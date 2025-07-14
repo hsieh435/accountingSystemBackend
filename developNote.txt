@@ -9,6 +9,13 @@
 
 
 
+https://wayne-blog.com/2023-02-21/ts-express-server/
+
+
+https://calvinegs.github.io/posts/nodejs-restapi-postgres/
+
+
+
 netstat -aon|findstr 8080
 taskkill /pid xxxxx /f
 
