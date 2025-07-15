@@ -16,6 +16,11 @@ https://calvinegs.github.io/posts/nodejs-restapi-postgres/
 
 
 
+臺灣證券交易所 OpenAPI
+https://openapi.twse.com.tw/
+
+
+
 netstat -aon|findstr 8080
 taskkill /pid xxxxx /f
 

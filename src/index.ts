@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
-import pool from "./db";
+import pool from "@/db";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 
 
 
-import tradeCategoryRoutes  from "./routes/tradeCategoryRoutes";
+import tradeCategoryRoutes  from "@/routes/tradeCategoryRoutes";
 
 
 
@@ -29,7 +29,7 @@ app.use(cors({
 
 
 // app.use(express.json());
-app.use("/tradeCategory", tradeCategoryRoutes);
+app.use("/accounting_system_backend/api/tradeCategory", tradeCategoryRoutes);
 
 
 
@@ -57,8 +57,8 @@ app.use("/tradeCategory", tradeCategoryRoutes);
 
 
 // server.listen(port);
-console.log(`server is running on http://localhost:${port}`);
+// console.log(`server is running on http://localhost:${port}`);
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`OK! http://localhost:${port}`);
 });

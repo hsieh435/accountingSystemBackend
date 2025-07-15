@@ -1,18 +1,18 @@
 import { Request, Response } from "express";
-import pool from "../db";
-import * as tradeService from "./../services/tradeCategoryServices";
+import * as tradeService from "@/services/tradeCategoryServices";
+import { success, error } from "@/utils/response";
 
 
 
 export const getAll = async (req: Request, res: Response) => {
-  console.log( 100);
   try {
     const result = await tradeService.getAllTradeCategory();
-    console.log("result:", result);
-    res.json(result);
+    // console.log("result:", result);
+    res.json(success({ data: result }));
+    // console.log("res:", res.json(success({ data: result })));
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error");
+    // console.error(err);
+    res.status(500).json(error({ message: "Server error" }));
   }
 };
 
@@ -20,37 +20,64 @@ export const getAll = async (req: Request, res: Response) => {
 
 export const getOne = async (req: Request, res: Response) => {
   try {
-    const trade = await tradeService.getTradeByCode(req.params.code);
-    if (!trade) return res.status(404).send("Not found");
-    res.json(trade);
+    const result = await tradeService.getTradeCategoryByCode(req.params.code);
+    res.json(success({ data: result }));
   } catch (err) {
-    res.status(500).send("Server error");
+    res.status(500).json(error({ message: "Server error" }));
   }
 };
 
 
+
+interface IDataParams {
+    categoryCode: string;
+    categoryName: string;
+    isCashflowAble: boolean;
+    isCashcardAble: boolean;
+    isCreditcardAble: boolean;
+    isCuaccountAble: boolean;
+    isStaccountAble: boolean;
+    sort: number;
+}
 
 export const create = async (req: Request, res: Response) => {
   try {
-    const { trade_code, trade_name, sort } = req.body;
-    const trade = await tradeService.createTrade(trade_code, trade_name, sort);
-    res.status(201).json(trade);
+    const dataParams: IDataParams = req.body;
+    const result = await tradeService.createTradeCategory(
+      dataParams.categoryCode,
+      dataParams.categoryName,
+      dataParams.isCashflowAble,
+      dataParams.isCashcardAble,
+      dataParams.isCreditcardAble,
+      dataParams.isCuaccountAble,
+      dataParams.isStaccountAble,
+      dataParams.sort
+    );
+    res.status(200).json(success({ data: result }));
   } catch (err) {
-    res.status(500).send("Server error");
+    res.status(500).json(error({ message: "Server error" }));
   }
 };
-
 
 
 
 export const update = async (req: Request, res: Response) => {
   try {
-    const { trade_name, sort } = req.body;
-    const trade = await tradeService.updateTrade(req.params.code, trade_name, sort);
-    if (!trade) return res.status(404).send("Not found");
-    res.json(trade);
+    const dataParams: IDataParams = req.body;
+    const result = await tradeService.updateTradeCategory(
+      dataParams.categoryCode,
+      dataParams.categoryName,
+      dataParams.isCashflowAble,
+      dataParams.isCashcardAble,
+      dataParams.isCreditcardAble,
+      dataParams.isCuaccountAble,
+      dataParams.isStaccountAble,
+      dataParams.sort
+    );
+    if (!result) return res.status(404).json(error({ message: "Not found" }));
+    res.json(success({ data: result }));
   } catch (err) {
-    res.status(500).send("Server error");
+    res.status(500).json(error({ message: "Server error" }));
   }
 };
 
@@ -58,10 +85,9 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
   try {
-    const trade = await tradeService.deleteTrade(req.params.code);
-    if (!trade) return res.status(404).send("Not found");
-    res.json({ message: "Deleted successfully" });
+    const result = await tradeService.deleteTrade(req.params.code);
+    res.json(success({ data: [], message: "Deleted successfully" }));
   } catch (err) {
-    res.status(500).send("Server error");
+    res.status(500).json(error({ message: "Server error" }));
   }
 };
