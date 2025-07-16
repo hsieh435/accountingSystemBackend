@@ -1,15 +1,15 @@
 import { Request, Response } from "express";
-import * as tradeService from "@/services/tradeCategoryServices";
 import { success, error } from "@/utils/response";
+import * as tradeService from "@/services/tradeCategoryServices";
 
 
 
 export const getAll = async (req: Request, res: Response) => {
+  
   try {
     const result = await tradeService.getAllTradeCategory();
     // console.log("result:", result);
-    res.json(success({ data: result }));
-    // console.log("res:", res.json(success({ data: result })));
+    res.json(success({ data: result, message: "查詢成功" }));
   } catch (err) {
     // console.error(err);
     res.status(500).json(error({ message: "Server error" }));
@@ -41,8 +41,8 @@ interface IDataParams {
 }
 
 export const create = async (req: Request, res: Response) => {
+  const dataParams = req.body as IDataParams;
   try {
-    const dataParams: IDataParams = req.body;
     const result = await tradeService.createTradeCategory(
       dataParams.categoryCode,
       dataParams.categoryName,
@@ -61,9 +61,9 @@ export const create = async (req: Request, res: Response) => {
 
 
 
-export const update = async (req: Request, res: Response) => {
+export async function update(req: Request, res: Response) {
+  const dataParams = req.body as IDataParams;
   try {
-    const dataParams: IDataParams = req.body;
     const result = await tradeService.updateTradeCategory(
       dataParams.categoryCode,
       dataParams.categoryName,
@@ -74,8 +74,7 @@ export const update = async (req: Request, res: Response) => {
       dataParams.isStaccountAble,
       dataParams.sort
     );
-    if (!result) return res.status(404).json(error({ message: "Not found" }));
-    res.json(success({ data: result }));
+    res.status(200).json(success({ data: result }));
   } catch (err) {
     res.status(500).json(error({ message: "Server error" }));
   }
@@ -85,8 +84,8 @@ export const update = async (req: Request, res: Response) => {
 
 export const remove = async (req: Request, res: Response) => {
   try {
-    const result = await tradeService.deleteTrade(req.params.code);
-    res.json(success({ data: [], message: "Deleted successfully" }));
+    const result = await tradeService.deleteTradeCategory(req.params.code);
+    res.json(success({ message: "刪除成功" }));
   } catch (err) {
     res.status(500).json(error({ message: "Server error" }));
   }

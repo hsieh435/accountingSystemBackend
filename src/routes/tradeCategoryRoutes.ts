@@ -7,11 +7,11 @@ const router = Router();
 
 
 
-router.get("/list", tradeController.getAll);
-router.get("/:code", tradeController.getOne);
-router.post("/create", tradeController.create);
-router.post("/update", tradeController.update);
-router.delete("/:code", tradeController.remove);
+router.get("/api/tradeCategory/list", tradeController.getAll);
+router.get("/api/tradeCategory/:code", tradeController.getOne);
+router.post("/api/tradeCategory/create", tradeController.create);
+router.put("/api/tradeCategory/update", tradeController.update);
+router.delete("/api/tradeCategory/:code", tradeController.remove);
 
 
 
