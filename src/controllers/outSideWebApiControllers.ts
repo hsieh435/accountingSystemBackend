@@ -27,3 +27,5 @@ export async function getEachStockList(req: Request, res: Response) {
   res.json(success({ data: data, message: "查詢成功" }));
 };
 // https://hackmd.io/@aaronlife/python-ex-stock-by-api
+// tse_開頭為上市股票
+// otc_開頭為上櫃股票
