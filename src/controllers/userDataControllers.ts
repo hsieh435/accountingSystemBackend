@@ -5,7 +5,8 @@ import * as userDataServices from "@/services/userDataServices";
 
 
 const jwt = require("jsonwebtoken");
-const SECRET_KEY = 'your-secret-key';
+require("dotenv").config();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 
 
@@ -13,10 +14,17 @@ export async function userLogin(req: Request, res: Response) {
   // console.log("Request:", req.body);
 
   try {
-    const result = await userDataServices.accountTesting(req.body);
-    // console.log("result:", result);
-    if (result) {
-      const token = jwt.sign({ id: req.body.id, username: req.body.username }, SECRET_KEY, { expiresIn: "10h" });
+    const { success: testingResult, userData: dataGot } = await userDataServices.loginTesting(req.body);
+    // console.log("result:", testingResult);
+    // console.log("dataGot:", dataGot);
+    if (testingResult) {
+      const token = jwt.sign({
+        userId: dataGot.userId,
+        userName: dataGot.userName
+      },
+        JWT_SECRET,
+        { expiresIn: "10h" }
+      );
       res.json(success({ data: { jwt: token }, message: "登入成功" }));
     } else {
       res.json(error({ message: "帳號或密碼錯誤" }));
@@ -24,6 +32,23 @@ export async function userLogin(req: Request, res: Response) {
   } catch (err) {
     // console.error(err);
     res.json(error({ message: "Server error" }));
+  }
+}
+
+
+
+export async function userDataUpdate(req: Request, res: Response) {
+  console.log("Request:", req.body);
+
+  try {
+    const result = await userDataServices.accountDataChange(req.body);
+    if (result) {
+      res.json(success({ message: "修改成功" }));
+    } else {
+      res.json(error({ message: "修改失敗" }));
+    }
+  } catch (err) {
+    res.status(500).json(error({ message: "Server error" }));
   }
 }
 

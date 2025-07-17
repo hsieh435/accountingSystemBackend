@@ -3,25 +3,34 @@ import { keysToCamel } from "@/utils/caseConverter";
 
 
 
-export async function accountTesting(data: { userId: string; password: string }) {
-  const result =
+export async function loginTesting(data: { userId: string; password: string }) {
+  const searchingUserResult =
     await pool.query(`SELECT * FROM user_data WHERE user_id = '${data.userId}' AND user_password = '${data.password}'`);
-  // console.log("result:", result.rows);
-  if (result.rows.length === 1) {
-    return true;
+  // console.log("searchingUserResult:", searchingUserResult.rows);
+  if (searchingUserResult.rows.length === 1) {
+    return { success: true, userData: keysToCamel(searchingUserResult.rows[0]) };
   } else {
-    return false;
+    return { success: false, userData: [] };
   }
 };
 
 
 
-export async function accountCreating(data: { userId: string; password: string }) {
-  const result =
-    await pool.query(`SELECT * FROM user_data WHERE user_id = '${data.userId}' AND user_password = '${data.password}'`);
-  // console.log("result:", result.rows);
-  if (result.rows.length === 1) {
-    return true;
+export async function accountDataChange(data: { userId: string; userName: string; userOldPassword: string; userNewPassword: string }) {
+  // console.log("data:", data);
+
+  const searchingUserResult =
+    await pool.query(`SELECT * FROM user_data WHERE user_id = '${data.userId}' AND user_password = '${data.userOldPassword}'`);
+  // console.log("searchingUserResult:", searchingUserResult);
+  if (searchingUserResult.rows.length === 1) {
+    const userDataUpdateResult =
+      await pool.query(`UPDATE user_data SET user_name='${data.userName}', user_password='${data.userNewPassword}' WHERE user_id='${data.userId}'`);
+    // console.log("userDataUpdateResult:", userDataUpdateResult);
+    if (userDataUpdateResult.rowCount === 1) {
+      return true;
+    } else {
+      return false;
+    }
   } else {
     return false;
   }
