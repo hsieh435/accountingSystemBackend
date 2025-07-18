@@ -11,7 +11,7 @@ export async function getAllStockList(req: Request, res: Response) {
   });
   const data = await response.json();
   // console.log("data:", data);
-  res.json(success({ data: data, message: "查詢成功" }));
+  res.json(success({ data: data, message: "查詢成功", req, res }));
 };
 
 
@@ -24,7 +24,7 @@ export async function getEachStockList(req: Request, res: Response) {
   });
   const data = await response.json();
   // console.log("data:", data);
-  res.json(success({ data: data, message: "查詢成功" }));
+  res.json(success({ data: data, message: "查詢成功", req, res }));
 };
 // https://hackmd.io/@aaronlife/python-ex-stock-by-api
 // tse_開頭為上市股票

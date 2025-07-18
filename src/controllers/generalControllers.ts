@@ -8,7 +8,7 @@ export async function jwtVerify(req: Request, res: Response) {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json(error({ message: "No token provided" }));
+      return res.status(401).json(error({ message: "No token provided", req, res }));
     }
 
     const token = authHeader.split(" ")[1];
@@ -21,11 +21,11 @@ export async function jwtVerify(req: Request, res: Response) {
       // console.log("decoded:", decoded);
 
       if (err) {
-        return res.status(403).json(error({ message: "Invalid token" }));
+        return res.status(403).json(error({ message: "Invalid token", req, res }));
       }
-      res.json(success({ data: decoded, message: "Token is valid" }));
+      res.json(success({ data: decoded, req, res }));
     });
   } catch (err) {
-    res.status(500).json(error({ message: "Server error" }));
+    res.status(500).json(error({ message: "Server error", req, res }));
   }
 };

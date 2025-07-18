@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
 
-// Extend Express Request interface to include 'user'
+// Extend Express Request interface to include "user"
 declare global {
   namespace Express {
     interface Request {
@@ -17,12 +17,12 @@ export async function authenticateToken(req: Request, res: Response, next: Funct
 
   const JWT_SECRET = process.env.JWT_SECRET;
   if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET is not defined in environment variables');
+    throw new Error("JWT_SECRET is not defined in environment variables");
   }
 
 
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer token_value
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1]; // Bearer token_value
 
   if (!token) return res.sendStatus(401); // 沒帶 token
 

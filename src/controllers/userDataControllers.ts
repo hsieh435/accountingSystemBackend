@@ -25,13 +25,13 @@ export async function userLogin(req: Request, res: Response) {
         JWT_SECRET,
         { expiresIn: "10h" }
       );
-      res.json(success({ data: { jwt: token }, message: "登入成功" }));
+      res.json(success({ data: { jwt: token }, message: "登入成功", req, res }));
     } else {
-      res.json(error({ message: "帳號或密碼錯誤" }));
+      res.json(error({ message: "帳號或密碼錯誤", req, res }));
     }
   } catch (err) {
     // console.error(err);
-    res.json(error({ message: "Server error" }));
+    res.json(error({ message: "Server error", req, res }));
   }
 }
 
@@ -43,12 +43,18 @@ export async function userDataUpdate(req: Request, res: Response) {
   try {
     const result = await userDataServices.accountDataChange(req.body);
     if (result) {
-      res.json(success({ message: "修改成功" }));
+      const token = jwt.sign({
+        userId: req.body.userId,
+        userName: req.body.userName
+      },
+        JWT_SECRET,
+        { expiresIn: "10h" }
+      );
+      res.json(success({ data: { jwt: token }, message: "修改成功", req, res }));
     } else {
-      res.json(error({ message: "修改失敗" }));
+      res.json(error({ message: "修改失敗", req, res }));
     }
   } catch (err) {
-    res.status(500).json(error({ message: "Server error" }));
+    res.status(500).json(error({ message: "Server error", req, res }));
   }
 }
-

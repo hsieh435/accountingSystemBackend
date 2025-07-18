@@ -8,7 +8,7 @@ export function toCamelCase(str: string): string {
 export function keysToCamel<T extends object>(obj: T): any {
   if (Array.isArray(obj)) {
     return obj.map(v => keysToCamel(v));
-  } else if (obj !== null && typeof obj === 'object') {
+  } else if (obj !== null && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [
         toCamelCase(key),
