@@ -1,3 +1,4 @@
+import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as userDataServices from "@/services/userDataServices";
@@ -7,6 +8,21 @@ import * as userDataServices from "@/services/userDataServices";
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
+
+
+
+export async function userDataList(req: Request, res: Response) {
+
+  try {
+    const searchingUserResult = await pool.query("SELECT * FROM user_data");
+    // console.log("searchingUserResult:", searchingUserResult);
+    if (searchingUserResult) {
+      res.json(success({ data: searchingUserResult.rows.length, req, res }));
+    }
+  } catch (err) {
+    res.json(error({ message: "Server error", req, res }));
+  }
+}
 
 
 
@@ -30,7 +46,6 @@ export async function userLogin(req: Request, res: Response) {
       res.json(error({ message: "帳號或密碼錯誤", req, res }));
     }
   } catch (err) {
-    // console.error(err);
     res.json(error({ message: "Server error", req, res }));
   }
 }

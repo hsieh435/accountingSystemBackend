@@ -11,7 +11,6 @@ export const getAll = async (req: Request, res: Response) => {
     // console.log("result:", result);
     res.json(success({ data: result, message: "查詢成功", req, res }));
   } catch (err) {
-    // console.error(err);
     res.status(500).json(error({ message: "Server error", req, res }));
   }
 };
