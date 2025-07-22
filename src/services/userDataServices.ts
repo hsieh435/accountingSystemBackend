@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { keysToCamel } from "@/utils/caseConverter";
+import { keysToCamel, getCurrentYMD } from "@/utils/tools";
 
 
 
@@ -12,6 +12,20 @@ export async function loginTesting(data: { userId: string; password: string }) {
     return { success: true, userData: keysToCamel(searchingUserResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
+  }
+};
+
+
+
+export async function createUser(data: { userAccount: string; userName: string; userPassword: string }) {
+  // console.log("data:", data);
+  const createUserResult =
+    await pool.query(`INSERT INTO user_data (user_id, user_name, user_password, created_date) VALUES ('${data.userAccount}', '${data.userName}', '${data.userPassword}', '${getCurrentYMD()}')`);
+  // console.log("createUserResult:", createUserResult);
+  if (createUserResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
   }
 };
 

@@ -7,6 +7,7 @@ dotenv.config();
 
 
 
+import cashFlowRoutes from "@/routes/cashFlowRoutes"
 import generalRoutes from "@/routes/generalRoutes";
 import outSideWebApiRoutes from "@/routes/outSideWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
@@ -29,6 +30,7 @@ app.use(cors({
 
 
 app.use(express.json());
+app.use("/accounting_system_backend", cashFlowRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outSideWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);

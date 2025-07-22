@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import { keysToCamel } from "@/utils/caseConverter";
+import { keysToCamel } from "@/utils/tools";
 
 
 

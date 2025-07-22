@@ -11,9 +11,7 @@ const router = Router();
 router.get("/api/userList", userDataControllers.userDataList);
 router.post("/public/user/login", userDataControllers.userLogin);
 router.post("/api/user/dataUpdate", authenticateToken, userDataControllers.userDataUpdate);
-// router.post("/create", userDataControllers.create);
-// router.put("/update", userDataControllers.update);
-// router.delete("/:code", userDataControllers.remove);
+router.post("/api/user/create", userDataControllers.userCreate);
 
 
 

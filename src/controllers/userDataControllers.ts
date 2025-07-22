@@ -52,6 +52,23 @@ export async function userLogin(req: Request, res: Response) {
 
 
 
+export async function userCreate(req: Request, res: Response) {
+  // console.log("Request:", req.body);
+
+  try {
+    const result = await userDataServices.createUser(req.body);
+    if (result) {
+      res.json(success({ message: "使用者創建成功", req, res }));
+    } else {
+      res.json(error({ message: "使用者創建失敗", req, res }));
+    }
+  } catch (err) {
+    res.status(500).json(error({ message: "Server error", req, res }));
+  }
+}
+
+
+
 export async function userDataUpdate(req: Request, res: Response) {
   console.log("Request:", req.body);
 
