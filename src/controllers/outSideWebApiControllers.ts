@@ -29,3 +29,11 @@ export async function getEachStockList(req: Request, res: Response) {
 // https://hackmd.io/@aaronlife/python-ex-stock-by-api
 // tse_開頭為上市股票
 // otc_開頭為上櫃股票
+
+// https://mis.twse.com.tw/stock/index?lang=zhHant
+
+// https://ithelp.ithome.com.tw/articles/10258478
+
+// https://vocus.cc/article/667ebabbfd897800016b3086
+
+// https://openapi.twse.com.tw/

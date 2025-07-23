@@ -61,3 +61,18 @@ export function getCurrentMonth() {
 export function getCurrentDate() {
   return new Date().getDate();
 }
+
+
+
+// 取得西元年月格式 yyyy-mm
+export function yearMonthFormat(dateString: string) {
+
+  if (!dateString) return "";
+  let date = new Date(dateString);
+
+  if (isNaN(date.getFullYear()) || isNaN(date.getMonth())) return "";
+
+  const month = ("00" + (date.getMonth() + 1)).slice(-2);
+  return `${date.getFullYear()}-${month}`;
+}
+

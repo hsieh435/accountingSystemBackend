@@ -11,7 +11,7 @@ export const getAll = async (req: Request, res: Response) => {
     // console.log("result:", result);
     res.json(success({ data: result, message: "查詢成功", req, res }));
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };
 
@@ -22,7 +22,7 @@ export const getOne = async (req: Request, res: Response) => {
     const result = await tradeService.getTradeCategoryByCode(req.params.code);
     res.json(success({ data: result, req, res }));
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };
 
@@ -54,7 +54,7 @@ export const create = async (req: Request, res: Response) => {
     );
     res.json(success({ data: result, req, res }));
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };
 
@@ -75,17 +75,17 @@ export async function update(req: Request, res: Response) {
     );
     res.json(success({ data: result, req, res }));
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };
 
 
 
-export const remove = async (req: Request, res: Response) => {
+export async function remove(req: Request, res: Response) {
   try {
-    const result = await tradeService.deleteTradeCategory(req.params.code);
+    const result = await tradeService.removeTradeCategory(req.params.code);
     res.json(success({ message: "刪除成功", req, res }));
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };

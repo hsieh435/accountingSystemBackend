@@ -20,7 +20,7 @@ export async function userDataList(req: Request, res: Response) {
       res.json(success({ data: searchingUserResult.rows.length, req, res }));
     }
   } catch (err) {
-    res.json(error({ message: "Server error", req, res }));
+    res.json(error({ req, res }));
   }
 }
 
@@ -46,7 +46,7 @@ export async function userLogin(req: Request, res: Response) {
       res.json(error({ message: "帳號或密碼錯誤", req, res }));
     }
   } catch (err) {
-    res.json(error({ message: "Server error", req, res }));
+    res.json(error({ req, res }));
   }
 }
 
@@ -63,7 +63,7 @@ export async function userCreate(req: Request, res: Response) {
       res.json(error({ message: "使用者創建失敗", req, res }));
     }
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 }
 
@@ -87,6 +87,6 @@ export async function userDataUpdate(req: Request, res: Response) {
       res.json(error({ message: "修改失敗", req, res }));
     }
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 }

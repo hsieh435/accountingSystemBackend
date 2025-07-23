@@ -26,6 +26,6 @@ export async function jwtVerify(req: Request, res: Response) {
       res.json(success({ data: decoded, req, res }));
     });
   } catch (err) {
-    res.status(500).json(error({ message: "Server error", req, res }));
+    res.status(500).json(error({ req, res }));
   }
 };

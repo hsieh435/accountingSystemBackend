@@ -34,7 +34,7 @@ export const success = ({ data = [], message = "成功", req, res }: { data?: an
 
 
 
-export const error = ({ data = [], message = "錯誤", req, res }: { data?: any; message?: string; req: Request; res: Response }) => {
+export const error = ({ data = [], message = "網路錯誤", req, res }: { data?: any; message?: string; req: Request; res: Response }) => {
 
   const response = {
     config: {

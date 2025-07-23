@@ -33,7 +33,7 @@ export async function updateTradeCategory(code: string, name: string, isCashflow
 
 
 
-export async function deleteTradeCategory(code: string) {
+export async function removeTradeCategory(code: string) {
   const result = await pool.query(`DELETE FROM public.trade_category WHERE category_code = '${code}'`);
   return keysToCamel(result.rows[0]);
 };

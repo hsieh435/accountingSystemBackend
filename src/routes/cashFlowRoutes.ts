@@ -9,9 +9,10 @@ const router = Router();
 
 
 router.post("/api/cashFlow/List", authenticateToken, cashFlowControllers.cashFlowList);
+router.get("/api/cashFlowData/:cashflowId", authenticateToken, cashFlowControllers.searchingCashFlowById);
 router.post("/api/cashFlow/create", authenticateToken, cashFlowControllers.cashFlowCreate);
 router.put("/api/cashFlow/update", authenticateToken, cashFlowControllers.cashFlowUpdate);
-router.delete("/api/cashFlow/delete/:cashflowId", authenticateToken, cashFlowControllers.cashFlowDelete);
+router.get("/api/cashFlow/delete/:cashflowId", authenticateToken, cashFlowControllers.cashFlowDelete);
 
 
 
