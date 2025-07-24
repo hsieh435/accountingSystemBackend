@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as cashFlowServices from "@/services/cashFlowServices";
 import { keysToCamel } from "@/utils/tools";
+import { searchingCashFlowList } from "@/services/cashFlowServices";
 
 
 
@@ -13,15 +14,18 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 
 export async function cashFlowList(req: Request, res: Response) {
+  req.body.userId = req.user.userId;
+
   try {
-    const searchingResult =
-      await pool.query(`SELECT * FROM cashflow_list where currency LIKE '%${req.body.currencyId}%' ORDER BY created_date`);
-    // console.log("searchingResult:", searchingResult.rows);
-    if (searchingResult.rows.length >= 0) {
-      res.json(success({ data: keysToCamel(searchingResult.rows), req, res }));
+    const searchingResult = await searchingCashFlowList(req.body.currencyId, req.body.userId);
+    console.log("searchingResult:", searchingResult);
+    if (searchingResult.success === true) {
+      res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
+    } else {
+      res.json(error({ message: "發生錯誤0", req, res }));
     }
   } catch (err) {
-    res.json(error({ req, res }));
+    res.json(error({ message: "發生錯誤2", req, res }));
   }
 }
 

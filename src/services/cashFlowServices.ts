@@ -18,6 +18,21 @@ export interface ICashFlowList {
 
 
 
+export async function searchingCashFlowList(currencyId: string, userId: string) {
+  try {
+    const searchingResult =
+      await pool.query(`SELECT cashflow_list.*, currency_list.currency_name FROM cashflow_list
+        LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
+        WHERE currency LIKE '%${currencyId}%' AND user_id='${userId}' ORDER BY created_date`);
+    // console.log("searchingResult:", searchingResult.rows);
+    return { success: true, data: keysToCamel(searchingResult.rows) };
+  } catch (err) {
+    return { success: false, data: [] };
+  }
+}
+
+
+
 export async function insertCashflowData(data: ICashFlowList) {
 
   const insertResult =
