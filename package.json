@@ -18,7 +18,8 @@
     "jsonwebtoken": "^9.0.2",
     "morgan": "~1.9.1",
     "pg": "^8.16.3",
-    "pg-types": "^4.0.2"
+    "pg-types": "^4.0.2",
+    "prettier": "^3.6.2"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

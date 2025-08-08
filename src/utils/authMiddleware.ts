@@ -31,7 +31,8 @@ export async function authenticateToken(req: Request, res: Response, next: Funct
 
     if (err) return res.sendStatus(403); // token 無效或過期
 
-    req.user = user; // 通過驗證，將解開的 user 設到 req
+    req.user = user; // 通過驗證，將解開的 user 設到 req    
+    req.body.userId = req.user.userId;
     next();
   });
 }
