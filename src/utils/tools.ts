@@ -62,6 +62,11 @@ export function getCurrentDate() {
   return new Date().getDate();
 }
 
+// 取得當下時間戳，type 為 number
+export function getCurrentTimestamp() {
+  return new Date().getTime();
+}
+
 
 
 // 取得西元年月格式 yyyy-mm
@@ -75,4 +80,3 @@ export function yearMonthFormat(dateString: string) {
   const month = ("00" + (date.getMonth() + 1)).slice(-2);
   return `${date.getFullYear()}-${month}`;
 }
-

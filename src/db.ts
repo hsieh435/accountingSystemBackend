@@ -14,7 +14,6 @@ types.setTypeParser(1114, val => val);
 
 
 
-
 // 查詢資料型別 OID 語法
 // SELECT typname, oid FROM pg_type;
 
@@ -27,8 +26,6 @@ types.setTypeParser(1114, val => val);
 // time 1083
 // timestamp 1114
 // uuid 2950
-
-
 
 
 

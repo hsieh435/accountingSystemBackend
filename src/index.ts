@@ -8,6 +8,7 @@ dotenv.config();
 
 
 import cashFlowRoutes from "@/routes/cashFlowRoutes"
+import cashCardRoutes from "@/routes/cashCardRoutes"
 import generalRoutes from "@/routes/generalRoutes";
 import outSideWebApiRoutes from "@/routes/outSideWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
@@ -31,6 +32,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use("/accounting_system_backend", cashFlowRoutes);
+app.use("/accounting_system_backend", cashCardRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outSideWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
@@ -38,18 +40,6 @@ app.use("/accounting_system_backend", tradeCategoryRoutes);
 app.use("/accounting_system_backend", userDataRoutes);
 
 
-
-// const server = createServer((request: IncomingMessage, response: ServerResponse) => {
-//   response.on("error", (err) => {
-//     console.error(err);
-//   });
-//   response.writeHead(200, { "Content-Type": "text/plain" });
-//   response.end("Hello world!");
-// });
-
-
-// server.listen(port);
-// console.log(`server is running on http://localhost:${port}`);
 
 app.listen(port, () => {
   console.log(`OK ! http://localhost:${port}`);
