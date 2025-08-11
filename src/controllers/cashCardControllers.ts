@@ -6,13 +6,14 @@ import { keysToCamel } from "@/utils/tools";
 
 
 
-const jwt = require("jsonwebtoken");
-require("dotenv").config();
-const JWT_SECRET = process.env.JWT_SECRET;
+// const jwt = require("jsonwebtoken");
+// require("dotenv").config();
+// const JWT_SECRET = process.env.JWT_SECRET;
 
 
 
-export async function cashDataList(req: Request, res: Response) {
+export async function cashCardDataList(req: Request, res: Response) {
+  // console.log("Request body:", req.body);
 
   try {
     const searchingResult = await cashCardServices.searchingCashCardList(req.body);
@@ -30,8 +31,6 @@ export async function cashDataList(req: Request, res: Response) {
 
 
 export async function searchingCashCardById(req: Request, res: Response) {
-  // console.log("req.params:", req.params);
-  // console.log("req.body:", req.body);
 
   try {
     const searchingResult =
@@ -49,7 +48,7 @@ export async function searchingCashCardById(req: Request, res: Response) {
 
 
 
-export async function cashDataCreate(req: Request, res: Response) {
+export async function cashCardCreate(req: Request, res: Response) {
 
   try {
     const createResult = await cashCardServices.insertCashCardData(req.body);
@@ -66,10 +65,10 @@ export async function cashDataCreate(req: Request, res: Response) {
 
 
 
-export async function cashDataUpdate(req: Request, res: Response) {
+export async function cashCardUpdate(req: Request, res: Response) {
 
   try {
-    const updateResult = await cashCardServices.cashCardUpdate(req.body);
+    const updateResult = await cashCardServices.uodateCashCardData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -82,7 +81,7 @@ export async function cashDataUpdate(req: Request, res: Response) {
 
 
 
-export async function cashDataDelete(req: Request, res: Response) {
+export async function cashCardDelete(req: Request, res: Response) {
   req.body.cashcardId = req.params.cashCardId;
 
   try {

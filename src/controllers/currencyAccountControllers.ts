@@ -1,21 +1,16 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as cashFlowServices from "@/services/cashFlowServices";
+import * as currencyAccountServices from "@/services/currencyAccountServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-// const jwt = require("jsonwebtoken");
-// require("dotenv").config();
-// const JWT_SECRET = process.env.JWT_SECRET;
-
-
-
-export async function cashFlowList(req: Request, res: Response) {
+export async function currencyAccountList(req: Request, res: Response) {
+  // console.log("Request body:", req.body);
 
   try {
-    const searchingResult = await cashFlowServices.searchingCashFlowList(req.body.currencyId, req.body.userId);
+    const searchingResult = await currencyAccountServices.searchingCurrencyAccountList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -29,16 +24,16 @@ export async function cashFlowList(req: Request, res: Response) {
 
 
 
-export async function searchingCashFlowById(req: Request, res: Response) {
+export async function searchingCurrencyAccountById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM cashflow_list where cashflow_id = '${req.params.cashflowId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.accountId}' and user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
     } else {
-      res.json(error({ message: "現金流不存在", req, res }));
+      res.json(error({ message: "存款帳戶不存在", req, res }));
     }
   } catch (err) {
     res.json(error({ req, res }));
@@ -47,10 +42,10 @@ export async function searchingCashFlowById(req: Request, res: Response) {
 
 
 
-export async function cashFlowCreate(req: Request, res: Response) {
+export async function currencyAccountCreate(req: Request, res: Response) {
 
   try {
-    const createResult = await cashFlowServices.insertCashflowData(req.body);
+    const createResult = await currencyAccountServices.insertCurrencyAccountData(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -64,10 +59,10 @@ export async function cashFlowCreate(req: Request, res: Response) {
 
 
 
-export async function cashFlowUpdate(req: Request, res: Response) {
+export async function currencyAccountUpdate(req: Request, res: Response) {
 
   try {
-    const updateResult = await cashFlowServices.uodateCashflowData(req.body);
+    const updateResult = await currencyAccountServices.updateCurrencyAccountData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -80,11 +75,11 @@ export async function cashFlowUpdate(req: Request, res: Response) {
 
 
 
-export async function cashFlowDelete(req: Request, res: Response) {
-  req.body.cashflowId = req.params.cashflowId;
+export async function currencyAccountDelete(req: Request, res: Response) {
+  req.body.currencyAccountId = req.params.currencyAccountId;
 
   try {
-    const removeResult = await cashFlowServices.removeCashflowData(req.body);
+    const removeResult = await currencyAccountServices.removeCurrencyAccountData(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {

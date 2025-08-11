@@ -1,10 +1,9 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
-import { StringifyOptions } from "querystring";
 
 
 
-export interface ICashCardList {
+export interface ICashCardData {
   cashcardId: string;
   userId: string;
   cashcardName: string;
@@ -37,7 +36,7 @@ export async function searchingCashCardList(data: { currencyId: string; userId: 
 
 
 
-export async function insertCashCardData(data: ICashCardList) {
+export async function insertCashCardData(data: ICashCardData) {
 
   const insertResult =
     await pool.query(`INSERT INTO public.cashcard_list(cashcard_id, user_id, cashcard_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, created_date, note)	VALUES (${getCurrentTimestamp() + ''}, '${data.userId}', '${data.cashcardName}', '${data.currency}', ${data.startingAmount}, ${data.presentAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
@@ -51,7 +50,7 @@ export async function insertCashCardData(data: ICashCardList) {
 
 
 
-export async function cashCardUpdate(data: ICashCardList) {
+export async function uodateCashCardData(data: ICashCardData) {
   // console.log("data:", data);
   const updateResult =
     await pool.query(`UPDATE public.cashcard_list SET cashcard_name = '${data.cashcardName}', minimum_value_allowed = ${data.minimumValueAllowed}, maximum_value_allowed = ${data.maximumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
@@ -65,13 +64,13 @@ export async function cashCardUpdate(data: ICashCardList) {
 
 
 
-export async function removeCashCardData(data: ICashCardList) {
+export async function removeCashCardData(data: ICashCardData) {
 
   const searchingResult =
     await pool.query(`SELECT * FROM cashcard_trade where cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
   // console.log("searchingResult:", searchingResult);
   if (searchingResult.rows.length > 0) {
-    return { success: false, message: "有收支紀錄，無法刪除" };
+    return { success: false, message: "已有收支紀錄，無法刪除" };
   } else {
     const deleteResult =
       await pool.query(`DELETE FROM public.cashcard_list WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);

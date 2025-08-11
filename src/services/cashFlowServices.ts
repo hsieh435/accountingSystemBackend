@@ -1,10 +1,9 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
-import { StringifyOptions } from "querystring";
 
 
 
-export interface ICashFlowList {
+export interface ICashFlowData {
   cashflowId: string;
   userId: string;
   currency: string;
@@ -34,7 +33,7 @@ export async function searchingCashFlowList(currencyId: string, userId: string) 
 
 
 
-export async function insertCashflowData(data: ICashFlowList) {
+export async function insertCashflowData(data: ICashFlowData) {
 
   const insertResult =
     await pool.query(`INSERT INTO cashflow_list(cashflow_id, user_id, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('${getCurrentTimestamp() + ''}', '${data.userId}', '${data.currency}', ${data.startingAmount}, ${data.presentAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
@@ -48,7 +47,7 @@ export async function insertCashflowData(data: ICashFlowList) {
 
 
 
-export async function cashflowDataUpdate(data: ICashFlowList) {
+export async function uodateCashflowData(data: ICashFlowData) {
   // console.log("data:", data);
   const updateResult =
     await pool.query(`UPDATE public.cashcard_list SET minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE cashcard_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
@@ -62,7 +61,7 @@ export async function cashflowDataUpdate(data: ICashFlowList) {
 
 
 
-export async function removeCashflowData(data: ICashFlowList) {
+export async function removeCashflowData(data: ICashFlowData) {
 
   const searchingResult =
     await pool.query(`SELECT * FROM cashcard_trade where cashcard_id = '${data.cashflowId}' and user_id = '${data.userId}';`);

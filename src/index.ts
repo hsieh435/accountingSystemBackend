@@ -9,6 +9,8 @@ dotenv.config();
 
 import cashFlowRoutes from "@/routes/cashFlowRoutes"
 import cashCardRoutes from "@/routes/cashCardRoutes"
+import creditCardRoutes from "@/routes/creditCardRoutes"
+import currencyAccountRoutes from "@/routes/currencyAccountRoutes";
 import generalRoutes from "@/routes/generalRoutes";
 import outSideWebApiRoutes from "@/routes/outSideWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
@@ -33,6 +35,8 @@ app.use(cors({
 app.use(express.json());
 app.use("/accounting_system_backend", cashFlowRoutes);
 app.use("/accounting_system_backend", cashCardRoutes);
+app.use("/accounting_system_backend", creditCardRoutes);
+app.use("/accounting_system_backend", currencyAccountRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outSideWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
