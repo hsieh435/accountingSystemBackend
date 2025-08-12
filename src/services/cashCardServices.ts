@@ -14,6 +14,7 @@ export interface ICashCardData {
   maximumValueAllowed: number;
   alertValue: number;
   openAlert: boolean;
+  enable: boolean;
   createdDate: string;
   note: string;
 }

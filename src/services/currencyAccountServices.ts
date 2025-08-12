@@ -3,7 +3,6 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 
 
 
-
 export interface ICurrencyAccountData {
   accountId: string;
   userId: string;
@@ -23,6 +22,8 @@ export interface ICurrencyAccountData {
   createdDate: string;
   note: string;
 }
+
+
 
 export async function searchingCurrencyAccountList(data: { currencyId: string; userId: string }) {
   // console.log("data:", data);
@@ -44,7 +45,7 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
 export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_name, account_type, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, is_salary_account, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountName}', '${data.accountType}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.isSalaryAccount}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, is_salary_account, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.isSalaryAccount}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };

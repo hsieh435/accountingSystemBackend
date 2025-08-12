@@ -16,6 +16,7 @@ export interface ICreditCardData {
   expirationDate: string;
   alertValue: number;
   openAlert: boolean;
+  enable: boolean;
   createdDate: string;
   note: string;
 }
@@ -42,7 +43,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
 export async function insertCreditCardData(data: ICreditCardData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.creditcard_list(creditcard_id, user_id, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_scheme, currency, credit_per_month, expiration_date, alert_value, open_alert, created_date, note)	VALUES (${getCurrentTimestamp() + ''}, '${data.userId}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.creditcard_list(creditcard_id, user_id, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_scheme, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES (${getCurrentTimestamp() + ''}, '${data.userId}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
@@ -56,7 +57,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
 export async function updateCreditCardData(data: ICreditCardData) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.creditcard_list SET creditcard_name = '${data.creditcardName}', creditcard_bank_code = '${data.creditcardBankCode}', creditcard_bank_name = '${data.creditcardBankName}', credit_per_month = ${data.creditPerMonth}, expiration_date = '${data.expirationDate}', alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.creditcard_list SET creditcard_name = '${data.creditcardName}', creditcard_bank_code = '${data.creditcardBankCode}', creditcard_bank_name = '${data.creditcardBankName}', credit_per_month = ${data.creditPerMonth}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
