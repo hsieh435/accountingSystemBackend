@@ -88,3 +88,30 @@ export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
     }
   }
 };
+
+
+
+export async function enableCurrencyAccount(data: ICurrencyAccountData) {
+  // console.log("data:", data);
+
+  const updateResult =
+    await pool.query(`UPDATE public.currency_account_list SET enable = ${true} WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function disableCurrencyAccount(data: ICurrencyAccountData) {
+
+  const updateResult =
+    await pool.query(`UPDATE public.currency_account_list SET enable = ${false} WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}

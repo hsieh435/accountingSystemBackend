@@ -71,7 +71,7 @@ export async function removeCashCardData(data: ICashCardData) {
     await pool.query(`SELECT * FROM cashcard_trade where cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
   // console.log("searchingResult:", searchingResult);
   if (searchingResult.rows.length > 0) {
-    return { success: false, message: "已有收支紀錄，無法刪除" };
+    return { success: false, message: "已有使用紀錄，無法刪除" };
   } else {
     const deleteResult =
       await pool.query(`DELETE FROM public.cashcard_list WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
@@ -83,3 +83,30 @@ export async function removeCashCardData(data: ICashCardData) {
     }
   }
 };
+
+
+
+export async function enableCashCard(data: ICashCardData) {
+  // console.log("data:", data);
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashcard_list SET enable = ${true} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function disableCashCard(data: ICashCardData) {
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashcard_list SET enable = ${false} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}

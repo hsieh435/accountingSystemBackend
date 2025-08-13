@@ -28,7 +28,7 @@ export async function searchingCurrencyAccountById(req: Request, res: Response) 
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.accountId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.currencyAccountId}' and user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
@@ -89,3 +89,37 @@ export async function currencyAccountDelete(req: Request, res: Response) {
     res.json(error({ req, res }));
   }
 };
+
+
+
+export async function enableCurrencyAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.currencyAccountId;
+
+  try {
+    const adjustResult = await currencyAccountServices.enableCurrencyAccount(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "啟用成功", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
+
+
+export async function disableCurrencyAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.currencyAccountId;
+
+  try {
+    const adjustResult = await currencyAccountServices.disableCurrencyAccount(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "已停用", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}

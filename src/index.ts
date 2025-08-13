@@ -11,6 +11,7 @@ import cashFlowRoutes from "@/routes/cashFlowRoutes"
 import cashCardRoutes from "@/routes/cashCardRoutes"
 import creditCardRoutes from "@/routes/creditCardRoutes"
 import currencyAccountRoutes from "@/routes/currencyAccountRoutes";
+import functionListRoutes from "@/routes/functionListRoutes";
 import generalRoutes from "@/routes/generalRoutes";
 import outSideWebApiRoutes from "@/routes/outSideWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
@@ -38,6 +39,7 @@ app.use("/accounting_system_backend", cashFlowRoutes);
 app.use("/accounting_system_backend", cashCardRoutes);
 app.use("/accounting_system_backend", creditCardRoutes);
 app.use("/accounting_system_backend", currencyAccountRoutes);
+app.use("/accounting_system_backend", functionListRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outSideWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);

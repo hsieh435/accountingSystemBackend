@@ -48,7 +48,7 @@ export async function searchingCreditCardById(req: Request, res: Response) {
 
 
 
-export async function cashDataCreate(req: Request, res: Response) {
+export async function creditCardCreate(req: Request, res: Response) {
 
   try {
     const createResult = await creditCardServices.insertCreditCardData(req.body);
@@ -65,7 +65,7 @@ export async function cashDataCreate(req: Request, res: Response) {
 
 
 
-export async function cashDataUpdate(req: Request, res: Response) {
+export async function creditCardUpdate(req: Request, res: Response) {
 
   try {
     const updateResult = await creditCardServices.updateCreditCardData(req.body);
@@ -81,8 +81,8 @@ export async function cashDataUpdate(req: Request, res: Response) {
 
 
 
-export async function cashDataDelete(req: Request, res: Response) {
-  req.body.cashcardId = req.params.cashCardId;
+export async function creditCardDelete(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
 
   try {
     const removeResult = await creditCardServices.removeCreditCardData(req.body);
@@ -95,3 +95,37 @@ export async function cashDataDelete(req: Request, res: Response) {
     res.json(error({ req, res }));
   }
 };
+
+
+
+export async function enableCreditCard(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
+
+  try {
+    const adjustResult = await creditCardServices.enableCreditCard(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "啟用成功", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
+
+
+export async function disableCreditCard(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
+
+  try {
+    const adjustResult = await creditCardServices.disableCreditCard(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "已停用", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}

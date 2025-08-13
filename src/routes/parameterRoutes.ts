@@ -12,7 +12,7 @@ router.get("/api/parameters/schemasList", authenticateToken, parameterController
 router.get("/api/parameters/schemas/:schemasCode", authenticateToken, parameterControllers.getSchemaById);
 router.post("/api/parameters/schemas/create", authenticateToken, parameterControllers.createSchema);
 router.put("/api/parameters/schemas/update", authenticateToken, parameterControllers.updateSchema);
-router.delete("/api/parameters/schemas/:schemasCode", authenticateToken, parameterControllers.deleteSchema);
+router.get("/api/parameters/schemas/:schemasCode", authenticateToken, parameterControllers.deleteSchema);
 
 
 
@@ -21,7 +21,7 @@ router.get("/api/parameters/currencyList", authenticateToken, parameterControlle
 router.get("/api/parameters/currency/:currencyCode", authenticateToken, parameterControllers.getEachCurrency);
 router.post("/api/parameters/currency/create", authenticateToken, parameterControllers.createCurrency);
 router.put("/api/parameters/currency/update", authenticateToken, parameterControllers.updateCurrency);
-router.delete("/api/parameters/currency/:currencyCode", authenticateToken, parameterControllers.deleteCurrency);
+router.get("/api/parameters/currency/:currencyCode", authenticateToken, parameterControllers.deleteCurrency);
 
 
 

@@ -120,10 +120,8 @@ export async function deleteCurrency(req: Request, res: Response) {
       UNION ALL
       SELECT 1 FROM stock_accounts_list WHERE currency = '${req.params.currencyCode}'
       ) AS combined;
-
     `,
   );
-
   // console.log("searchingCurrencyResult:", searchingCurrencyResult.rows[0]);
 
   if (searchingCurrencyResult.rows[0].total > 0) {

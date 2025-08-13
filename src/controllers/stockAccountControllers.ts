@@ -7,7 +7,6 @@ import { keysToCamel } from "@/utils/tools";
 
 
 export async function stockAccountList(req: Request, res: Response) {
-  // console.log("Request body:", req.body);
 
   try {
     const searchingResult = await stockAccountServices.searchingStockAccountList(req.body);

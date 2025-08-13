@@ -10,9 +10,11 @@ const router = Router();
 
 router.post("/api/creditCard/List", authenticateToken, creditCardControllers.creditCardDataList);
 router.get("/api/creditCardData/:creditCardId", authenticateToken, creditCardControllers.searchingCreditCardById);
-router.post("/api/creditCard/create", authenticateToken, creditCardControllers.cashDataCreate);
-router.put("/api/creditCard/update", authenticateToken, creditCardControllers.cashDataUpdate);
-router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCardControllers.cashDataDelete);
+router.post("/api/creditCard/create", authenticateToken, creditCardControllers.creditCardCreate);
+router.put("/api/creditCard/update", authenticateToken, creditCardControllers.creditCardUpdate);
+router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCardControllers.creditCardDelete);
+router.get("/api/creditCard/enable/:creditCardId", authenticateToken, creditCardControllers.enableCreditCard);
+router.get("/api/creditCard/disable/:creditCardId", authenticateToken, creditCardControllers.disableCreditCard);
 
 
 
