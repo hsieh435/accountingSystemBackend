@@ -81,28 +81,11 @@ export async function creditCardUpdate(req: Request, res: Response) {
 
 
 
-export async function creditCardDelete(req: Request, res: Response) {
-  req.body.creditcardId = req.params.creditCardId;
-
-  try {
-    const removeResult = await creditCardServices.removeCreditCardData(req.body);
-    if (removeResult.success === true) {
-      res.json(success({ message: removeResult.message, req, res }));
-    } else {
-      res.json(error({ message: removeResult.message, req, res }));
-    }
-  } catch (err) {
-    res.json(error({ req, res }));
-  }
-};
-
-
-
 export async function enableCreditCard(req: Request, res: Response) {
   req.body.creditcardId = req.params.creditCardId;
 
   try {
-    const adjustResult = await creditCardServices.enableCreditCard(req.body);
+    const adjustResult = await creditCardServices.enableCreditCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -119,7 +102,7 @@ export async function disableCreditCard(req: Request, res: Response) {
   req.body.creditcardId = req.params.creditCardId;
 
   try {
-    const adjustResult = await creditCardServices.disableCreditCard(req.body);
+    const adjustResult = await creditCardServices.disableCreditCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -129,3 +112,20 @@ export async function disableCreditCard(req: Request, res: Response) {
     res.json(error({ req, res }));
   }
 }
+
+
+
+export async function creditCardDelete(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
+
+  try {
+    const removeResult = await creditCardServices.removeCreditCardData(req.body);
+    if (removeResult.success === true) {
+      res.json(success({ message: removeResult.message, req, res }));
+    } else {
+      res.json(error({ message: removeResult.message, req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+};

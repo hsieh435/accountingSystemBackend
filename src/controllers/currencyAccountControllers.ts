@@ -75,28 +75,11 @@ export async function currencyAccountUpdate(req: Request, res: Response) {
 
 
 
-export async function currencyAccountDelete(req: Request, res: Response) {
-  req.body.currencyAccountId = req.params.currencyAccountId;
-
-  try {
-    const removeResult = await currencyAccountServices.removeCurrencyAccountData(req.body);
-    if (removeResult.success === true) {
-      res.json(success({ message: removeResult.message, req, res }));
-    } else {
-      res.json(error({ message: removeResult.message, req, res }));
-    }
-  } catch (err) {
-    res.json(error({ req, res }));
-  }
-};
-
-
-
 export async function enableCurrencyAccount(req: Request, res: Response) {
   req.body.accountId = req.params.currencyAccountId;
 
   try {
-    const adjustResult = await currencyAccountServices.enableCurrencyAccount(req.body);
+    const adjustResult = await currencyAccountServices.enableCurrencyAccountStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -113,7 +96,7 @@ export async function disableCurrencyAccount(req: Request, res: Response) {
   req.body.accountId = req.params.currencyAccountId;
 
   try {
-    const adjustResult = await currencyAccountServices.disableCurrencyAccount(req.body);
+    const adjustResult = await currencyAccountServices.disableCurrencyAccountStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -123,3 +106,20 @@ export async function disableCurrencyAccount(req: Request, res: Response) {
     res.json(error({ req, res }));
   }
 }
+
+
+
+export async function currencyAccountDelete(req: Request, res: Response) {
+  req.body.currencyAccountId = req.params.currencyAccountId;
+
+  try {
+    const removeResult = await currencyAccountServices.removeCurrencyAccountData(req.body);
+    if (removeResult.success === true) {
+      res.json(success({ message: removeResult.message, req, res }));
+    } else {
+      res.json(error({ message: removeResult.message, req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+};

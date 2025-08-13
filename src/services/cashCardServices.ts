@@ -65,6 +65,33 @@ export async function uodateCashCardData(data: ICashCardData) {
 
 
 
+export async function enableCashCardStatus(data: ICashCardData) {
+  // console.log("data:", data);
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashcard_list SET enable = ${true} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function disableCashCardStatus(data: ICashCardData) {
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashcard_list SET enable = ${false} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+
 export async function removeCashCardData(data: ICashCardData) {
 
   const searchingResult =
@@ -83,30 +110,3 @@ export async function removeCashCardData(data: ICashCardData) {
     }
   }
 };
-
-
-
-export async function enableCashCard(data: ICashCardData) {
-  // console.log("data:", data);
-
-  const updateResult =
-    await pool.query(`UPDATE public.cashcard_list SET enable = ${true} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-export async function disableCashCard(data: ICashCardData) {
-
-  const updateResult =
-    await pool.query(`UPDATE public.cashcard_list SET enable = ${false} WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
-}

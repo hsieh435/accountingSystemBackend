@@ -72,6 +72,38 @@ export async function stockAccountUpdate(req: Request, res: Response) {
   }
 }
 
+export async function enableStockAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.stockAccountId;
+
+  try {
+    const adjustResult = await stockAccountServices.enableStockAccountStatus(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "啟用成功", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
+
+
+export async function disableStockAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.stockAccountId;
+
+  try {
+    const adjustResult = await stockAccountServices.disableStockAccountStatus(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "已停用", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
 
 
 export async function stockAccountDelete(req: Request, res: Response) {

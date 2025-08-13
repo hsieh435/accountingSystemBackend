@@ -12,9 +12,9 @@ router.post("/api/cashCard/List", authenticateToken, cashCardControllers.cashCar
 router.get("/api/cashCardData/:cashCardId", authenticateToken, cashCardControllers.searchingCashCardById);
 router.post("/api/cashCard/create", authenticateToken, cashCardControllers.cashCardCreate);
 router.put("/api/cashCard/update", authenticateToken, cashCardControllers.cashCardUpdate);
-router.get("/api/cashCard/delete/:cashCardId", authenticateToken, cashCardControllers.cashCardDelete);
 router.get("/api/cashCard/enable/:cashCardId", authenticateToken, cashCardControllers.enableCashCard);
 router.get("/api/cashCard/disable/:cashCardId", authenticateToken, cashCardControllers.disableCashCard);
+router.get("/api/cashCard/delete/:cashCardId", authenticateToken, cashCardControllers.cashCardDelete);
 
 
 

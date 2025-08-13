@@ -81,29 +81,11 @@ export async function cashCardUpdate(req: Request, res: Response) {
 
 
 
-export async function cashCardDelete(req: Request, res: Response) {
-  req.body.cashcardId = req.params.cashCardId;
-
-  try {
-    const removeResult = await cashCardServices.removeCashCardData(req.body);
-    if (removeResult.success === true) {
-      res.json(success({ message: removeResult.message, req, res }));
-    } else {
-      res.json(error({ message: removeResult.message, req, res }));
-    }
-  } catch (err) {
-    res.json(error({ req, res }));
-  }
-};
-
-
-
-
 export async function enableCashCard(req: Request, res: Response) {
   req.body.cashcardId = req.params.cashCardId;
 
   try {
-    const adjustResult = await cashCardServices.enableCashCard(req.body);
+    const adjustResult = await cashCardServices.enableCashCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -120,7 +102,7 @@ export async function disableCashCard(req: Request, res: Response) {
   req.body.cashcardId = req.params.cashCardId;
 
   try {
-    const adjustResult = await cashCardServices.disableCashCard(req.body);
+    const adjustResult = await cashCardServices.disableCashCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -130,3 +112,21 @@ export async function disableCashCard(req: Request, res: Response) {
     res.json(error({ req, res }));
   }
 }
+
+
+
+export async function cashCardDelete(req: Request, res: Response) {
+  req.body.cashcardId = req.params.cashCardId;
+
+  try {
+    const removeResult = await cashCardServices.removeCashCardData(req.body);
+    if (removeResult.success === true) {
+      res.json(success({ message: removeResult.message, req, res }));
+    } else {
+      res.json(error({ message: removeResult.message, req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+};
+

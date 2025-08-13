@@ -68,6 +68,33 @@ export async function updateCreditCardData(data: ICreditCardData) {
 
 
 
+export async function enableCreditCardStatus(data: ICreditCardData) {
+  // console.log("data:", data);
+
+  const updateResult =
+    await pool.query(`UPDATE public.creditcard_list SET enable = ${true} WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
+  console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+export async function disableCreditCardStatus(data: ICreditCardData) {
+
+  const updateResult =
+    await pool.query(`UPDATE public.creditcard_list SET enable = ${false} WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+
 export async function removeCreditCardData(data: ICreditCardData) {
 
   const searchingResult =
@@ -86,30 +113,3 @@ export async function removeCreditCardData(data: ICreditCardData) {
     }
   }
 };
-
-
-
-export async function enableCreditCard(data: ICreditCardData) {
-  // console.log("data:", data);
-
-  const updateResult =
-    await pool.query(`UPDATE public.creditcard_list SET enable = ${true} WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
-  console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-export async function disableCreditCard(data: ICreditCardData) {
-
-  const updateResult =
-    await pool.query(`UPDATE public.creditcard_list SET enable = ${false} WHERE creditcard_id = '${data.creditcardId}' and user_id = '${data.userId}';`);
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
-}
