@@ -1,7 +1,11 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
+import * as tradeService from "@/services/tradeCategoryServices";
 import { keysToCamel } from "@/utils/tools";
+
+
+
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {
@@ -58,6 +62,8 @@ export async function deleteSchema(req: Request, res: Response) {
   }
 }
 
+
+
 // currency
 export async function getCurrencyList(req: Request, res: Response) {
   const searchingCurrencyResult = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
@@ -81,9 +87,9 @@ export async function getEachCurrency(req: Request, res: Response) {
 
 export async function createCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
-  const { currencyCode, currencyName, allowDelete, sort } = req.body;
+  const { currencyCode, currencyName, currencySymbol, sort } = req.body;
   const result = await pool.query(
-    `INSERT INTO currency_list (currency_code, currency_name, allow_delete, sort) VALUES ('${currencyCode}', '${currencyName}', ${allowDelete}, ${sort});`,
+    `INSERT INTO currency_list (currency_code, currency_name, currency_symbol, sort) VALUES ('${currencyCode}', '${currencyName}', '${currencySymbol}', ${sort});`,
   );
   if (result.rowCount === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
@@ -106,19 +112,20 @@ export async function updateCurrency(req: Request, res: Response) {
 
 export async function deleteCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
+  // console.log("req.params:", req.params);
 
   const searchingCurrencyResult = await pool.query(
     `SELECT COUNT(*)::INTEGER AS total
       FROM (
-      SELECT 1 FROM cashflow_list WHERE currency = '${req.params.currencyCode}'
+      SELECT 1 FROM cashflow_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
-      SELECT 1 FROM cashcard_list WHERE currency = '${req.params.currencyCode}'
+      SELECT 1 FROM cashcard_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
-      SELECT 1 FROM creditcard_list WHERE currency = '${req.params.currencyCode}'
+      SELECT 1 FROM creditcard_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
-      SELECT 1 FROM currency_accounts_list WHERE currency = '${req.params.currencyCode}'
+      SELECT 1 FROM currency_account_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
-      SELECT 1 FROM stock_accounts_list WHERE currency = '${req.params.currencyCode}'
+      SELECT 1 FROM stock_account_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       ) AS combined;
     `,
   );
@@ -139,3 +146,92 @@ export async function deleteCurrency(req: Request, res: Response) {
 
   }
 }
+
+
+
+// tradeCategory
+export const getAll = async (req: Request, res: Response) => {
+
+  try {
+    const result = await tradeService.getAllTradeCategory();
+    // console.log("result:", result);
+    res.json(success({ data: result, message: "查詢成功", req, res }));
+  } catch (err) {
+    res.status(500).json(error({ req, res }));
+  }
+};
+
+
+
+export const getOne = async (req: Request, res: Response) => {
+  try {
+    const result = await tradeService.getTradeCategoryByCode(req.params.code);
+    res.json(success({ data: result, req, res }));
+  } catch (err) {
+    res.status(500).json(error({ req, res }));
+  }
+};
+
+
+
+interface IDataParams {
+  categoryCode: string;
+  categoryName: string;
+  isCashflowAble: boolean;
+  isCashcardAble: boolean;
+  isCreditcardAble: boolean;
+  isCuaccountAble: boolean;
+  isStaccountAble: boolean;
+  sort: number;
+}
+
+export const create = async (req: Request, res: Response) => {
+  const dataParams = req.body as IDataParams;
+  try {
+    const result = await tradeService.createTradeCategory(
+      dataParams.categoryCode,
+      dataParams.categoryName,
+      dataParams.isCashflowAble,
+      dataParams.isCashcardAble,
+      dataParams.isCreditcardAble,
+      dataParams.isCuaccountAble,
+      dataParams.isStaccountAble,
+      dataParams.sort
+    );
+    res.json(success({ data: result, req, res }));
+  } catch (err) {
+    res.status(500).json(error({ req, res }));
+  }
+};
+
+
+
+export async function update(req: Request, res: Response) {
+  const dataParams = req.body as IDataParams;
+  try {
+    const result = await tradeService.updateTradeCategory(
+      dataParams.categoryCode,
+      dataParams.categoryName,
+      dataParams.isCashflowAble,
+      dataParams.isCashcardAble,
+      dataParams.isCreditcardAble,
+      dataParams.isCuaccountAble,
+      dataParams.isStaccountAble,
+      dataParams.sort
+    );
+    res.json(success({ data: result, req, res }));
+  } catch (err) {
+    res.status(500).json(error({ req, res }));
+  }
+};
+
+
+
+export async function remove(req: Request, res: Response) {
+  try {
+    const result = await tradeService.removeTradeCategory(req.params.code);
+    res.json(success({ message: "刪除成功", req, res }));
+  } catch (err) {
+    res.status(500).json(error({ req, res }));
+  }
+};

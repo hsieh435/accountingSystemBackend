@@ -12,7 +12,7 @@ router.get("/api/parameters/schemasList", authenticateToken, parameterController
 router.get("/api/parameters/schemas/:schemasCode", authenticateToken, parameterControllers.getSchemaById);
 router.post("/api/parameters/schemas/create", authenticateToken, parameterControllers.createSchema);
 router.put("/api/parameters/schemas/update", authenticateToken, parameterControllers.updateSchema);
-router.get("/api/parameters/schemas/:schemasCode", authenticateToken, parameterControllers.deleteSchema);
+router.get("/api/parameters/schemas/delete/:schemasCode", authenticateToken, parameterControllers.deleteSchema);
 
 
 
@@ -21,8 +21,16 @@ router.get("/api/parameters/currencyList", authenticateToken, parameterControlle
 router.get("/api/parameters/currency/:currencyCode", authenticateToken, parameterControllers.getEachCurrency);
 router.post("/api/parameters/currency/create", authenticateToken, parameterControllers.createCurrency);
 router.put("/api/parameters/currency/update", authenticateToken, parameterControllers.updateCurrency);
-router.get("/api/parameters/currency/:currencyCode", authenticateToken, parameterControllers.deleteCurrency);
+router.get("/api/parameters/currency/delete/:currencyCode", authenticateToken, parameterControllers.deleteCurrency);
 
+
+
+// tradeCategory
+router.get("/api/parameters/tradeCategory/list", authenticateToken, parameterControllers.getAll);
+router.get("/api/parameters/tradeCategory/:code", authenticateToken, parameterControllers.getOne);
+router.post("/api/parameters/tradeCategory/create", authenticateToken, parameterControllers.create);
+router.put("/api/parameters/tradeCategory/update", authenticateToken, parameterControllers.update);
+router.get("/api/parameters/tradeCategory/delete/:code", authenticateToken, parameterControllers.remove);
 
 
 

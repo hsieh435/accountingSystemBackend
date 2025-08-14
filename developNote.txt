@@ -30,7 +30,7 @@ taskkill /pid xxxxx /f
 
 
 git ls-files | wc -l
-71
+48
 
 git ls-files | xargs cat | wc -l
-18719
+4459

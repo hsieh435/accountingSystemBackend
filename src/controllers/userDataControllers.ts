@@ -70,7 +70,7 @@ export async function userCreate(req: Request, res: Response) {
 
 
 export async function userDataUpdate(req: Request, res: Response) {
-  console.log("Request:", req.body);
+  // console.log("Request:", req.body);
 
   try {
     const result = await userDataServices.accountDataChange(req.body);

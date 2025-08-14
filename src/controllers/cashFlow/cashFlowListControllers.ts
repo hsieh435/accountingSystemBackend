@@ -1,19 +1,10 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as cashFlowServices from "@/services/cashFlowServices";
+import * as cashFlowServices from "@/services/cashFlow/cashFlowListServices";
 import { keysToCamel } from "@/utils/tools";
 
-
-
-// const jwt = require("jsonwebtoken");
-// require("dotenv").config();
-// const JWT_SECRET = process.env.JWT_SECRET;
-
-
-
 export async function cashFlowList(req: Request, res: Response) {
-
   try {
     const searchingResult = await cashFlowServices.searchingCashFlowList(req.body.currencyId, req.body.userId);
     // console.log("searchingResult:", searchingResult);
@@ -27,13 +18,11 @@ export async function cashFlowList(req: Request, res: Response) {
   }
 }
 
-
-
 export async function searchingCashFlowById(req: Request, res: Response) {
-
   try {
-    const searchingResult =
-      await pool.query(`SELECT * FROM cashflow_list where cashflow_id = '${req.params.cashflowId}' and user_id='${req.body.userId}'`);
+    const searchingResult = await pool.query(
+      `SELECT * FROM cashflow_list where cashflow_id = '${req.params.cashflowId}' and user_id='${req.body.userId}'`,
+    );
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
@@ -45,10 +34,7 @@ export async function searchingCashFlowById(req: Request, res: Response) {
   }
 }
 
-
-
 export async function cashFlowCreate(req: Request, res: Response) {
-
   try {
     const createResult = await cashFlowServices.insertCashflowData(req.body);
     // console.log("createResult:", createResult);
@@ -62,10 +48,7 @@ export async function cashFlowCreate(req: Request, res: Response) {
   }
 }
 
-
-
 export async function cashFlowUpdate(req: Request, res: Response) {
-
   try {
     const updateResult = await cashFlowServices.uodateCashflowData(req.body);
     if (updateResult) {
@@ -77,8 +60,6 @@ export async function cashFlowUpdate(req: Request, res: Response) {
     res.status(500).json(error({ req, res }));
   }
 }
-
-
 
 export async function cashFlowDelete(req: Request, res: Response) {
   req.body.cashflowId = req.params.cashflowId;
@@ -93,4 +74,4 @@ export async function cashFlowDelete(req: Request, res: Response) {
   } catch (err) {
     res.json(error({ req, res }));
   }
-};
+}

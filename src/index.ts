@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import pool from "@/db";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,7 +14,6 @@ import functionListRoutes from "@/routes/functionListRoutes";
 import generalRoutes from "@/routes/generalRoutes";
 import outSideWebApiRoutes from "@/routes/outSideWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
-import tradeCategoryRoutes  from "@/routes/tradeCategoryRoutes";
 import stockAccountRoutes from "@/routes/stockAccountRoutes";
 import userDataRoutes from "@/routes/userDataRoutes";
 
@@ -43,7 +41,6 @@ app.use("/accounting_system_backend", functionListRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outSideWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
-app.use("/accounting_system_backend", tradeCategoryRoutes);
 app.use("/accounting_system_backend", stockAccountRoutes);
 app.use("/accounting_system_backend", userDataRoutes);
 
