@@ -1,15 +1,22 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as stockAccountServices from "@/services/stockAccountServices";
+import * as creditCardServices from "@/services/creditCard/creditCardListServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-export async function stockAccountList(req: Request, res: Response) {
+// const jwt = require("jsonwebtoken");
+// require("dotenv").config();
+// const JWT_SECRET = process.env.JWT_SECRET;
+
+
+
+export async function creditCardDataList(req: Request, res: Response) {
+  // console.log("Request body:", req.body);
 
   try {
-    const searchingResult = await stockAccountServices.searchingStockAccountList(req.body);
+    const searchingResult = await creditCardServices.searchingCreditCardList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -23,16 +30,16 @@ export async function stockAccountList(req: Request, res: Response) {
 
 
 
-export async function searchingStockAccountById(req: Request, res: Response) {
+export async function searchingCreditCardById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM stock_account_list where account_id = '${req.params.accountId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM creditcard_list where creditcard_id = '${req.params.creditCardId}' and user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
     } else {
-      res.json(error({ message: "存款帳戶不存在", req, res }));
+      res.json(error({ message: "信用卡不存在", req, res }));
     }
   } catch (err) {
     res.json(error({ req, res }));
@@ -41,10 +48,10 @@ export async function searchingStockAccountById(req: Request, res: Response) {
 
 
 
-export async function stockAccountCreate(req: Request, res: Response) {
+export async function creditCardCreate(req: Request, res: Response) {
 
   try {
-    const createResult = await stockAccountServices.insertStockAccountData(req.body);
+    const createResult = await creditCardServices.insertCreditCardData(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -58,10 +65,10 @@ export async function stockAccountCreate(req: Request, res: Response) {
 
 
 
-export async function stockAccountUpdate(req: Request, res: Response) {
+export async function creditCardUpdate(req: Request, res: Response) {
 
   try {
-    const updateResult = await stockAccountServices.updateStockAccountData(req.body);
+    const updateResult = await creditCardServices.updateCreditCardData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -72,11 +79,13 @@ export async function stockAccountUpdate(req: Request, res: Response) {
   }
 }
 
-export async function enableStockAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.stockAccountId;
+
+
+export async function enableCreditCard(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
 
   try {
-    const adjustResult = await stockAccountServices.enableStockAccountStatus(req.body);
+    const adjustResult = await creditCardServices.enableCreditCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -89,11 +98,11 @@ export async function enableStockAccount(req: Request, res: Response) {
 
 
 
-export async function disableStockAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.stockAccountId;
+export async function disableCreditCard(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
 
   try {
-    const adjustResult = await stockAccountServices.disableStockAccountStatus(req.body);
+    const adjustResult = await creditCardServices.disableCreditCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -106,11 +115,11 @@ export async function disableStockAccount(req: Request, res: Response) {
 
 
 
-export async function stockAccountDelete(req: Request, res: Response) {
-  req.body.stockAccountId = req.params.stockAccountId;
+export async function creditCardDelete(req: Request, res: Response) {
+  req.body.creditcardId = req.params.creditCardId;
 
   try {
-    const removeResult = await stockAccountServices.removeStockAccountData(req.body);
+    const removeResult = await creditCardServices.removeCreditCardData(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {

@@ -6,8 +6,8 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 export interface ICurrencyAccountData {
   accountId: string;
   userId: string;
-  accountName: string;
   accountType: string;
+  accountName: string;
   accountBankCode: string;
   accountBankName: string;
   currency: string;
@@ -45,7 +45,7 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
 export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, is_salary_account, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.isSalaryAccount}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, is_salary_account, open_alert, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.isSalaryAccount}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
@@ -59,7 +59,7 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
 export async function updateCurrencyAccountData(data: ICurrencyAccountData) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.currency_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, is_salary_account = ${data.isSalaryAccount}, note = '${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.currency_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, is_salary_account = ${data.isSalaryAccount}, note = '${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;

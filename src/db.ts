@@ -11,11 +11,12 @@ types.setTypeParser(1700, val => {
 
 // 將 PostgreSQL 的 timestamp 類型轉換為 JavaScript 的 string 類型
 types.setTypeParser(1114, val => val);
+types.setTypeParser(1184, val => val);
 
 
 
 // 查詢資料型別 OID 語法
-// SELECT typname, oid FROM pg_type;
+// SELECT * FROM pg_type order by typname
 
 // 常見資料型別 OID
 // numeric 1700
@@ -24,7 +25,8 @@ types.setTypeParser(1114, val => val);
 // boolean 16
 // date 1082
 // time 1083
-// timestamp 1114
+// timestamp without time zone 1114
+// timestamp with time zone 1184
 // uuid 2950
 
 

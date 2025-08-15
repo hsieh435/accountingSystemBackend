@@ -6,6 +6,7 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 export interface ICashFlowData {
   cashflowId: string;
   userId: string;
+  accountType: string;
   currency: string;
   startingAmount: number;
   presentAmount: number;
@@ -18,12 +19,12 @@ export interface ICashFlowData {
 
 
 
-export async function searchingCashFlowList(currencyId: string, userId: string) {
+export async function searchingCashFlowList(data: ICashFlowData) {
   try {
     const searchingResult =
       await pool.query(`SELECT cashflow_list.*, currency_list.currency_name FROM cashflow_list
         LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
-        WHERE currency LIKE '%${currencyId}%' AND user_id = '${userId}' ORDER BY created_date`);
+        WHERE currency LIKE '%${data.currency}%' AND user_id = '${data.userId}' ORDER BY created_date`);
     // console.log("searchingResult:", searchingResult.rows);
     return { success: true, data: keysToCamel(searchingResult.rows) };
   } catch (err) {
@@ -36,7 +37,7 @@ export async function searchingCashFlowList(currencyId: string, userId: string) 
 export async function insertCashflowData(data: ICashFlowData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO cashflow_list(cashflow_id, user_id, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.currency}', ${data.startingAmount}, ${data.presentAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };

@@ -1,16 +1,15 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as currencyAccountServices from "@/services/currencyAccountServices";
+import * as stockAccountServices from "@/services/stockAccount/stockAccountListServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-export async function currencyAccountList(req: Request, res: Response) {
-  // console.log("Request body:", req.body);
+export async function stockAccountList(req: Request, res: Response) {
 
   try {
-    const searchingResult = await currencyAccountServices.searchingCurrencyAccountList(req.body);
+    const searchingResult = await stockAccountServices.searchingStockAccountList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -24,11 +23,11 @@ export async function currencyAccountList(req: Request, res: Response) {
 
 
 
-export async function searchingCurrencyAccountById(req: Request, res: Response) {
+export async function searchingStockAccountById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.currencyAccountId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM stock_account_list where account_id = '${req.params.stockAccountId}' and user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
@@ -42,10 +41,10 @@ export async function searchingCurrencyAccountById(req: Request, res: Response) 
 
 
 
-export async function currencyAccountCreate(req: Request, res: Response) {
+export async function stockAccountCreate(req: Request, res: Response) {
 
   try {
-    const createResult = await currencyAccountServices.insertCurrencyAccountData(req.body);
+    const createResult = await stockAccountServices.insertStockAccountData(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -59,10 +58,10 @@ export async function currencyAccountCreate(req: Request, res: Response) {
 
 
 
-export async function currencyAccountUpdate(req: Request, res: Response) {
+export async function stockAccountUpdate(req: Request, res: Response) {
 
   try {
-    const updateResult = await currencyAccountServices.updateCurrencyAccountData(req.body);
+    const updateResult = await stockAccountServices.updateStockAccountData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -73,13 +72,11 @@ export async function currencyAccountUpdate(req: Request, res: Response) {
   }
 }
 
-
-
-export async function enableCurrencyAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.currencyAccountId;
+export async function enableStockAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.stockAccountId;
 
   try {
-    const adjustResult = await currencyAccountServices.enableCurrencyAccountStatus(req.body);
+    const adjustResult = await stockAccountServices.enableStockAccountStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -92,11 +89,11 @@ export async function enableCurrencyAccount(req: Request, res: Response) {
 
 
 
-export async function disableCurrencyAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.currencyAccountId;
+export async function disableStockAccount(req: Request, res: Response) {
+  req.body.accountId = req.params.stockAccountId;
 
   try {
-    const adjustResult = await currencyAccountServices.disableCurrencyAccountStatus(req.body);
+    const adjustResult = await stockAccountServices.disableStockAccountStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -109,11 +106,11 @@ export async function disableCurrencyAccount(req: Request, res: Response) {
 
 
 
-export async function currencyAccountDelete(req: Request, res: Response) {
-  req.body.currencyAccountId = req.params.currencyAccountId;
+export async function stockAccountDelete(req: Request, res: Response) {
+  req.body.stockAccountId = req.params.stockAccountId;
 
   try {
-    const removeResult = await currencyAccountServices.removeCurrencyAccountData(req.body);
+    const removeResult = await stockAccountServices.removeStockAccountData(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {

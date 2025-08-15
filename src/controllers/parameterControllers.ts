@@ -174,30 +174,10 @@ export const getOne = async (req: Request, res: Response) => {
 
 
 
-interface IDataParams {
-  categoryCode: string;
-  categoryName: string;
-  isCashflowAble: boolean;
-  isCashcardAble: boolean;
-  isCreditcardAble: boolean;
-  isCuaccountAble: boolean;
-  isStaccountAble: boolean;
-  sort: number;
-}
-
 export const create = async (req: Request, res: Response) => {
-  const dataParams = req.body as IDataParams;
+  //
   try {
-    const result = await tradeService.createTradeCategory(
-      dataParams.categoryCode,
-      dataParams.categoryName,
-      dataParams.isCashflowAble,
-      dataParams.isCashcardAble,
-      dataParams.isCreditcardAble,
-      dataParams.isCuaccountAble,
-      dataParams.isStaccountAble,
-      dataParams.sort
-    );
+    const result = await tradeService.createTradeCategory(req.body);
     res.json(success({ data: result, req, res }));
   } catch (err) {
     res.status(500).json(error({ req, res }));
@@ -207,18 +187,9 @@ export const create = async (req: Request, res: Response) => {
 
 
 export async function update(req: Request, res: Response) {
-  const dataParams = req.body as IDataParams;
+  //
   try {
-    const result = await tradeService.updateTradeCategory(
-      dataParams.categoryCode,
-      dataParams.categoryName,
-      dataParams.isCashflowAble,
-      dataParams.isCashcardAble,
-      dataParams.isCreditcardAble,
-      dataParams.isCuaccountAble,
-      dataParams.isStaccountAble,
-      dataParams.sort
-    );
+    const result = await tradeService.updateTradeCategory(req.body);
     res.json(success({ data: result, req, res }));
   } catch (err) {
     res.status(500).json(error({ req, res }));

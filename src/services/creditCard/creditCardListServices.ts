@@ -6,6 +6,7 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 export interface ICreditCardData {
   creditcardId: string;
   userId: string;
+  accountType: string;
   creditcardName: string;
   creditcardBankCode: string;
   creditcardBankName: string;
@@ -31,7 +32,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
       await pool.query(`SELECT creditcard_list.*, currency_list.currency_name FROM creditcard_list
         LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
         WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`);
-    // console.log("searchingResult:", searchingResult);
+    console.log("searchingResult:", searchingResult);
     return { success: true, data: keysToCamel(searchingResult.rows) };
   } catch (err) {
     return { success: false, data: [] };
@@ -43,7 +44,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
 export async function insertCreditCardData(data: ICreditCardData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.creditcard_list(creditcard_id, user_id, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_scheme, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES (${getCurrentTimestamp() + ''}, '${data.userId}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };

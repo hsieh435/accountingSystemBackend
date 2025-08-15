@@ -6,6 +6,7 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 export interface ICashCardData {
   cashcardId: string;
   userId: string;
+  accountType: string;
   cashcardName: string;
   currency: string;
   startingAmount: number;
@@ -40,7 +41,7 @@ export async function searchingCashCardList(data: { currencyId: string; userId: 
 export async function insertCashCardData(data: ICashCardData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.cashcard_list(cashcard_id, user_id, cashcard_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, created_date, note)	VALUES (${getCurrentTimestamp() + ''}, '${data.userId}', '${data.cashcardName}', '${data.currency}', ${data.startingAmount}, ${data.presentAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.cashcard_list(cashcard_id, user_id, account_type, cashcard_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.cashcardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };

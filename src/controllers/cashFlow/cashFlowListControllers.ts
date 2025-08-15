@@ -6,7 +6,7 @@ import { keysToCamel } from "@/utils/tools";
 
 export async function cashFlowList(req: Request, res: Response) {
   try {
-    const searchingResult = await cashFlowServices.searchingCashFlowList(req.body.currencyId, req.body.userId);
+    const searchingResult = await cashFlowServices.searchingCashFlowList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));

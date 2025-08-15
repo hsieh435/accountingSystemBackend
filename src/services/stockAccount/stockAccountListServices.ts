@@ -6,8 +6,8 @@ import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 export interface IStockAccountList {
   accountId: string;
   userId: string;
-  accountName: string;
   accountType: string;
+  accountName: string;
   accountBankCode: string;
   accountBankName: string;
   currency: string;
@@ -44,7 +44,7 @@ export async function searchingStockAccountList(data: { currencyId: string; user
 export async function insertStockAccountData(data: IStockAccountList) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.stock_account_list(account_id, user_id, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES('${getCurrentTimestamp()}', '${data.userId}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${true}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
@@ -58,7 +58,7 @@ export async function insertStockAccountData(data: IStockAccountList) {
 export async function updateStockAccountData(data: IStockAccountList) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
