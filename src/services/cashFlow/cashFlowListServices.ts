@@ -7,6 +7,7 @@ export interface ICashFlowData {
   cashflowId: string;
   userId: string;
   accountType: string;
+  cashflowName: string;
   currency: string;
   startingAmount: number;
   presentAmount: number;
@@ -18,13 +19,19 @@ export interface ICashFlowData {
 }
 
 
+export interface IAccountSearchingParams {
+  currencyId: string;
+  userId: string;
+}
 
-export async function searchingCashFlowList(data: ICashFlowData) {
+
+
+export async function searchingCashFlowList(data: IAccountSearchingParams) {
   try {
     const searchingResult =
       await pool.query(`SELECT cashflow_list.*, currency_list.currency_name FROM cashflow_list
         LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
-        WHERE currency LIKE '%${data.currency}%' AND user_id = '${data.userId}' ORDER BY created_date`);
+        WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`);
     // console.log("searchingResult:", searchingResult.rows);
     return { success: true, data: keysToCamel(searchingResult.rows) };
   } catch (err) {
@@ -37,7 +44,7 @@ export async function searchingCashFlowList(data: ICashFlowData) {
 export async function insertCashflowData(data: ICashFlowData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.cashflowName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
@@ -48,10 +55,10 @@ export async function insertCashflowData(data: ICashFlowData) {
 
 
 
-export async function uodateCashflowData(data: ICashFlowData) {
+export async function updateCashflowData(data: ICashFlowData) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.cashcard_list SET minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE cashcard_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.cashflow_list SET cashflow_name='${data.cashflowName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -65,7 +72,7 @@ export async function uodateCashflowData(data: ICashFlowData) {
 export async function removeCashflowData(data: ICashFlowData) {
 
   const searchingResult =
-    await pool.query(`SELECT * FROM cashcard_trade where cashcard_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+    await pool.query(`SELECT * FROM cashflow_trade where cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
   // console.log("searchingResult:", searchingResult);
   if (searchingResult.rows.length > 0) {
     return { success: false, message: "現金流已被使用，無法刪除" };

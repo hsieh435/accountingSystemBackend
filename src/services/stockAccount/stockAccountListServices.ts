@@ -58,7 +58,7 @@ export async function insertStockAccountData(data: IStockAccountList) {
 export async function updateStockAccountData(data: IStockAccountList) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;

@@ -50,7 +50,7 @@ export async function cashFlowCreate(req: Request, res: Response) {
 
 export async function cashFlowUpdate(req: Request, res: Response) {
   try {
-    const updateResult = await cashFlowServices.uodateCashflowData(req.body);
+    const updateResult = await cashFlowServices.updateCashflowData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
