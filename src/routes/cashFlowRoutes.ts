@@ -9,6 +9,8 @@ router.post("/api/cashFlow/list", authenticateToken, cashFlowListControllers.cas
 router.get("/api/cashFlowData/:cashflowId", authenticateToken, cashFlowListControllers.searchingCashFlowById);
 router.post("/api/cashFlow/create", authenticateToken, cashFlowListControllers.cashFlowCreate);
 router.put("/api/cashFlow/update", authenticateToken, cashFlowListControllers.cashFlowUpdate);
+router.get("/api/cashFlow/enable/:cashflowId", authenticateToken, cashFlowListControllers.enableCashFlow);
+router.get("/api/cashFlow/disable/:cashflowId", authenticateToken, cashFlowListControllers.disableCashFlow);
 router.get("/api/cashFlow/delete/:cashflowId", authenticateToken, cashFlowListControllers.cashFlowDelete);
 
 export default router;

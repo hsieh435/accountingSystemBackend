@@ -61,6 +61,40 @@ export async function cashFlowUpdate(req: Request, res: Response) {
   }
 }
 
+export async function enableCashFlow(req: Request, res: Response) {
+  req.body.cashflowId = req.params.cashflowId;
+
+  try {
+    const adjustResult = await cashFlowServices.enableCashFlowStatus(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "啟用成功", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
+
+
+export async function disableCashFlow(req: Request, res: Response) {
+  req.body.cashflowId = req.params.cashflowId;
+
+  try {
+    const adjustResult = await cashFlowServices.disableCashFlowStatus(req.body);
+    if (adjustResult) {
+      res.json(success({ message: "停用成功", req, res }));
+    } else {
+      res.json(error({ req, res }));
+    }
+  } catch (err) {
+    res.json(error({ req, res }));
+  }
+}
+
+
+
 export async function cashFlowDelete(req: Request, res: Response) {
   req.body.cashflowId = req.params.cashflowId;
 

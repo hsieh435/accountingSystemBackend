@@ -45,7 +45,7 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
 export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, is_salary_account, open_alert, enable, created_date, note)	VALUES ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.isSalaryAccount}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.currency_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, is_salary_account, open_alert, enable, created_date, note)	VALUES (${data.accountId}, '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.isSalaryAccount}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
@@ -75,7 +75,7 @@ export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
 
   const updateResult =
     await pool.query(`UPDATE public.currency_account_list SET enable = ${true} WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
-  console.log("updateResult:", updateResult);
+  // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
   } else {

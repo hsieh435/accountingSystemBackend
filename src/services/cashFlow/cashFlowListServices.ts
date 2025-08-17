@@ -69,21 +69,45 @@ export async function updateCashflowData(data: ICashFlowData) {
 
 
 
-export async function removeCashflowData(data: ICashFlowData) {
 
-  const searchingResult =
-    await pool.query(`SELECT * FROM cashflow_trade where cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
-  // console.log("searchingResult:", searchingResult);
-  if (searchingResult.rows.length > 0) {
-    return { success: false, message: "現金流已被使用，無法刪除" };
+export async function enableCashFlowStatus(data: ICashFlowData) {
+  // console.log("data:", data);
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashflow_list SET enable = ${true} WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
   } else {
-    const deleteResult =
-      await pool.query(`DELETE FROM public.cashcard_list WHERE cashcard_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
-    // console.log("deleteResult:", deleteResult);
-    if (deleteResult.rowCount === 1) {
-      return { success: true, message: "刪除成功" };
-    } else {
-      return { success: false, message: "刪除失敗" };
-    }
+    return false;
   }
-};
+}
+
+export async function disableCashFlowStatus(data: ICashFlowData) {
+
+  const updateResult =
+    await pool.query(`UPDATE public.cashflow_list SET enable = ${false} WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+  // console.log("updateResult:", updateResult);
+  if (updateResult.rowCount === 1) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
+
+export async function removeCashflowData(data: ICashFlowData) {
+    const deleteResult = await pool.query(
+      `DELETE FROM public.cashflow_list WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`,
+    );
+  // console.log("deleteResult:", deleteResult);
+  if (deleteResult.rowCount === 1) {
+    await pool.query(
+      `DELETE FROM public.cashflow_trade WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`,
+    );
+    return { success: true, message: "刪除成功" };
+  } else {
+    return { success: false, message: "刪除失敗" };
+  }
+}

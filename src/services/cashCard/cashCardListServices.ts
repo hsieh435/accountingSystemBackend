@@ -95,19 +95,15 @@ export async function disableCashCardStatus(data: ICashCardData) {
 
 export async function removeCashCardData(data: ICashCardData) {
 
-  const searchingResult =
-    await pool.query(`SELECT * FROM cashcard_trade where cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
-  // console.log("searchingResult:", searchingResult);
-  if (searchingResult.rows.length > 0) {
-    return { success: false, message: "已有使用紀錄，無法刪除" };
+  const deleteResult =
+    await pool.query(`DELETE FROM public.cashcard_list WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
+  // console.log("deleteResult:", deleteResult);
+  if (deleteResult.rowCount === 1) {
+    await pool.query(
+      `DELETE FROM public.cashcard_trade WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`
+    );
+    return { success: true, message: "刪除成功" };
   } else {
-    const deleteResult =
-      await pool.query(`DELETE FROM public.cashcard_list WHERE cashcard_id = '${data.cashcardId}' and user_id = '${data.userId}';`);
-    // console.log("deleteResult:", deleteResult);
-    if (deleteResult.rowCount === 1) {
-      return { success: true, message: "刪除成功" };
-    } else {
-      return { success: false, message: "刪除失敗" };
-    }
+    return { success: false, message: "刪除失敗" };
   }
 };
