@@ -1,6 +1,6 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
-import * as outSideWebApiControllers from "@/controllers/outSideWebApiControllers";
+import * as outSideWebApiControllers from "@/controllers/outSideWebApi/stockControllers";
 
 
 

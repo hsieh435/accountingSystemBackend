@@ -1,0 +1,40 @@
+import { Request, Response } from "express";
+import { success, error } from "@/utils/response";
+
+
+
+export async function getAllStockList(req: Request, res: Response) {
+
+  const response = await fetch(`https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await response.json();
+  // console.log("data:", data);
+  res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
+};
+
+
+
+export async function getEachStockList(req: Request, res: Response) {
+
+  const response = await fetch(`https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL`, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  const data = await response.json();
+  // console.log("data:", data);
+  res.json(success({ data: data, message: "查詢成功", req, res }));
+};
+// https://hackmd.io/@aaronlife/python-ex-stock-by-api
+// tse_開頭為上市股票
+// otc_開頭為上櫃股票
+
+// https://mis.twse.com.tw/stock/index?lang=zhHant
+
+// https://ithelp.ithome.com.tw/articles/10258478
+
+// https://vocus.cc/article/667ebabbfd897800016b3086
+
+// https://openapi.twse.com.tw/
+// https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL

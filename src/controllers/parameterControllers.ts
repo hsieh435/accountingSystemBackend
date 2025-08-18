@@ -65,6 +65,15 @@ export async function deleteSchema(req: Request, res: Response) {
 
 
 // currency
+export interface ICurrencyList {
+  currencyCode: string;
+  currencyName: string;
+  currencySymbol: string;
+  minimumDenomination: number;
+  sort: number;
+}
+
+
 export async function getCurrencyList(req: Request, res: Response) {
   const searchingCurrencyResult = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
   if (searchingCurrencyResult.rows.length > 0) {
@@ -87,9 +96,9 @@ export async function getEachCurrency(req: Request, res: Response) {
 
 export async function createCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
-  const { currencyCode, currencyName, currencySymbol, sort } = req.body;
+  const data: ICurrencyList = req.body;
   const result = await pool.query(
-    `INSERT INTO currency_list (currency_code, currency_name, currency_symbol, sort) VALUES ('${currencyCode}', '${currencyName}', '${currencySymbol}', ${sort});`,
+    `INSERT INTO public.currency_list(currency_code, currency_name, currency_symbol, minimum_denomination, sort) VALUES ('${data.currencyCode}', '${data.currencyName}', '${data.currencySymbol}', ${data.minimumDenomination}, ${data.sort});`
   );
   if (result.rowCount === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
@@ -100,8 +109,9 @@ export async function createCurrency(req: Request, res: Response) {
 
 export async function updateCurrency(req: Request, res: Response) {
   const { currencyCode, currencyName, sort } = req.body;
+  const data: ICurrencyList = req.body;
   const result = await pool.query(
-    `UPDATE currency_list SET currency_name = '${currencyName}', sort = ${sort} WHERE currency_code = '${currencyCode}';`,
+    `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`
   );
   if (result.rowCount === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
