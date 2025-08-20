@@ -1,76 +1,93 @@
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 
-
-
 export async function getAllStockList(req: Request, res: Response) {
-
-  const response = await fetch(`https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL`, {
+  const response = await fetch("https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   const jsonData = await response.json();
   // console.log("jsonData:", jsonData.length);
 
-  const data = jsonData.filter((item: any) =>
-    item.Code.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-    item.Name.toLowerCase().includes(req.params.keyword.toLowerCase())
-  ).map((item: any) => {
-    return {
-      value: item.Code,
-      label: `${item.Code} - ${item.Name}`,
-    };
-  }).slice(0, 20);
+  const data = jsonData
+    .filter(
+      (item: any) =>
+        item.Code.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+        item.Name.toLowerCase().includes(req.params.keyword.toLowerCase()),
+    )
+    .map((item: any) => {
+      return {
+        value: item.Code,
+        label: `${item.Code} - ${item.Name}`,
+      };
+    })
+    .slice(0, 20);
   res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
-};
-
-
+}
 
 export async function getEachStockList(req: Request, res: Response) {
-
-  const response = await fetch(`https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL`, {
+  const response = await fetch("https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   const jsonData = await response.json();
   console.log("jsonData:", jsonData);
 
-  const data = jsonData.filter((item: any) =>
-    item.Code.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-    item.Name.toLowerCase().includes(req.params.keyword.toLowerCase())
-  ).map((item: any) => {
-    return {
-      value: item.Code,
-      label: `${item.Code} - ${item.Name}`,
-    };
-  }).slice(0, 20);
+  const data = jsonData
+    .filter(
+      (item: any) =>
+        item.Code.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+        item.Name.toLowerCase().includes(req.params.keyword.toLowerCase()),
+    )
+    .map((item: any) => {
+      return {
+        value: item.Code,
+        label: `${item.Code} - ${item.Name}`,
+      };
+    })
+    .slice(0, 20);
   res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
-};
+}
 // https://hackmd.io/@aaronlife/python-ex-stock-by-api
 // tse_開頭為上市股票
 // otc_開頭為上櫃股票
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
-
-
 export async function getStockPriceByDateRange(req: Request, res: Response) {
-  const data: { stockNo: string; startYear: number; startMonth: number; endMonth: number; endYear: number } = req.body;
+  const data: { stockNo: string; startYear: number; startMonth: number; endYear: number; endMonth: number } = req.body;
   // console.log("data:", data);
-
-  const response = await fetch(`https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${data.startYear}${(data.startMonth).toString().padStart(2, "0")}01`, {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  const resultData = await response.json();
-  // console.log("data:", resultData);
+  const resultData = [];
+  if (data.startYear === data.endYear && data.startMonth === data.endMonth) {
+    const response = await fetch(
+      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${data.startYear}${data.startMonth.toString().padStart(2, "0")}01`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    resultData.push(await response.json());
+    // console.log("resultData:", resultData);
+  } else {
+    // for (let index = 0; index < array.length; index++) {
+    //   const element = array[index];
+    // }
+    const response = await fetch(
+      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${data.startYear}${data.startMonth.toString().padStart(2, "0")}01`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    console.log("resultData:", await response.json());
+    resultData.push(await response.json());
+    // console.log("resultData:", resultData);
+  }
   res.json(success({ data: resultData, message: "查詢成功", req, res }));
-};
+}
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
 // https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=202110011&stockNo=2330
-
-
 
 // https://ithelp.ithome.com.tw/articles/10258478
 

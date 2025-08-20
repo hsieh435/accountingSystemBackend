@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
-import * as outerWebApiControllers from "@/controllers/outerWebApi/stockControllers";
+import * as outerWebApiStockControllers from "@/controllers/outerWebApi/stockControllers";
+import * as outerWebApiCurrencyExRateControllers from "@/controllers/outerWebApi/currencyExRateControllers";
 
 
 
@@ -8,9 +9,14 @@ const router = Router();
 
 
 
-router.get("/api/outerWebApi/stockInfo/:keyword", authenticateToken, outerWebApiControllers.getAllStockList);
-router.get("/api/outerWebApi/stockInfo/:code", authenticateToken, outerWebApiControllers.getEachStockList);
-router.post("/api/outerWebApi/stockInfo/rangeValue", authenticateToken, outerWebApiControllers.getStockPriceByDateRange);
+router.get("/api/outerWebApi/stockInfo/:keyword", authenticateToken, outerWebApiStockControllers.getAllStockList);
+router.get("/api/outerWebApi/stockInfo/:code", authenticateToken, outerWebApiStockControllers.getEachStockList);
+router.post("/api/outerWebApi/stockInfo/rangeValue", authenticateToken, outerWebApiStockControllers.getStockPriceByDateRange);
+
+
+
+router.get("/api/outerWebApi/currencyExRateInfo/list", authenticateToken, outerWebApiCurrencyExRateControllers.getAllCurrencyRateList);
+
 
 
 
