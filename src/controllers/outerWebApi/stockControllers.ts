@@ -66,25 +66,33 @@ export async function getStockPriceByDateRange(req: Request, res: Response) {
         headers: { "Content-Type": "application/json" },
       },
     );
-    resultData.push(await response.json());
-    // console.log("resultData:", resultData);
+    const responseData = await response.json();
+    resultData.push(responseData);
+
   } else {
-    // for (let index = 0; index < array.length; index++) {
-    //   const element = array[index];
-    // }
-    const response = await fetch(
-      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${data.startYear}${data.startMonth.toString().padStart(2, "0")}01`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
-    console.log("resultData:", await response.json());
-    resultData.push(await response.json());
-    // console.log("resultData:", resultData);
+    const startDate = new Date(data.startYear, data.startMonth - 1, 1);
+    const endDate = new Date(data.endYear, data.endMonth - 1, 1);
+    let currentDate = startDate;
+
+    for (let i = currentDate; currentDate <= endDate; currentDate.setMonth(currentDate.getMonth() + 1)) {
+      const response = await fetch(
+        `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, "0")}01`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      const responseData = await response.json();
+      if (responseData.total !== 0) {
+        resultData.push(responseData);
+      }
+    }
   }
+  // console.log("resultData:", resultData);
   res.json(success({ data: resultData, message: "查詢成功", req, res }));
 }
+
+
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
 // https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date=202110011&stockNo=2330
