@@ -57,41 +57,39 @@ export async function getEachStockList(req: Request, res: Response) {
 export async function getStockPriceByDateRange(req: Request, res: Response) {
   const data: { stockNo: string; startYear: number; startMonth: number; endYear: number; endMonth: number } = req.body;
   // console.log("data:", data);
-  const resultData = [];
-  if (data.startYear === data.endYear && data.startMonth === data.endMonth) {
+  const allData: any[] = [];
+  let firstResponseMeta: any = null;
+
+  const startDate = new Date(data.startYear, data.startMonth - 1, 1);
+  const endDate = new Date(data.endYear, data.endMonth - 1, 1);
+
+  for (let i = new Date(startDate); i <= endDate; i.setMonth(i.getMonth() + 1)) {
+    const dateStr = `${i.getFullYear()}${(i.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}01`;
     const response = await fetch(
-      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${data.startYear}${data.startMonth.toString().padStart(2, "0")}01`,
+      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${dateStr}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
     const responseData = await response.json();
-    resultData.push(responseData);
-
-  } else {
-    const startDate = new Date(data.startYear, data.startMonth - 1, 1);
-    const endDate = new Date(data.endYear, data.endMonth - 1, 1);
-    let currentDate = startDate;
-
-    for (let i = currentDate; currentDate <= endDate; currentDate.setMonth(currentDate.getMonth() + 1)) {
-      const response = await fetch(
-        `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${currentDate.getFullYear()}${(currentDate.getMonth() + 1).toString().padStart(2, "0")}01`,
-        {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-      const responseData = await response.json();
-      if (responseData.total !== 0) {
-        resultData.push(responseData);
+    if (responseData.total !== 0 && Array.isArray(responseData.data)) {
+      if (!firstResponseMeta) {
+        firstResponseMeta = { ...responseData, data: [] };
       }
+      allData.push(...responseData.data);
     }
   }
-  // console.log("resultData:", resultData);
-  res.json(success({ data: resultData, message: "查詢成功", req, res }));
-}
 
+  if (firstResponseMeta) {
+    firstResponseMeta.data = allData;
+    res.json(success({ data: firstResponseMeta, message: "查詢成功", req, res }));
+  } else {
+    res.json(success({ data: {}, message: "查無資料", req, res }));
+  }
+}
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
