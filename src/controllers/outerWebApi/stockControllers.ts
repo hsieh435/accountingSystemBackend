@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 
+
+
+// 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
   const response = await fetch("https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL", {
     method: "GET",
@@ -25,13 +28,16 @@ export async function getAllStockList(req: Request, res: Response) {
   res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
 }
 
+
+
+//
 export async function getEachStockList(req: Request, res: Response) {
   const response = await fetch("https://openapi.twse.com.tw/v1/exchangeReport/BWIBBU_ALL", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
   });
   const jsonData = await response.json();
-  console.log("jsonData:", jsonData);
+  // console.log("jsonData:", jsonData);
 
   const data = jsonData
     .filter(
@@ -52,8 +58,9 @@ export async function getEachStockList(req: Request, res: Response) {
 // tse_開頭為上市股票
 // otc_開頭為上櫃股票
 
-// https://mis.twse.com.tw/stock/index?lang=zhHant
 
+//
+// https://mis.twse.com.tw/stock/index?lang=zhHant
 export async function getStockPriceByDateRange(req: Request, res: Response) {
   const data: { stockNo: string; startYear: number; startMonth: number; endYear: number; endMonth: number } = req.body;
   // console.log("data:", data);
@@ -90,6 +97,14 @@ export async function getStockPriceByDateRange(req: Request, res: Response) {
     res.json(success({ data: {}, message: "查無資料", req, res }));
   }
 }
+
+
+
+
+// https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=2330&date=2025-08-01&end_date=2025-08-31
+
+
+
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 

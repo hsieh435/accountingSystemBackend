@@ -16,7 +16,7 @@ router.post("/api/outerWebApi/stockInfo/rangeValue", authenticateToken, outerWeb
 
 
 router.get("/api/outerWebApi/currencyExRateInfo/list/:currencyCode", authenticateToken, outerWebApiCurrencyExRateControllers.getAllCurrencyRateList);
-
+router.get("/api/outerWebApi/currencyExRateInfo/latest/:currencyCode", authenticateToken, outerWebApiCurrencyExRateControllers.getLatestCurrencyExchangeRate);
 
 
 
