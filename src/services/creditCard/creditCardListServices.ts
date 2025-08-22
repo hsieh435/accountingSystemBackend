@@ -32,7 +32,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
       await pool.query(`SELECT creditcard_list.*, currency_list.currency_name FROM creditcard_list
         LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
         WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`);
-    console.log("searchingResult:", searchingResult);
+    // console.log("searchingResult:", searchingResult);
     return { success: true, data: keysToCamel(searchingResult.rows) };
   } catch (err) {
     return { success: false, data: [] };

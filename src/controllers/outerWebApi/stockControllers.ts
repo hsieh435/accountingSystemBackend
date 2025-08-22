@@ -1,7 +1,5 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { success, error } from "@/utils/response";
-
-
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
@@ -27,8 +25,6 @@ export async function getAllStockList(req: Request, res: Response) {
     .slice(0, 20);
   res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
 }
-
-
 
 //
 export async function getEachStockList(req: Request, res: Response) {
@@ -58,53 +54,39 @@ export async function getEachStockList(req: Request, res: Response) {
 // tse_開頭為上市股票
 // otc_開頭為上櫃股票
 
-
 //
 // https://mis.twse.com.tw/stock/index?lang=zhHant
-export async function getStockPriceByDateRange(req: Request, res: Response) {
+export async function getStockPriceHistoryRecord(req: Request, res: Response) {
   const data: { stockNo: string; startYear: number; startMonth: number; endYear: number; endMonth: number } = req.body;
   // console.log("data:", data);
-  const allData: any[] = [];
-  let firstResponseMeta: any = null;
 
-  const startDate = new Date(data.startYear, data.startMonth - 1, 1);
-  const endDate = new Date(data.endYear, data.endMonth - 1, 1);
+  // const aaaa = new Date(data.endYear, data.endMonth, 0);
+  // console.log("aaaa:", aaaa.getDate());
 
-  for (let i = new Date(startDate); i <= endDate; i.setMonth(i.getMonth() + 1)) {
-    const dateStr = `${i.getFullYear()}${(i.getMonth() + 1)
-      .toString()
-      .padStart(2, "0")}01`;
+  const dateStr = `${data.startYear}-${(data.startMonth).toString().padStart(2, "0")}-01`;
+  const endDateStr =
+    `${data.endYear}-${(data.endMonth).toString().padStart(2, "0")}-${new Date(data.endYear, data.endMonth, 0).getDate().toString().padStart(2, "0")}`;
+  // console.log("data:", data.stockNo);
+  // console.log("dateStr:", dateStr);
+  // console.log("endDateStr:", endDateStr);
+  try {
     const response = await fetch(
-      `https://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&stockNo=${data.stockNo}&date=${dateStr}`,
+      `https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=${data.stockNo}&date=${dateStr}&end_date=${endDateStr}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
-    const responseData = await response.json();
-    if (responseData.total !== 0 && Array.isArray(responseData.data)) {
-      if (!firstResponseMeta) {
-        firstResponseMeta = { ...responseData, data: [] };
-      }
-      allData.push(...responseData.data);
-    }
-  }
-
-  if (firstResponseMeta) {
-    firstResponseMeta.data = allData;
-    res.json(success({ data: firstResponseMeta, message: "查詢成功", req, res }));
-  } else {
-    res.json(success({ data: {}, message: "查無資料", req, res }));
+    const jsonData = await response.json();
+    // console.log("response:", jsonData);
+    res.json(success({ data: jsonData, message: jsonData.data.length > 0 ? "查詢成功" : "查無資料", req, res }));
+  } catch (err) {
+    console.log("err:", err);
+    res.json(error({ data: [], req, res }));
   }
 }
 
-
-
-
 // https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=2330&date=2025-08-01&end_date=2025-08-31
-
-
-
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
