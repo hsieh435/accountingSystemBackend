@@ -19,7 +19,7 @@ export async function getAllStockList(req: Request, res: Response) {
     .map((item: any) => {
       return {
         value: item.Code,
-        label: `${item.Code} - ${item.Name}`,
+        label: `${item.Name}（${item.Code}）`,
       };
     })
     // .slice(0, 20);
