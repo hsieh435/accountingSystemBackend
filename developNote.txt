@@ -7,9 +7,6 @@
 
 4.SQL語法
 
-5.安裝 Prettier - Code formatter 跟 npm i prettier
-文件：https://prettier.io/docs
-
 
 
 https://wayne-blog.com/2023-02-21/ts-express-server/
