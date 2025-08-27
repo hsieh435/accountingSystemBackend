@@ -50,6 +50,12 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
   }
 }
 
+
+// https://api.docsaid.org/stocks/infos
+// https://docsaid.org/blog/get-taiwan-all-stocks-info/
+
+
+
 // https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=2330&date=2025-08-01&end_date=2025-08-31
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
