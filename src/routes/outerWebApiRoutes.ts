@@ -5,6 +5,14 @@ import * as outerWebApiCurrencyExRateControllers from "@/controllers/outerWebApi
 
 const router = Router();
 
+
+
+
+
+
+
+
+
 router.get("/api/outerWebApi/stockInfo/:keyword", authenticateToken, outerWebApiStockControllers.getAllStockList);
 router.post(
   "/api/outerWebApi/stockInfo/rangeValue",

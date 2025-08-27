@@ -27,7 +27,7 @@ export async function searchingCashFlowRecordById(req: Request, res: Response) {
     const searchingResult = await cashFlowRecordServices.searchingCashFlowRecordById(req.body);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.success === true) {
-      res.json(success({ data: keysToCamel(searchingResult.data[0]), req, res }));
+      res.json(success({ data: keysToCamel(searchingResult.data), req, res }));
     } else {
       res.json(error({ data: [], message: "支出紀錄不存在", req, res }));
     }
@@ -39,7 +39,7 @@ export async function searchingCashFlowRecordById(req: Request, res: Response) {
 
 
 export async function cashFlowRecordCreate(req: Request, res: Response) {
-  // console.log("Request Body:", req.body);
+  console.log("Request Body:", req.body);
   try {
     const createResult = await cashFlowRecordServices.insertCashFlowRecordData(req.body);
     console.log("createResult:", createResult);

@@ -40,7 +40,7 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
     const searchingResult = await pool.query(
       `SELECT * FROM public.cashflow_trade where cashflow_id = '${data.cashflowId}' and trade_id = '${data.tradeId}' and user_id='${data.userId}'`,
     );
-    // console.log("searchingResult:", searchingResult.rows);
+    console.log("searchingResult:", searchingResult.rows[0]);
     if (searchingResult.rows.length === 1) {
       return { success: true, data: searchingResult.rows[0] };
     } else {
@@ -52,13 +52,21 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 }
 
 export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
-  console.log("data:", data);
-  const insertResult =
-    await pool.query(`INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.cashflowId}', '${data.userId}', ${data.tradeDatetime}+08, '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`);
-  console.log("insertResult:", insertResult);
-  if (insertResult.rowCount === 1) {
-    return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-  } else {
+  // console.log("data:", data);
+
+  try {
+    const insertResult = await pool.query(
+      `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.cashflowId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
+    );
+    // console.log("insertResult:", insertResult);
+
+    if (insertResult.rowCount === 1) {
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
+    }
+  } catch (err) {
+    console.error("Error in insertCashFlowRecordData:", err);
     return { success: false, userData: [] };
   }
 }
