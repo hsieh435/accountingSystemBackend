@@ -3,30 +3,39 @@ import { success, error } from "@/utils/response";
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
-  const response = await fetch("https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL", {
-    method: "GET",
-    headers: { "Content-Type": "application/json" },
-  });
-  const jsonData = await response.json();
-  // console.log("jsonData:", jsonData.length);
+  try {
+    const response = await fetch("https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (response.status === 200) {
+      const jsonData = await response.json();
+      // console.log("jsonData:", jsonData.data.length);
+      // 3960
+      const data: { stock_id: string; stock_name: string }[] = [];
+      jsonData.data.forEach(function(item: { stock_id: string; stock_name: string }) {
+        if (!data.some(i => i.stock_id === item.stock_id)) {
+          data.push(item);
+        }
+      });
 
-  const data = jsonData
-    .filter(
-      (item: any) =>
-        item.Code.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-        item.Name.toLowerCase().includes(req.params.keyword.toLowerCase()),
-    )
-    .map((item: any) => {
-      return {
-        value: item.Code,
-        label: `${item.Name}（${item.Code}）`,
-      };
-    })
-    // .slice(0, 20);
-  res.json(success({ data: JSON.stringify(data), message: "查詢成功", req, res }));
+      const dataFiltered = data.filter((item: { stock_id: string; stock_name: string }) =>
+        item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+        item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
+      ).map((item: { stock_id: string; stock_name: string }) => {
+        return {
+          value: item.stock_id,
+          label: `${item.stock_name}（${item.stock_id}）`,
+        };
+      });
+      res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
+    } else {
+      res.json(error({ data: [], req, res }));
+    }
+  } catch (err) {
+    res.json(error({ data: [], req, res }));
+  }
 }
-
-
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 export async function getStockPriceHistoryRecord(req: Request, res: Response) {
@@ -45,16 +54,12 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
     // console.log("response:", jsonData);
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
-    console.log("err:", err);
     res.json(error({ data: [], req, res }));
   }
 }
 
-
 // https://api.docsaid.org/stocks/infos
 // https://docsaid.org/blog/get-taiwan-all-stocks-info/
-
-
 
 // https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=2330&date=2025-08-01&end_date=2025-08-31
 
