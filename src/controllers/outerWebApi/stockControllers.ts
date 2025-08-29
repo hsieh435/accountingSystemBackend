@@ -22,12 +22,7 @@ export async function getAllStockList(req: Request, res: Response) {
       const dataFiltered = data.filter((item: { stock_id: string; stock_name: string }) =>
         item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
         item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
-      ).map((item: { stock_id: string; stock_name: string }) => {
-        return {
-          value: item.stock_id,
-          label: `${item.stock_name}（${item.stock_id}）`,
-        };
-      });
+      )
       res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
     } else {
       res.json(error({ data: [], req, res }));
