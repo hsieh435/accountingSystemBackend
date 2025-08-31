@@ -80,3 +80,8 @@ export function yearMonthFormat(dateString: string) {
   const month = ("00" + (date.getMonth() + 1)).slice(-2);
   return `${date.getFullYear()}-${month}`;
 }
+
+// 設定時區
+export function setTimezone(dateString: string): string {
+  return new Date(dateString).toISOString();
+}

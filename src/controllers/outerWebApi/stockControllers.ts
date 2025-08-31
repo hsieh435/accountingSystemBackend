@@ -1,5 +1,6 @@
 import { Request, response, Response } from "express";
 import { success, error } from "@/utils/response";
+import { setTimezone } from "@/utils/tools";
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
@@ -36,6 +37,8 @@ export async function getAllStockList(req: Request, res: Response) {
 export async function getStockPriceHistoryRecord(req: Request, res: Response) {
   const data: { stockNo: string; startDate: string; endDate: string } = req.body;
   // console.log("data:", data);
+  console.log("setTimezone:", setTimezone(data.startDate));
+  console.log("setTimezone:", setTimezone(data.endDate));
 
   try {
     const response = await fetch(
@@ -52,6 +55,11 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
     res.json(error({ data: [], req, res }));
   }
 }
+
+
+
+// 除權息
+// https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=2535&start_date=2015-01-01
 
 // https://api.docsaid.org/stocks/infos
 // https://docsaid.org/blog/get-taiwan-all-stocks-info/

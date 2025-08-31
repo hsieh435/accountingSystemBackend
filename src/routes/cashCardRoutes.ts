@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
 import * as cashCardControllers from "@/controllers/cashCard/cashCardListControllers";
+import * as cashCardRecordControllers from "@/controllers/cashCard/cashCardRecordControllers";
 
 const router = Router();
 

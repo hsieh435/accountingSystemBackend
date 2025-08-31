@@ -99,9 +99,10 @@ export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
 
 export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
 
+  console.log("data:", data);
   const searchingResult =
     await pool.query(`SELECT * FROM currency_account_trade where account_id = '${data.accountId}' and user_id = '${data.userId}';`);
-  // console.log("searchingResult:", searchingResult);
+  console.log("searchingResult:", searchingResult);
   if (searchingResult.rows.length > 0) {
     return { success: false, message: "已有收支紀錄，無法刪除" };
   } else {

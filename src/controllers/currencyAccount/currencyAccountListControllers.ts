@@ -28,7 +28,7 @@ export async function searchingCurrencyAccountById(req: Request, res: Response) 
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.currencyAccountId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.accountId}' and user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
@@ -76,7 +76,7 @@ export async function currencyAccountUpdate(req: Request, res: Response) {
 
 
 export async function enableCurrencyAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.currencyAccountId;
+  req.body.accountId = req.params.accountId;
 
   try {
     const adjustResult = await currencyAccountServices.enableCurrencyAccountStatus(req.body);
@@ -93,7 +93,7 @@ export async function enableCurrencyAccount(req: Request, res: Response) {
 
 
 export async function disableCurrencyAccount(req: Request, res: Response) {
-  req.body.accountId = req.params.currencyAccountId;
+  req.body.accountId = req.params.accountId;
 
   try {
     const adjustResult = await currencyAccountServices.disableCurrencyAccountStatus(req.body);
@@ -110,7 +110,7 @@ export async function disableCurrencyAccount(req: Request, res: Response) {
 
 
 export async function currencyAccountDelete(req: Request, res: Response) {
-  req.body.currencyAccountId = req.params.currencyAccountId;
+  req.body.accountId = req.params.accountId;
 
   try {
     const removeResult = await currencyAccountServices.removeCurrencyAccountData(req.body);

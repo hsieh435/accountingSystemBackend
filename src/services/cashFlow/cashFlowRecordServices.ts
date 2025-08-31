@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -40,7 +40,7 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
     const searchingResult = await pool.query(
       `SELECT * FROM public.cashflow_trade where cashflow_id = '${data.cashflowId}' and trade_id = '${data.tradeId}' and user_id='${data.userId}'`,
     );
-    console.log("searchingResult:", searchingResult.rows[0]);
+    // console.log("searchingResult:", searchingResult.rows[0]);
     if (searchingResult.rows.length === 1) {
       return { success: true, data: searchingResult.rows[0] };
     } else {
@@ -56,7 +56,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
 
   try {
     const insertResult = await pool.query(
-      `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.cashflowId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
+      `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.cashflowId}', '${data.userId}', '${setTimezone(data.tradeDatetime)}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
     );
     // console.log("insertResult:", insertResult);
 
@@ -72,10 +72,11 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
+  console.log("data:", data);
   const updateResult = await pool.query(
-    `UPDATE public.cashflow_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', transaction_type='${data.transactionType}', trade_amount=${data.tradeAmount}, trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id='${data.tradeId}' AND cashflow_id='${data.cashflowId}' AND user_id='${data.userId}'`,
+    `UPDATE public.cashflow_trade SET trade_datetime='${setTimezone(data.tradeDatetime)}', trade_category='${data.tradeCategory}', transaction_type='${data.transactionType}', trade_amount=${data.tradeAmount}, trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id='${data.tradeId}' AND cashflow_id='${data.cashflowId}' AND user_id='${data.userId}'`,
   );
-  // console.log("insertResult:", insertResult);
+  // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(updateResult.rows[0]) };
   } else {
