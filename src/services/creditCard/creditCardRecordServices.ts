@@ -28,7 +28,6 @@ export interface IFinanceRecordSearchingParams {
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
-  console.log("data:", data);
 
   try {
     const searchingResult =
@@ -52,11 +51,10 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
 
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {
-  console.log("data:", data);
 
   const insertResult =
     await pool.query(`INSERT INTO public.creditcard_trade(trade_id, credit_card_id, trade_datetime, user_id, trade_category, trade_amount, currency, bill_month, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.creditCardId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', ${data.tradeAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}')`);
-  console.log("insertResult:", insertResult);
+  // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {

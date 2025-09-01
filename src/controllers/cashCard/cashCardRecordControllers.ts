@@ -42,7 +42,7 @@ export async function cashCardRecordCreate(req: Request, res: Response) {
   // console.log("Request:", req.body);
   try {
     const createResult = await cashCardRecordServices.insertCashCardRecord(req.body);
-    console.log("createResult:", createResult);
+    // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
     } else {

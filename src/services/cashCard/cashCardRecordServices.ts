@@ -49,9 +49,9 @@ export async function searchingCashCardRecordList(data: IFinanceRecordSearchingP
 export async function searchingCashCardRecordById(data: { cashcardId: string; tradeId: string; userId: string }) {
   try {
     const searchingResult = await pool.query(
-      `SELECT * FROM public.cashcard_trade where cashcard_id = '${data.cashcardId}' and trade_id = '${data.tradeId}' and user_id='${data.userId}'`,
+      `SELECT * FROM public.cashcard_trade WHERE cashcard_id = '${data.cashcardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
     );
-    console.log("searchingResult:", searchingResult.rows[0]);
+    // console.log("searchingResult:", searchingResult.rows[0]);
     if (searchingResult.rows.length === 1) {
       return { success: true, data: searchingResult.rows[0] };
     } else {
