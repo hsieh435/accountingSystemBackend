@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 
 
 export interface ICashCardRecordList {
@@ -27,9 +27,18 @@ export interface IFinanceRecordSearchingParams {
 
 export async function searchingCashCardRecordList(data: IFinanceRecordSearchingParams) {
   try {
-    const searchingResult = await pool.query(`SELECT cashcard_trade.*, currency_list.currency_name FROM cashcard_trade
-        LEFT JOIN currency_list ON cashcard_trade.currency = currency_list.currency_code
-        WHERE user_id = '${data.userId}' AND cashcard_id  LIKE '%${data.accountId}%' AND currency LIKE '%${data.currencyId}%' AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`);
+    const searchingResult = await pool.query(`SELECT cashcard_trade.*,
+      currency_list.currency_name,
+      cashcard_list.cashcard_name,
+      trade_category.trade_name,
+      transaction_category.transaction_name
+      FROM cashcard_trade LEFT JOIN currency_list ON cashcard_trade.currency = currency_list.currency_code
+      LEFT JOIN cashcard_list ON cashcard_trade.cashcard_id = cashcard_list.cashcard_id
+      LEFT JOIN trade_category ON cashcard_trade.trade_category = trade_category.trade_code
+      LEFT JOIN transaction_category ON cashcard_trade.transaction_type = transaction_category.transaction_code
+      WHERE cashcard_trade.user_id = '${data.userId}' AND cashcard_trade.cashcard_id LIKE '%${data.accountId}%'
+      AND cashcard_trade.currency LIKE '%${data.currencyId}%'
+      AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`);
     // console.log("searchingResult:", searchingResult.rows);
     return { success: true, data: keysToCamel(searchingResult.rows) };
   } catch (err) {
@@ -55,7 +64,6 @@ export async function searchingCashCardRecordById(data: { cashcardId: string; tr
 
 export async function insertCashCardRecord(data: ICashCardRecordList) {
   // console.log("data:", data);
-  console.log("data:", setTimezone(data.tradeDatetime));
 
   try {
     const insertResult = await pool.query(

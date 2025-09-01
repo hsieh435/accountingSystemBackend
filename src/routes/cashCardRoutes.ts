@@ -13,4 +13,11 @@ router.get("/api/cashCard/enable/:cashCardId", authenticateToken, cashCardContro
 router.get("/api/cashCard/disable/:cashCardId", authenticateToken, cashCardControllers.disableCashCard);
 router.get("/api/cashCard/delete/:cashCardId", authenticateToken, cashCardControllers.cashCardDelete);
 
+
+
+router.post("/api/cashCardRecord/list", authenticateToken, cashCardRecordControllers.cashCardRecordList);
+router.post("/api/cashCardRecordById", authenticateToken, cashCardRecordControllers.searchingCashCardRecordById);
+router.post("/api/cashCardRecord/create", authenticateToken, cashCardRecordControllers.cashCardRecordCreate);
+router.post("/api/cashCardRecord/update", authenticateToken, cashCardRecordControllers.cashCardRecordUpdate);
+
 export default router;

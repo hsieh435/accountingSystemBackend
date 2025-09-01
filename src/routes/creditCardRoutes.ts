@@ -13,4 +13,12 @@ router.get("/api/creditCard/enable/:creditCardId", authenticateToken, creditCard
 router.get("/api/creditCard/disable/:creditCardId", authenticateToken, creditCardControllers.disableCreditCard);
 router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCardControllers.creditCardDelete);
 
+
+
+router.post("/api/creditCardRecord/list", authenticateToken, creditCardRecordControllers.creditCardRecordList);
+router.post("/api/creditCardRecordById", authenticateToken, creditCardRecordControllers.searchingCreditCardRecordById);
+router.post("/api/creditCardRecord/create", authenticateToken, creditCardRecordControllers.creditCardRecordCreate);
+router.post("/api/creditCardRecord/update", authenticateToken, creditCardRecordControllers.creditCardRecordUpdate);
+router.post("/api/creditCardRecord/delete", authenticateToken, creditCardRecordControllers.creditCardRecordDelete);
+
 export default router;

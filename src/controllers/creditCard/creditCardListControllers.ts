@@ -6,12 +6,6 @@ import { keysToCamel } from "@/utils/tools";
 
 
 
-// const jwt = require("jsonwebtoken");
-// require("dotenv").config();
-// const JWT_SECRET = process.env.JWT_SECRET;
-
-
-
 export async function creditCardDataList(req: Request, res: Response) {
   // console.log("Request body:", req.body);
 

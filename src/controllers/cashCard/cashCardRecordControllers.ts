@@ -39,7 +39,7 @@ export async function searchingCashCardRecordById(req: Request, res: Response) {
 
 
 export async function cashCardRecordCreate(req: Request, res: Response) {
-  console.log("Request:", req.body);
+  // console.log("Request:", req.body);
   try {
     const createResult = await cashCardRecordServices.insertCashCardRecord(req.body);
     console.log("createResult:", createResult);
@@ -68,7 +68,7 @@ export async function cashCardRecordUpdate(req: Request, res: Response) {
 
 
 
-// export async function cashCardDelete(req: Request, res: Response) {
+// export async function deleteCashCardRecord(req: Request, res: Response) {
 //   req.body.cashcardId = req.params.cashcardId;
 
 //   try {
