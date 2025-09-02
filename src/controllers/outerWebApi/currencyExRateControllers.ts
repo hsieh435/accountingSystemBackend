@@ -37,4 +37,3 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
   // console.log("data:", data);
   res.json(success({ data: data, message: "查詢成功", req, res }));
 }
-// https://api.finmindtrade.com/api/v3/data?dataset=TaiwanExchangeRate&data_id=EUR&date=2006-01-01

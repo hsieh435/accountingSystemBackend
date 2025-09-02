@@ -58,12 +58,53 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
 
 
 // 除權息
-// https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=2535&start_date=2015-01-01
+export async function getStockDividendInfo(req: Request, res: Response) {
+  const data: { stockNo: string; startDate: string; endDate: string } = req.body;
+  // console.log("data:", data);
+
+  try {
+    const response = await fetch(
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=${data.stockNo}&start_date=2000-01-01`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const jsonData = await response.json();
+    // console.log("response:", jsonData);
+    res.json(success({ data: jsonData, message: "查詢成功", req, res }));
+  } catch (err) {
+    res.json(error({ data: [], req, res }));
+  }
+}
+
+
+
+// PER：本益比（Price-to-Earning Ratio）
+// PBR：股價淨值比（Price-to-Book Ratio）
+export async function getStockPERInfo(req: Request, res: Response) {
+  const data: { stockNo: string; startDate: string; endDate: string } = req.body;
+  // console.log("data:", data);
+
+  try {
+    const response = await fetch(
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=2000-01-01`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+    const jsonData = await response.json();
+    res.json(success({ data: jsonData, message: "查詢成功", req, res }));
+  } catch (err) {
+    res.json(error({ data: [], req, res }));
+  }
+}
+
+
 
 // https://api.docsaid.org/stocks/infos
 // https://docsaid.org/blog/get-taiwan-all-stocks-info/
-
-// https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=2330&date=2025-08-01&end_date=2025-08-31
 
 // https://mis.twse.com.tw/stock/index?lang=zhHant
 
