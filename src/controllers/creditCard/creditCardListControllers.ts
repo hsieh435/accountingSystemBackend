@@ -28,7 +28,7 @@ export async function searchingCreditCardById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM creditcard_list where creditcard_id = '${req.params.creditCardId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM creditcard_list WHERE creditcard_id = '${req.params.creditCardId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));

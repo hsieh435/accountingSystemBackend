@@ -34,7 +34,7 @@ export async function searchingCashCardById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM cashcard_list where cashcard_id = '${req.params.cashCardId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM cashcard_list WHERE cashcard_id = '${req.params.cashCardId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));

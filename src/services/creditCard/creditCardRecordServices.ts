@@ -1,8 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 
-
-
 export interface ICreditCardTradeData {
   tradeId: string;
   userId: string;
@@ -17,7 +15,6 @@ export interface ICreditCardTradeData {
   tradeNote: string;
 }
 
-
 export interface IFinanceRecordSearchingParams {
   accountId: string;
   currencyId: string;
@@ -28,10 +25,8 @@ export interface IFinanceRecordSearchingParams {
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
-
   try {
-    const searchingResult =
-      await pool.query(`SELECT creditcard_trade.*,
+    const searchingResult = await pool.query(`SELECT creditcard_trade.*,
       currency_list.currency_name,
       creditcard_list.creditcard_name,
       trade_category.trade_name
@@ -48,45 +43,39 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
   }
 }
 
-
-
 export async function insertCreditCardData(data: ICreditCardTradeData) {
-
-  const insertResult =
-    await pool.query(`INSERT INTO public.creditcard_trade(trade_id, credit_card_id, trade_datetime, user_id, trade_category, trade_amount, currency, bill_month, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.creditCardId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', ${data.tradeAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}')`);
+  const insertResult = await pool.query(
+    `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, trade_datetime, user_id, trade_category, trade_amount, currency, bill_month, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.creditCardId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', ${data.tradeAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}')`,
+  );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
   }
-};
-
-
+}
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
   const updateResult =
     await pool.query(`UPDATE public.creditcard_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', trade_amount=${data.tradeAmount}, currency='${data.currency}', bill_month='${data.billMonth}', trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}'
-    WHERE trade_id = '${data.tradeId}' and credit_card_id = '${data.creditCardId}' and user_id = '${data.userId}';`);
+    WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
   } else {
     return false;
   }
-};
-
-
+}
 
 export async function removeCreditCardData(data: { tradeId: string; creditCardId: string; userId: string }) {
-
-  const deleteResult =
-    await pool.query(`DELETE FROM public.creditcard_trade WHERE trade_id = '${data.tradeId}' and creditcard_id = '${data.creditCardId}' and user_id = '${data.userId}';`);
-    // console.log("deleteResult:", deleteResult);
-    if (deleteResult.rowCount === 1) {
-      return { success: true, message: "刪除成功" };
-    } else {
-      return { success: false, message: "刪除失敗" };
-    }
-};
+  const deleteResult = await pool.query(
+    `DELETE FROM public.creditcard_trade WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+  );
+  // console.log("deleteResult:", deleteResult);
+  if (deleteResult.rowCount === 1) {
+    return { success: true, message: "刪除成功" };
+  } else {
+    return { success: false, message: "刪除失敗" };
+  }
+}

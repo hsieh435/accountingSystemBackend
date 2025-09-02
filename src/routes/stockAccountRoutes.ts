@@ -1,6 +1,7 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
 import * as stockAccountControllers from "@/controllers/stockAccount/stockAccountListControllers";
+import * as stockAccountRecordControllers from "@/controllers/stockAccount/stockAccountRecordControllers";
 
 
 
@@ -17,5 +18,11 @@ router.get("/api/stockAccount/disable/:stockAccountId", authenticateToken, stock
 router.get("/api/stockAccount/delete/:stockAccountId", authenticateToken, stockAccountControllers.stockAccountDelete);
 
 
+
+router.post("/api/stockAccountRecord/list", authenticateToken, stockAccountRecordControllers.stockAccountRecordList);
+router.post("/api/stockAccountRecordDataById", authenticateToken, stockAccountRecordControllers.searchingStockAccountRecordById);
+router.post("/api/stockAccountRecord/create", authenticateToken, stockAccountRecordControllers.stockAccountRecordCreate);
+router.post("/api/stockAccountRecord/update", authenticateToken, stockAccountRecordControllers.stockAccountRecordUpdate);
+router.post("/api/stockAccountRecord/delete", authenticateToken, stockAccountRecordControllers.stockAccountRecordDelete);
 
 export default router;

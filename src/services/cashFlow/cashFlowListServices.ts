@@ -58,7 +58,7 @@ export async function insertCashflowData(data: ICashFlowData) {
 export async function updateCashflowData(data: ICashFlowData) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.cashflow_list SET cashflow_name='${data.cashflowName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.cashflow_list SET cashflow_name='${data.cashflowName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -74,7 +74,7 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
   // console.log("data:", data);
 
   const updateResult =
-    await pool.query(`UPDATE public.cashflow_list SET enable = ${true} WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.cashflow_list SET enable = ${true} WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -86,7 +86,7 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
 export async function disableCashFlowStatus(data: ICashFlowData) {
 
   const updateResult =
-    await pool.query(`UPDATE public.cashflow_list SET enable = ${false} WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.cashflow_list SET enable = ${false} WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -99,12 +99,12 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
 
 export async function removeCashflowData(data: ICashFlowData) {
     const deleteResult = await pool.query(
-      `DELETE FROM public.cashflow_list WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`,
+      `DELETE FROM public.cashflow_list WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}';`,
     );
   // console.log("deleteResult:", deleteResult);
   if (deleteResult.rowCount === 1) {
     await pool.query(
-      `DELETE FROM public.cashflow_trade WHERE cashflow_id = '${data.cashflowId}' and user_id = '${data.userId}';`,
+      `DELETE FROM public.cashflow_trade WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}';`,
     );
     return { success: true, message: "刪除成功" };
   } else {

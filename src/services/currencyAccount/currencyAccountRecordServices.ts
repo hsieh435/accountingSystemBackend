@@ -76,7 +76,7 @@ export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordLi
 export async function updateCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.currency_account_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', transaction_type='${data.transactionType}', trade_amount=${data.tradeAmount}, currency='${data.currency}', trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}';`);
+    await pool.query(`UPDATE public.currency_account_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', transaction_type='${data.transactionType}', trade_amount=${data.tradeAmount}, currency='${data.currency}', trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;

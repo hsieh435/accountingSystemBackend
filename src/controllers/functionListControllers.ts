@@ -27,9 +27,8 @@ export async function functionListSearching(req: Request, res: Response) {
   try {
     const searchingFunctionGroup = await pool.query(`SELECT * FROM public.function_group ORDER BY sort ASC`);
 
-    const searchingFunction = await pool.query(
-      `SELECT * FROM public.function ORDER BY function_group_id ASC, sort ASC`,
-    );
+    const searchingFunction = 
+      await pool.query(`SELECT * FROM public.function ORDER BY function_group_id ASC, sort ASC`);
 
     const functionGroupList: IFunctionGroupList[] = searchingFunctionGroup.rows.map((group) => {
       const functions = searchingFunction.rows

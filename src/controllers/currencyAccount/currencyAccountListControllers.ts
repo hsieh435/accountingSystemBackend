@@ -28,7 +28,7 @@ export async function searchingCurrencyAccountById(req: Request, res: Response) 
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM currency_account_list where account_id = '${req.params.accountId}' and user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM currency_account_list WHERE account_id = '${req.params.accountId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));

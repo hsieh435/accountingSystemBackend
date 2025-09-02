@@ -1,8 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 
-
-
 export interface IStockAccountList {
   accountId: string;
   userId: string;
@@ -22,8 +20,6 @@ export interface IStockAccountList {
   note: string;
 }
 
-
-
 export async function searchingStockAccountList(data: { currencyId: string; userId: string }) {
   // console.log("data:", data);
 
@@ -39,41 +35,37 @@ export async function searchingStockAccountList(data: { currencyId: string; user
   }
 }
 
-
-
 export async function insertStockAccountData(data: IStockAccountList) {
-
-  const insertResult =
-    await pool.query(`INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES (${data.accountId}, '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`);
+  const insertResult = await pool.query(
+    `INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES (${data.accountId}, '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
+  );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
   }
-};
-
-
+}
 
 export async function updateStockAccountData(data: IStockAccountList) {
   // console.log("data:", data);
-  const updateResult =
-    await pool.query(`UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  const updateResult = await pool.query(
+    `UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+  );
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
   } else {
     return false;
   }
-};
-
-
+}
 
 export async function enableStockAccountStatus(data: IStockAccountList) {
   // console.log("data:", data);
 
-  const updateResult =
-    await pool.query(`UPDATE public.stock_account_list SET enable = ${true} WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  const updateResult = await pool.query(
+    `UPDATE public.stock_account_list SET enable = ${true} WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+  );
   console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -82,12 +74,10 @@ export async function enableStockAccountStatus(data: IStockAccountList) {
   }
 }
 
-
-
 export async function disableStockAccountStatus(data: IStockAccountList) {
-
-  const updateResult =
-    await pool.query(`UPDATE public.stock_account_list SET enable = ${false} WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  const updateResult = await pool.query(
+    `UPDATE public.stock_account_list SET enable = ${false} WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+  );
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -96,18 +86,17 @@ export async function disableStockAccountStatus(data: IStockAccountList) {
   }
 }
 
-
-
 export async function removeStockAccountData(data: IStockAccountList) {
-
-  const searchingResult =
-    await pool.query(`SELECT * FROM stock_account_trade where account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+  const searchingResult = await pool.query(
+    `SELECT * FROM stock_account_trade WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+  );
   // console.log("searchingResult:", searchingResult);
   if (searchingResult.rows.length > 0) {
     return { success: false, message: "已有收支紀錄，無法刪除" };
   } else {
-    const deleteResult =
-      await pool.query(`DELETE FROM public.stock_account_list WHERE account_id = '${data.accountId}' and user_id = '${data.userId}';`);
+    const deleteResult = await pool.query(
+      `DELETE FROM public.stock_account_list WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    );
     // console.log("deleteResult:", deleteResult);
     if (deleteResult.rowCount === 1) {
       return { success: true, message: "刪除成功" };
@@ -115,4 +104,4 @@ export async function removeStockAccountData(data: IStockAccountList) {
       return { success: false, message: "刪除失敗" };
     }
   }
-};
+}

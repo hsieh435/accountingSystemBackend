@@ -19,9 +19,8 @@ export async function getSchemasList(req: Request, res: Response) {
 }
 
 export async function getSchemaById(req: Request, res: Response) {
-  const searchingSchemaResult = await pool.query(
-    `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
-  );
+  const searchingSchemaResult =
+    await pool.query(`SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`);
   if (searchingSchemaResult.rows.length === 1) {
     return res.json(success({ data: keysToCamel(searchingSchemaResult.rows[0]), req, res }));
   } else {
@@ -31,9 +30,8 @@ export async function getSchemaById(req: Request, res: Response) {
 
 export async function createSchema(req: Request, res: Response) {
   const { schemaCode, schemaName, sort } = req.body;
-  const result = await pool.query(
-    `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`,
-  );
+  const result =
+    await pool.query(`INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`);
   if (result.rows.length === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
   } else if (result.rows.length === 0) {
@@ -54,7 +52,7 @@ export async function updateSchema(req: Request, res: Response) {
 }
 
 export async function deleteSchema(req: Request, res: Response) {
-  const result = await pool.query(`DELETE FROM creditcard_schema_list WHERE schema_code = '${req.body.schemaCode}';`);
+  const result = await pool.query(`DELETE FROM creditcard_schema_list WHERE schema_code = '${req.body.schemaCode}'`);
   if (result.rowCount === 1) {
     return res.json(success({ data: { message: "刪除成功" }, req, res }));
   } else {

@@ -21,7 +21,7 @@ export async function cashFlowList(req: Request, res: Response) {
 export async function searchingCashFlowById(req: Request, res: Response) {
   try {
     const searchingResult = await pool.query(
-      `SELECT * FROM cashflow_list where cashflow_id = '${req.params.cashflowId}' and user_id='${req.body.userId}'`,
+      `SELECT * FROM cashflow_list WHERE cashflow_id = '${req.params.cashflowId}' AND user_id='${req.body.userId}'`,
     );
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {

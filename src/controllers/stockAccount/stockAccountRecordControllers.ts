@@ -1,16 +1,15 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as creditCardRecordServices from "@/services/creditCard/creditCardRecordServices";
+import * as stockAccountRecordServices from "@/services/stockAccount/stockAccountRecordServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-export async function creditCardRecordList(req: Request, res: Response) {
-  // console.log("Request body:", req.body);
+export async function stockAccountRecordList(req: Request, res: Response) {
 
   try {
-    const searchingResult = await creditCardRecordServices.searchingCreditCardRecordList(req.body);
+    const searchingResult = await stockAccountRecordServices.searchingStockAccountRecordList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -24,17 +23,16 @@ export async function creditCardRecordList(req: Request, res: Response) {
 
 
 
-export async function searchingCreditCardRecordById(req: Request, res: Response) {
-  // console.log("req:", req.body);
+export async function searchingStockAccountRecordById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM creditcard_trade WHERE trade_id = '${req.body.tradeId}' AND credit_card_id = '${req.body.creditCardId}' AND user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM stock_account_list WHERE trade_id = '${req.body.tradeId}' AND account_id = '${req.body.stockAccountId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
     } else {
-      res.json(error({ message: "信用卡不存在", req, res }));
+      res.json(error({ message: "存款帳戶不存在", req, res }));
     }
   } catch (err) {
     res.json(error({ req, res }));
@@ -43,10 +41,10 @@ export async function searchingCreditCardRecordById(req: Request, res: Response)
 
 
 
-export async function creditCardRecordCreate(req: Request, res: Response) {
+export async function stockAccountRecordCreate(req: Request, res: Response) {
 
   try {
-    const createResult = await creditCardRecordServices.insertCreditCardData(req.body);
+    const createResult = await stockAccountRecordServices.insertStockAccountRecord(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -60,10 +58,10 @@ export async function creditCardRecordCreate(req: Request, res: Response) {
 
 
 
-export async function creditCardRecordUpdate(req: Request, res: Response) {
+export async function stockAccountRecordUpdate(req: Request, res: Response) {
 
   try {
-    const updateResult = await creditCardRecordServices.updateCreditCardData(req.body);
+    const updateResult = await stockAccountRecordServices.updateStockAccountRecord(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -76,10 +74,11 @@ export async function creditCardRecordUpdate(req: Request, res: Response) {
 
 
 
-export async function creditCardRecordDelete(req: Request, res: Response) {
+export async function stockAccountRecordDelete(req: Request, res: Response) {
+  req.body.stockAccountId = req.params.stockAccountId;
 
   try {
-    const removeResult = await creditCardRecordServices.removeCreditCardData(req.body);
+    const removeResult = await stockAccountRecordServices.removeStockAccountRecord(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {

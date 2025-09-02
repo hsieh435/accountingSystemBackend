@@ -48,7 +48,7 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
 export async function searchingCashFlowRecordById(data: { cashflowId: string; tradeId: string; userId: string }) {
   try {
     const searchingResult = await pool.query(
-      `SELECT * FROM public.cashflow_trade where cashflow_id = '${data.cashflowId}' and trade_id = '${data.tradeId}' and user_id='${data.userId}'`,
+      `SELECT * FROM public.cashflow_trade WHERE cashflow_id = '${data.cashflowId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
     );
     // console.log("searchingResult:", searchingResult.rows[0]);
     if (searchingResult.rows.length === 1) {
