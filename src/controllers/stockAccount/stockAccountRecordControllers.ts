@@ -24,10 +24,11 @@ export async function stockAccountRecordList(req: Request, res: Response) {
 
 
 export async function searchingStockAccountRecordById(req: Request, res: Response) {
+  // console.log("req:", req.body);
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM stock_account_list WHERE trade_id = '${req.body.tradeId}' AND account_id = '${req.body.stockAccountId}' AND user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM stock_account_trade WHERE trade_id = '${req.body.tradeId}' AND account_id = '${req.body.accountId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));

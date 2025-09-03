@@ -20,7 +20,7 @@ router.get("/api/stockAccount/delete/:stockAccountId", authenticateToken, stockA
 
 
 router.post("/api/stockAccountRecord/list", authenticateToken, stockAccountRecordControllers.stockAccountRecordList);
-router.post("/api/stockAccountRecordDataById", authenticateToken, stockAccountRecordControllers.searchingStockAccountRecordById);
+router.post("/api/stockAccountRecordById", authenticateToken, stockAccountRecordControllers.searchingStockAccountRecordById);
 router.post("/api/stockAccountRecord/create", authenticateToken, stockAccountRecordControllers.stockAccountRecordCreate);
 router.post("/api/stockAccountRecord/update", authenticateToken, stockAccountRecordControllers.stockAccountRecordUpdate);
 router.post("/api/stockAccountRecord/delete", authenticateToken, stockAccountRecordControllers.stockAccountRecordDelete);

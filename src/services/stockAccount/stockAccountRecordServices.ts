@@ -15,8 +15,8 @@ export interface IStockAccountRecordList {
   quantity: number;
   handlingFee: number;
   transactionTax: number;
-  totalPrice: number;
-  tradePrice: number;
+  stockTotalPrice: number;
+  tradeTotalPrice: number;
   currency: string;
   tradeDescription: string;
   tradeNote: string;
@@ -62,7 +62,7 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordList) {
-  const insertResult = await pool.query(`INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, total_price, handling_fee, transaction_tax, trade_price, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.totalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradePrice}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
+  const insertResult = await pool.query(`INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.stockTotalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradeTotalPrice}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
@@ -75,7 +75,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
 export async function updateStockAccountRecord(data: IStockAccountRecordList) {
   // console.log("data:", data);
   const updateResult = await pool.query(
-    `UPDATE public.stock_account_trade SET trade_datetime='${data.tradeDatetime}', stock_no='${data.stockNo}', stock_name='${data.stockName}', price_per_share=${data.pricePerShare}, quantity=${data.quantity}, total_price=${data.totalPrice}, handling_fee=${data.handlingFee}, transaction_tax=${data.transactionTax}, trade_price = ${data.tradePrice}, trade_description = '${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    `UPDATE public.stock_account_trade SET trade_datetime='${data.tradeDatetime}', stock_no='${data.stockNo}', stock_name='${data.stockName}', price_per_share=${data.pricePerShare}, quantity=${data.quantity}, stock_total_price=${data.stockTotalPrice}, handling_fee=${data.handlingFee}, transaction_tax=${data.transactionTax}, trade_total_price = ${data.tradeTotalPrice}, trade_description = '${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
   );
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
