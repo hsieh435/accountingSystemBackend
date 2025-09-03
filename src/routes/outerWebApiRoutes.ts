@@ -19,6 +19,7 @@ router.post(
   authenticateToken,
   outerWebApiStockControllers.getStockPriceHistoryRecord,
 );
+router.post("/api/outerWebApi/stockInfo/dividendResult", authenticateToken, outerWebApiStockControllers.getStockDividendInfo);
 
 router.get(
   "/api/outerWebApi/currencyExRateInfo/latest/:currencyCode",

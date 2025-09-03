@@ -64,7 +64,7 @@ export async function getStockDividendInfo(req: Request, res: Response) {
 
   try {
     const response = await fetch(
-      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=${data.stockNo}&start_date=2000-01-01`,
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
