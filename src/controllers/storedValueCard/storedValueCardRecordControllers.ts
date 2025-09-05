@@ -1,14 +1,13 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as cashCardRecordServices from "@/services/cashCard/cashCardRecordServices";
+import * as storedValueCardRecordServices from "@/services/storedValueCard/storedValueCardRecordServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-export async function cashCardRecordList(req: Request, res: Response) {
+export async function storedValueCardRecordList(req: Request, res: Response) {
   try {
-    const searchingResult = await cashCardRecordServices.searchingCashCardRecordList(req.body);
+    const searchingResult = await storedValueCardRecordServices.searchingStoredValueCardRecordList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -22,9 +21,9 @@ export async function cashCardRecordList(req: Request, res: Response) {
 
 
 
-export async function searchingCashCardRecordById(req: Request, res: Response) {
+export async function searchingStoredValueCardRecordById(req: Request, res: Response) {
   try {
-    const searchingResult = await cashCardRecordServices.searchingCashCardRecordById(req.body);
+    const searchingResult = await storedValueCardRecordServices.searchingStoredValueCardRecordById(req.body);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.success === true) {
       res.json(success({ data: keysToCamel(searchingResult.data), req, res }));
@@ -38,10 +37,10 @@ export async function searchingCashCardRecordById(req: Request, res: Response) {
 
 
 
-export async function cashCardRecordCreate(req: Request, res: Response) {
+export async function storedValueCardRecordCreate(req: Request, res: Response) {
   // console.log("Request:", req.body);
   try {
-    const createResult = await cashCardRecordServices.insertCashCardRecord(req.body);
+    const createResult = await storedValueCardRecordServices.insertStoredValueCardRecord(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -53,9 +52,10 @@ export async function cashCardRecordCreate(req: Request, res: Response) {
   }
 }
 
-export async function cashCardRecordUpdate(req: Request, res: Response) {
+export async function storedValueCardRecordUpdate(req: Request, res: Response) {
+  console.log("Request:", req.body);
   try {
-    const updateResult = await cashCardRecordServices.updateCashCardRecordData(req.body);
+    const updateResult = await storedValueCardRecordServices.updateStoredValueCardRecordData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -68,11 +68,11 @@ export async function cashCardRecordUpdate(req: Request, res: Response) {
 
 
 
-// export async function deleteCashCardRecord(req: Request, res: Response) {
-//   req.body.cashcardId = req.params.cashcardId;
+// export async function deleteStoredValueCardRecord(req: Request, res: Response) {
+//   req.body.storedValueCardId = req.params.storedValueCardId;
 
 //   try {
-//     const removeResult = await cashCardRecordServices.deleteCashCardRecordData(req.body);
+//     const removeResult = await storedValueCardRecordServices.deleteStoredValueCardRecordData(req.body);
 //     if (removeResult.success === true) {
 //       res.json(success({ message: removeResult.message, req, res }));
 //     } else {

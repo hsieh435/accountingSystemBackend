@@ -3,10 +3,10 @@ import { keysToCamel } from "@/utils/tools";
 
 // 收支類型 interface
 export interface ITradeCategory {
-  categoryCode: string;
-  categoryName: string;
+  tradeCode: string;
+  tradeName: string;
   isCashflowAble: boolean;
-  isCashcardAble: boolean;
+  isStoredvaluecardAble: boolean;
   isCreditcardAble: boolean;
   isCuaccountAble: boolean;
   isStaccountAble: boolean;
@@ -25,14 +25,14 @@ export async function getTradeCategoryByCode(code: string) {
 
 export async function createTradeCategory(data: ITradeCategory) {
   const result = await pool.query(
-    `INSERT INTO trade_category (trade_code, trade_name, is_cashflow_able, is_cashcard_able, is_creditcard_able, is_cuaccount_able, is_staccount_able, sort) VALUES ('${data.categoryCode}', '${data.categoryName}', ${data.isCashflowAble}, ${data.isCashcardAble}, ${data.isCreditcardAble}, ${data.isCuaccountAble}, ${data.isStaccountAble}, ${data.sort});`,
+    `INSERT INTO trade_category (trade_code, trade_name, is_cashflow_able, is_storedvaluecard_able, is_creditcard_able, is_cuaccount_able, is_staccount_able, sort) VALUES ('${data.tradeCode}', '${data.tradeName}', ${data.isCashflowAble}, ${data.isStoredvaluecardAble}, ${data.isCreditcardAble}, ${data.isCuaccountAble}, ${data.isStaccountAble}, ${data.sort});`,
   );
   return keysToCamel(result.rows[0]);
 }
 
 export async function updateTradeCategory(data: ITradeCategory) {
   const result = await pool.query(
-    `UPDATE trade_category SET trade_name = '${data.categoryName}', is_cashflow_able = ${data.isCashflowAble}, is_cashcard_able = ${data.isCashcardAble}, is_creditcard_able = ${data.isCreditcardAble}, is_cuaccount_able = ${data.isCuaccountAble}, is_staccount_able = ${data.isStaccountAble}, sort = ${data.sort} WHERE trade_code = '${data.categoryCode}';`,
+    `UPDATE trade_category SET trade_name = '${data.tradeName}', is_cashflow_able = ${data.isCashflowAble}, is_storedvaluecard_able = ${data.isStoredvaluecardAble}, is_creditcard_able = ${data.isCreditcardAble}, is_cuaccount_able = ${data.isCuaccountAble}, is_staccount_able = ${data.isStaccountAble}, sort = ${data.sort} WHERE trade_code = '${data.tradeCode}';`,
   );
   return keysToCamel(result.rows[0]);
 }

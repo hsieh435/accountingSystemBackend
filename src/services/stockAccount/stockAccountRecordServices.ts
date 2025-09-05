@@ -62,7 +62,7 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordList) {
-  const insertResult = await pool.query(`INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.stockTotalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradeTotalPrice}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
+  const insertResult = await pool.query(`INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, currency, trade_description, trade_note) VALUES ('ST-${data.currency}-${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.stockTotalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradeTotalPrice}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {

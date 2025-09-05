@@ -127,7 +127,7 @@ export async function deleteCurrency(req: Request, res: Response) {
       FROM (
       SELECT 1 FROM cashflow_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
-      SELECT 1 FROM cashcard_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
+      SELECT 1 FROM stored_value_card_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
       SELECT 1 FROM creditcard_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL

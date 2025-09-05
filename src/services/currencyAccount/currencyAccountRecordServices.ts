@@ -62,7 +62,8 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
 export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
 
   const insertResult =
-    await pool.query(`INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('${getCurrentTimestamp()}', '${data.accountId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`);
+    await pool.query(
+      `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('CA-${data.currency}-${getCurrentTimestamp()}', '${data.accountId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };

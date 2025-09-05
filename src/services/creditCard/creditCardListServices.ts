@@ -36,7 +36,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
 
 export async function insertCreditCardData(data: ICreditCardData) {
   const insertResult = await pool.query(
-    `INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
+    `INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('CC-${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {

@@ -1,22 +1,16 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as cashCardServices from "@/services/cashCard/cashCardListServices";
+import * as storedValueCardListServices from "@/services/storedValueCard/storedValueCardListServices";
 import { keysToCamel } from "@/utils/tools";
 
 
 
-// const jwt = require("jsonwebtoken");
-// require("dotenv").config();
-// const JWT_SECRET = process.env.JWT_SECRET;
-
-
-
-export async function cashCardDataList(req: Request, res: Response) {
+export async function storedValueCardDataList(req: Request, res: Response) {
   // console.log("Request body:", req.body);
 
   try {
-    const searchingResult = await cashCardServices.searchingCashCardList(req.body);
+    const searchingResult = await storedValueCardListServices.searchingStoredValueCardList(req.body);
     // console.log("searchingResult:", searchingResult);
     if (searchingResult.success === true) {
       res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
@@ -28,13 +22,11 @@ export async function cashCardDataList(req: Request, res: Response) {
   }
 }
 
-
-
-export async function searchingCashCardById(req: Request, res: Response) {
-
+export async function searchingStoredValueCardById(req: Request, res: Response) {
   try {
-    const searchingResult =
-      await pool.query(`SELECT * FROM cashcard_list WHERE cashcard_id = '${req.params.cashCardId}' AND user_id='${req.body.userId}'`);
+    const searchingResult = await pool.query(
+      `SELECT * FROM stored_value_card_list WHERE stored_value_card_id = '${req.params.storedValueCardId}' AND user_id='${req.body.userId}'`,
+    );
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
@@ -46,12 +38,9 @@ export async function searchingCashCardById(req: Request, res: Response) {
   }
 }
 
-
-
-export async function cashCardCreate(req: Request, res: Response) {
-
+export async function storedValueCardCreate(req: Request, res: Response) {
   try {
-    const createResult = await cashCardServices.insertCashCardData(req.body);
+    const createResult = await storedValueCardListServices.insertStoredValueCardData(req.body);
     // console.log("createResult:", createResult);
     if (createResult.success === true) {
       res.json(success({ data: createResult, message: "建立成功", req, res }));
@@ -63,12 +52,9 @@ export async function cashCardCreate(req: Request, res: Response) {
   }
 }
 
-
-
-export async function cashCardUpdate(req: Request, res: Response) {
-
+export async function storedValueCardUpdate(req: Request, res: Response) {
   try {
-    const updateResult = await cashCardServices.uodateCashCardData(req.body);
+    const updateResult = await storedValueCardListServices.updateStoredValueCardData(req.body);
     if (updateResult) {
       res.json(success({ message: "修改成功", req, res }));
     } else {
@@ -79,13 +65,11 @@ export async function cashCardUpdate(req: Request, res: Response) {
   }
 }
 
-
-
-export async function enableCashCard(req: Request, res: Response) {
-  req.body.cashcardId = req.params.cashCardId;
+export async function enableStoredValueCard(req: Request, res: Response) {
+  req.body.storedValueCardId = req.params.storedValueCardId;
 
   try {
-    const adjustResult = await cashCardServices.enableCashCardStatus(req.body);
+    const adjustResult = await storedValueCardListServices.enableStoredValueCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "啟用成功", req, res }));
     } else {
@@ -96,13 +80,11 @@ export async function enableCashCard(req: Request, res: Response) {
   }
 }
 
-
-
-export async function disableCashCard(req: Request, res: Response) {
-  req.body.cashcardId = req.params.cashCardId;
+export async function disableStoredValueCard(req: Request, res: Response) {
+  req.body.storedValueCardId = req.params.storedValueCardId;
 
   try {
-    const adjustResult = await cashCardServices.disableCashCardStatus(req.body);
+    const adjustResult = await storedValueCardListServices.disableStoredValueCardStatus(req.body);
     if (adjustResult) {
       res.json(success({ message: "已停用", req, res }));
     } else {
@@ -113,13 +95,11 @@ export async function disableCashCard(req: Request, res: Response) {
   }
 }
 
-
-
-export async function cashCardDelete(req: Request, res: Response) {
-  req.body.cashcardId = req.params.cashCardId;
+export async function storedValueCardDelete(req: Request, res: Response) {
+  req.body.storedValueCardId = req.params.storedValueCardId;
 
   try {
-    const removeResult = await cashCardServices.removeCashCardData(req.body);
+    const removeResult = await storedValueCardListServices.removeStoredValueCardData(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {
@@ -128,4 +108,4 @@ export async function cashCardDelete(req: Request, res: Response) {
   } catch (err) {
     res.json(error({ req, res }));
   }
-};
+}
