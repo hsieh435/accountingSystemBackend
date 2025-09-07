@@ -1,5 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import * as accountBalanceServices from "@/services/accountBalanceServices";
 
 
 
@@ -17,7 +18,6 @@ export interface ICashFlowData {
   createDate: string;
   note: string;
 }
-
 
 export interface IAccountSearchingParams {
   currencyId: string;
@@ -42,11 +42,23 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 
 
 export async function insertCashflowData(data: ICashFlowData) {
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
 
   const insertResult =
-    await pool.query(`INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('CF-${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.cashflowName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getCurrentYMD()}', '${data.note}')`);
+    await pool.query(`INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('CF-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.cashflowName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${timeStampWithZone}', '${data.note}')`);
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
+    await accountBalanceServices.insertBalance({
+      tradeId: `CF-${data.currency}-${currentTimestamp}`,
+      accountId: `CF-${currentTimestamp}`,
+      userId: data.userId,
+      transactionType: "income",
+      tradeCode: "default",
+      tradeAmount: data.startingAmount,
+      accountBalance: data.startingAmount,
+      eventDatetimes: timeStampWithZone,
+    });
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };

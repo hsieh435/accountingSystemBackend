@@ -81,7 +81,35 @@ export function yearMonthFormat(dateString: string) {
   return `${date.getFullYear()}-${month}`;
 }
 
+
+// 西元年日期格式 yyyy / mm / dd hh:mm:ss 或 yyyy / mm / dd
+export function yearMonthDayTimeFormat(dateString: Date | string | number, hasTime: boolean = true): string {
+  // const localDate = new Date();
+  // 轉換為 UTC 字串
+  // const utcString = localDate.toISOString();
+  // console.log("UTC 時間:", utcString);
+
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime()) || !dateString) return "";
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return hasTime ? `${year} / ${month} / ${day} ${hours}:${minutes}:${seconds}` : `${year} / ${month} / ${day}`;
+}
+
 // 設定時區
 export function setTimezone(dateString: string): string {
   return new Date(dateString).toISOString();
+}
+
+
+// 取得當前時間戳，並轉換為 UTC 字串
+export function getTimeStampWithZone() {
+  return setTimezone(yearMonthDayTimeFormat((getCurrentTimestamp())));
 }

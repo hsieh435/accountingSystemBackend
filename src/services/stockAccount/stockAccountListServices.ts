@@ -1,5 +1,8 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
+import { keysToCamel, getTimeStampWithZone, getCurrentTimestamp } from "@/utils/tools";
+import * as accountBalanceServices from "@/services/accountBalanceServices";
+
+
 
 export interface IStockAccountList {
   accountId: string;
@@ -36,11 +39,25 @@ export async function searchingStockAccountList(data: { currencyId: string; user
 }
 
 export async function insertStockAccountData(data: IStockAccountList) {
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
+
+
   const insertResult = await pool.query(
-    `INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES (${data.accountId}, '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
+    `INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)	VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
+    await accountBalanceServices.insertBalance({
+      tradeId: `ST-${data.currency}-${currentTimestamp}`,
+      accountId: `ST-${currentTimestamp}`,
+      userId: data.userId,
+      transactionType: "income",
+      tradeCode: "default",
+      tradeAmount: data.startingAmount,
+      accountBalance: data.startingAmount,
+      eventDatetimes: timeStampWithZone,
+    });
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
@@ -87,6 +104,7 @@ export async function disableStockAccountStatus(data: IStockAccountList) {
 }
 
 export async function removeStockAccountData(data: IStockAccountList) {
+  console.log("data:", data);
   const searchingResult = await pool.query(
     `SELECT * FROM stock_account_trade WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
   );

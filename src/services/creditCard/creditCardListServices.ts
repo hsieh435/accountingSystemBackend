@@ -1,5 +1,8 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import * as accountBalanceServices from "@/services/accountBalanceServices";
+
+
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -35,11 +38,26 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
 }
 
 export async function insertCreditCardData(data: ICreditCardData) {
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
+
   const insertResult = await pool.query(
-    `INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('CC-${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
+    `INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('CC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
+      await accountBalanceServices.insertBalance({
+        tradeId: `SVC-${data.currency}-${currentTimestamp}`,
+        accountId: `SVC-${currentTimestamp}`,
+        userId: data.userId,
+        transactionType: "expense",
+        tradeCode: "default",
+        tradeAmount: 0,
+        accountBalance: 0,
+        eventDatetimes: timeStampWithZone,
+      });
+
+
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };

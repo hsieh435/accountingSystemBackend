@@ -61,6 +61,7 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
 export async function getStockDividendInfo(req: Request, res: Response) {
   const data: { stockNo: string; startDate: string; endDate: string } = req.body;
   // console.log("data:", data);
+  // TaiwanStockDividend
 
   try {
     const response = await fetch(

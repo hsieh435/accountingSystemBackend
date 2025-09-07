@@ -1,5 +1,8 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
+import { keysToCamel, getTimeStampWithZone, getCurrentTimestamp } from "@/utils/tools";
+import * as accountBalanceServices from "@/services/accountBalanceServices";
+
+
 
 export interface ICurrencyAccountData {
   accountId: string;
@@ -37,11 +40,25 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
 }
 
 export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
+
   const insertResult = await pool.query(
-    `INSERT INTO public.currency_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, is_salary_account, open_alert, enable, created_date, note)	VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.isSalaryAccount}, ${data.openAlert}, ${data.enable}, '${getCurrentYMD()}', '${data.note}')`,
+    `INSERT INTO public.currency_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, is_salary_account, open_alert, enable, created_date, note)	VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.isSalaryAccount}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
+    await accountBalanceServices.insertBalance({
+      tradeId: `ST-${data.currency}-${currentTimestamp}`,
+      accountId: data.accountId,
+      userId: data.userId,
+      transactionType: "income",
+      tradeCode: "default",
+      tradeAmount: data.startingAmount,
+      accountBalance: data.startingAmount,
+      eventDatetimes: timeStampWithZone,
+    });
+
     return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
