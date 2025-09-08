@@ -1,8 +1,6 @@
 import { Request, response, Response } from "express";
 import { success, error } from "@/utils/response";
 
-
-
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
   try {
@@ -15,16 +13,17 @@ export async function getAllStockList(req: Request, res: Response) {
       // console.log("jsonData:", jsonData.data.length);
       // 3960
       const data: { stock_id: string; stock_name: string }[] = [];
-      jsonData.data.forEach(function(item: { stock_id: string; stock_name: string }) {
-        if (!data.some(i => i.stock_id === item.stock_id)) {
+      jsonData.data.forEach(function (item: { stock_id: string; stock_name: string }) {
+        if (!data.some((i) => i.stock_id === item.stock_id)) {
           data.push(item);
         }
       });
 
-      const dataFiltered = data.filter((item: { stock_id: string; stock_name: string }) =>
-        item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-        item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
-      )
+      const dataFiltered = data.filter(
+        (item: { stock_id: string; stock_name: string }) =>
+          item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+          item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
+      );
       res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
     } else {
       res.json(error({ data: [], req, res }));
@@ -57,29 +56,42 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
 
 
 
-// 除權息
-export async function getStockDividendInfo(req: Request, res: Response) {
+// 股利政策表
+export async function getStockDividendPolicy(req: Request, res: Response) {
+  const data: { stockNo: string; startDate: string; endDate: string } = req.body;
+  // console.log("data:", data);
+  if (new Date(data.startDate) < new Date("2006-01-01 00:00:00")) {
+    data.startDate = "2006-01-01";
+  }
+
+}
+
+// 除權除息結果表
+export async function getStockDividendResult(req: Request, res: Response) {
   const data: { stockNo: string; startDate: string; endDate: string } = req.body;
   // console.log("data:", data);
   // TaiwanStockDividend
+  // TaiwanStockDividendResult
+
+  if (new Date(data.startDate) < new Date("2006-01-01 00:00:00")) {
+    data.startDate = "2006-01-01";
+  }
 
   try {
-    const response = await fetch(
-      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividendResult&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
+    const dividendResultResponse = await fetch(
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       },
     );
-    const jsonData = await response.json();
-    // console.log("response:", jsonData);
+    const jsonData = await dividendResultResponse.json();
+    // console.log("jsonData:", jsonData);
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
     res.json(error({ data: [], req, res }));
   }
 }
-
-
 
 // PER：本益比（Price-to-Earning Ratio）
 // PBR：股價淨值比（Price-to-Book Ratio）
@@ -101,8 +113,6 @@ export async function getStockPERInfo(req: Request, res: Response) {
     res.json(error({ data: [], req, res }));
   }
 }
-
-
 
 // https://api.docsaid.org/stocks/infos
 // https://docsaid.org/blog/get-taiwan-all-stocks-info/

@@ -1,17 +1,12 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
+import * as outerSystemLogin from "@/controllers/outerWebApi/outerSystemLogin";
 import * as outerWebApiStockControllers from "@/controllers/outerWebApi/stockControllers";
 import * as outerWebApiCurrencyExRateControllers from "@/controllers/outerWebApi/currencyExRateControllers";
 
 const router = Router();
 
-
-
-
-
-
-
-
+router.post("/api/outerWebApi/testConnection", outerSystemLogin.loginFinMindSystem);
 
 router.get("/api/outerWebApi/stockInfo/:keyword", authenticateToken, outerWebApiStockControllers.getAllStockList);
 router.post(
@@ -19,7 +14,11 @@ router.post(
   authenticateToken,
   outerWebApiStockControllers.getStockPriceHistoryRecord,
 );
-router.post("/api/outerWebApi/stockInfo/dividendResult", authenticateToken, outerWebApiStockControllers.getStockDividendInfo);
+router.post(
+  "/api/outerWebApi/stockInfo/dividendResult",
+  authenticateToken,
+  outerWebApiStockControllers.getStockDividendResult,
+);
 
 router.get(
   "/api/outerWebApi/currencyExRateInfo/latest/:currencyCode",
