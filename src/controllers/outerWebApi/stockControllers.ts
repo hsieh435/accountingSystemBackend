@@ -1,8 +1,10 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
+import { getCurrentYear } from "@/utils/tools";
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
+
   try {
     const response = await fetch("https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo", {
       method: "GET",
@@ -11,7 +13,6 @@ export async function getAllStockList(req: Request, res: Response) {
     if (response.status === 200) {
       const jsonData = await response.json();
       // console.log("jsonData:", jsonData.data.length);
-      // 3960
       const data: { stock_id: string; stock_name: string }[] = [];
       jsonData.data.forEach(function (item: { stock_id: string; stock_name: string }) {
         if (!data.some((i) => i.stock_id === item.stock_id)) {
@@ -73,13 +74,9 @@ export async function getStockDividendResult(req: Request, res: Response) {
   // TaiwanStockDividend
   // TaiwanStockDividendResult
 
-  if (new Date(data.startDate) < new Date("2006-01-01 00:00:00")) {
-    data.startDate = "2006-01-01";
-  }
-
   try {
     const dividendResultResponse = await fetch(
-      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${data.stockNo}&start_date=1990-01-01&end_date=${getCurrentYear()}-12-31`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -95,13 +92,16 @@ export async function getStockDividendResult(req: Request, res: Response) {
 
 // PER：本益比（Price-to-Earning Ratio）
 // PBR：股價淨值比（Price-to-Book Ratio）
-export async function getStockPERInfo(req: Request, res: Response) {
+export async function getStockPerPbrInfo(req: Request, res: Response) {
   const data: { stockNo: string; startDate: string; endDate: string } = req.body;
+  if (new Date(data.startDate) < new Date("2005-10-01 00:00:00")) {
+    data.startDate = "2005-10-01";
+  }
   // console.log("data:", data);
 
   try {
     const response = await fetch(
-      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=2000-01-01`,
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
       {
         method: "GET",
         headers: { "Content-Type": "application/json" },

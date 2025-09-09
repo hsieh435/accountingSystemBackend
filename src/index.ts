@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { createServer, IncomingMessage, ServerResponse } from "http";
+// import { createServer, IncomingMessage, ServerResponse } from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -26,7 +26,7 @@ const port = 3600;
 
 // app.use(cors());
 app.use(cors({
-  origin: "http://localhost:3000", // 僅允許這個網域發請求（例如你的前端）
+  origin: "http://localhost:3000", // 僅允許這個網域發請求
   credentials: true,               // 若有傳送 cookie 或授權資訊
 }));
 
@@ -41,8 +41,8 @@ app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outerWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
 app.use("/accounting_system_backend", stockAccountRoutes);
-app.use("/accounting_system_backend", userDataRoutes);
 app.use("/accounting_system_backend", storedValueCardRoutes);
+app.use("/accounting_system_backend", userDataRoutes);
 
 app.listen(port, () => {
   console.log(`${port} port`);

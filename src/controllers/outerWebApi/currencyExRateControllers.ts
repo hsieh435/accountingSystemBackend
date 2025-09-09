@@ -37,3 +37,8 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
   // console.log("data:", data);
   res.json(success({ data: data, message: "查詢成功", req, res }));
 }
+
+
+
+// https://app.exchangerate-api.com/sign-up
+// https://www.exchangerate-api.com/docs/historical-data-requests

@@ -8,6 +8,9 @@ const router = Router();
 
 router.post("/api/outerWebApi/testConnection", outerSystemLogin.loginFinMindSystem);
 
+
+
+// stock
 router.get("/api/outerWebApi/stockInfo/:keyword", authenticateToken, outerWebApiStockControllers.getAllStockList);
 router.post(
   "/api/outerWebApi/stockInfo/rangeValue",
@@ -19,7 +22,11 @@ router.post(
   authenticateToken,
   outerWebApiStockControllers.getStockDividendResult,
 );
+router.post("/api/outerWebApi/stockInfo/stockPerPbr", authenticateToken, outerWebApiStockControllers.getStockPerPbrInfo);
 
+
+
+// currency
 router.get(
   "/api/outerWebApi/currencyExRateInfo/latest/:currencyCode",
   authenticateToken,
