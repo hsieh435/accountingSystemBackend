@@ -8,7 +8,10 @@ export async function getAllStockList(req: Request, res: Response) {
   try {
     const response = await fetch("https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo", {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`
+      },
     });
     if (response.status === 200) {
       const jsonData = await response.json();
@@ -44,7 +47,10 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
       `https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=${data.stockNo}&date=${data.startDate}&end_date=${data.endDate}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
+        },
       },
     );
     const jsonData = await response.json();
@@ -79,7 +85,10 @@ export async function getStockDividendResult(req: Request, res: Response) {
       `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${data.stockNo}&start_date=1990-01-01&end_date=${getCurrentYear()}-12-31`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`
+        },
       },
     );
     const jsonData = await dividendResultResponse.json();
@@ -104,9 +113,11 @@ export async function getStockPerPbrInfo(req: Request, res: Response) {
       `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
-      },
-    );
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
+        },
+      });
     const jsonData = await response.json();
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
