@@ -28,6 +28,11 @@ router.post("/api/outerWebApi/stockInfo/stockPerPbr", authenticateToken, outerWe
 
 // currency
 router.get(
+  "/api/outerWebApi/currencyExRateInfo/currencyListFromOuterApi/:keyword",
+  authenticateToken,
+  outerWebApiCurrencyExRateControllers.getCurrencyListByOuterApi
+);
+router.get(
   "/api/outerWebApi/currencyExRateInfo/latest/:currencyCode",
   authenticateToken,
   outerWebApiCurrencyExRateControllers.getLatestCurrencyExchangeRate,

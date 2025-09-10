@@ -33,3 +33,7 @@ git ls-files | xargs cat | wc -l
 4459
 
 npm uninstall package-name
+
+
+apiKey.ts
+export const exchangerateApiKeys = ""
