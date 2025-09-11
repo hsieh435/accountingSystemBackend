@@ -16,7 +16,7 @@
   },
   "include": [
     "src/**/*" // 包含 src 資料夾下的所有檔案
-  ],
+, "excel.ts"  ],
   "exclude": [
     "node_modules", // 排除 node_modules 資料夾
     "**/*.spec.ts" // 排除所有測試檔案

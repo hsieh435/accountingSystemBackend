@@ -14,7 +14,7 @@ declare global {
 
 
 
-// middleware 函式
+// middleware 函式；參考網站：https://ithelp.ithome.com.tw/articles/10334612
 export async function authenticateToken(req: Request, res: Response, next: Function) {
   // console.log("userTimezone:", Intl.DateTimeFormat().resolvedOptions().timeZone);
 
