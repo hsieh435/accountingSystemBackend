@@ -42,3 +42,9 @@ export async function updateBalance(data: IBalanceData) {
     return false;
   }
 };
+
+
+
+export async function deleteBalance(data: IBalanceData) {
+  // 
+}

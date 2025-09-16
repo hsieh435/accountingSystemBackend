@@ -50,7 +50,7 @@ export async function insertStockAccountData(data: IStockAccountList) {
   if (insertResult.rowCount === 1) {
     await accountBalanceServices.insertBalance({
       tradeId: `ST-${data.currency}-${currentTimestamp}`,
-      accountId: `ST-${currentTimestamp}`,
+      accountId: `ST-${data.accountId}`,
       userId: data.userId,
       transactionType: "income",
       tradeCode: "default",

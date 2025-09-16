@@ -48,9 +48,9 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
-    await accountBalanceServices.insertBalance({
-      tradeId: `ST-${data.currency}-${currentTimestamp}`,
-      accountId: data.accountId,
+    const insertBalanceResult = await accountBalanceServices.insertBalance({
+      tradeId: `CA-${data.currency}-${currentTimestamp}`,
+      accountId: `CA-${data.accountId}`,
       userId: data.userId,
       transactionType: "income",
       tradeCode: "default",
@@ -58,8 +58,12 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
       accountBalance: data.startingAmount,
       eventDatetimes: timeStampWithZone,
     });
+    if (insertBalanceResult === true) {
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
+    }
 
-    return { success: true, userData: keysToCamel(insertResult.rows[0]) };
   } else {
     return { success: false, userData: [] };
   }

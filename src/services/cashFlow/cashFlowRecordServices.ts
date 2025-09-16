@@ -1,5 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import * as accountBalanceServices from "@/services/accountBalanceServices";
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -28,6 +29,7 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
     const searchingResult = await pool.query(`SELECT cashflow_trade.*,
       currency_list.currency_name,
       cashflow_list.cashflow_name,
+      cashflow_list.present_amount,
       trade_category.trade_name,
       transaction_category.transaction_name
       FROM cashflow_trade LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
@@ -71,12 +73,25 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
     // console.log("insertResult:", insertResult);
 
     if (insertResult.rowCount === 1) {
-      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+      // const insertBalanceResult = await accountBalanceServices.insertBalance({
+      //   tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
+      //   accountId: `CF-${getCurrentTimestamp()}`,
+      //   userId: data.userId,
+      //   transactionType: data.transactionType,
+      //   tradeCode: data.tradeCategory,
+      //   tradeAmount: data.tradeAmount,
+      //   accountBalance: 0,
+      //   eventDatetimes: getTimeStampWithZone(),
+      // });
+      // if (insertBalanceResult === true) {
+        return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+      // } else {
+      //   return { success: false, userData: [] };
+      // }
     } else {
       return { success: false, userData: [] };
     }
   } catch (err) {
-    console.error("Error in insertCashFlowRecordData:", err);
     return { success: false, userData: [] };
   }
 }

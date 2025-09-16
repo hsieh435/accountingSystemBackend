@@ -2,8 +2,6 @@ import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import * as accountBalanceServices from "@/services/accountBalanceServices";
 
-
-
 export interface IStoredValueCardData {
   storedValueCardId: string;
   userId: string;
@@ -45,7 +43,7 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
-    await accountBalanceServices.insertBalance({
+    const insertBalanceResult = await accountBalanceServices.insertBalance({
       tradeId: `SVC-${data.currency}-${currentTimestamp}`,
       accountId: `SVC-${currentTimestamp}`,
       userId: data.userId,
@@ -55,8 +53,11 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
       accountBalance: data.startingAmount,
       eventDatetimes: timeStampWithZone,
     });
-
-    return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    if (insertBalanceResult === true) {
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
+    }
   } else {
     return { success: false, userData: [] };
   }
