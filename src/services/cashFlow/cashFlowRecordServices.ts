@@ -24,6 +24,8 @@ export interface IFinanceRecordSearchingParams {
   userId: string;
 }
 
+const cashFlowAmount: number = 0;
+
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   try {
     const searchingResult = await pool.query(`SELECT cashflow_trade.*,

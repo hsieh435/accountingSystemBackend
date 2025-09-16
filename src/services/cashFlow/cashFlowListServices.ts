@@ -35,23 +35,21 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 }
 
 export async function insertCashflowData(data: ICashFlowData) {
-  const currentTimestamp = getCurrentTimestamp();
-  const timeStampWithZone = getTimeStampWithZone();
 
   const insertResult = await pool.query(
-    `INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('CF-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.cashflowName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${timeStampWithZone}', '${data.note}')`,
+    `INSERT INTO public.cashflow_list(cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, created_date, note) VALUES ('CF-${getCurrentTimestamp()}', '${data.userId}', '${data.accountType}', '${data.cashflowName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, '${getTimeStampWithZone()}', '${data.note}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
     const insertBalanceResult = await accountBalanceServices.insertBalance({
-      tradeId: `CF-${data.currency}-${currentTimestamp}`,
-      accountId: `CF-${currentTimestamp}`,
+      tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
+      accountId: `CF-${getCurrentTimestamp()}`,
       userId: data.userId,
       transactionType: "income",
       tradeCode: "default",
       tradeAmount: data.startingAmount,
       accountBalance: data.startingAmount,
-      eventDatetimes: timeStampWithZone,
+      eventDatetimes: getTimeStampWithZone(),
     });
     if (insertBalanceResult === true) {
       return { success: true, userData: keysToCamel(insertResult.rows[0]) };
