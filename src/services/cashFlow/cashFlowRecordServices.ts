@@ -24,101 +24,125 @@ export interface IFinanceRecordSearchingParams {
   userId: string;
 }
 
-const cashFlowAmount: number = 0;
+// Helper function for consistent error handling
+const handleDbError = (error: any, defaultData: any = []) => {
+  console.error("Database error:", error);
+  return { success: false, data: defaultData };
+};
+
+// Helper function for update/insert operations
+const executeOperation = async (query: string, params: any[], successData?: any) => {
+  try {
+    const result = await pool.query(query, params);
+    if (result.rowCount === 1) {
+      return {
+        success: true,
+        userData: successData ? keysToCamel(successData) : keysToCamel(result.rows[0]),
+      };
+    }
+    return { success: false, userData: [] };
+  } catch (error) {
+    console.error("Operation error:", error);
+    return { success: false, userData: [] };
+  }
+};
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   try {
-    const searchingResult = await pool.query(`SELECT cashflow_trade.*,
-      currency_list.currency_name,
-      cashflow_list.cashflow_name,
-      cashflow_list.present_amount,
-      trade_category.trade_name,
-      transaction_category.transaction_name
-      FROM cashflow_trade LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
+    const query = `
+      SELECT cashflow_trade.*,
+        currency_list.currency_name,
+        cashflow_list.cashflow_name,
+        cashflow_list.present_amount,
+        trade_category.trade_name,
+        transaction_category.transaction_name
+      FROM cashflow_trade
+      LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
       LEFT JOIN cashflow_list ON cashflow_trade.cashflow_id = cashflow_list.cashflow_id
       LEFT JOIN trade_category ON cashflow_trade.trade_category = trade_category.trade_code
       LEFT JOIN transaction_category ON cashflow_trade.transaction_type = transaction_category.transaction_code
-      WHERE cashflow_trade.user_id = '${data.userId}' AND cashflow_trade.cashflow_id LIKE '%${data.accountId}%'
-      AND cashflow_trade.currency LIKE '%${data.currencyId}%'
-      AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`);
+      WHERE cashflow_trade.user_id = $1
+        AND cashflow_trade.cashflow_id LIKE $2
+        AND cashflow_trade.currency LIKE $3
+        AND trade_datetime BETWEEN $4 AND $5
+      ORDER BY trade_datetime
+    `;
 
-    // console.log("searchingResult:", searchingResult.rows);
-    return { success: true, data: keysToCamel(searchingResult.rows) };
-  } catch (err) {
-    return { success: false, data: [] };
+    const params = [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, data.startingDate, data.endDate];
+
+    const result = await pool.query(query, params);
+    return { success: true, data: keysToCamel(result.rows) };
+  } catch (error) {
+    return handleDbError(error);
   }
 }
 
 export async function searchingCashFlowRecordById(data: { cashflowId: string; tradeId: string; userId: string }) {
   try {
-    const searchingResult = await pool.query(
-      `SELECT * FROM public.cashflow_trade WHERE cashflow_id = '${data.cashflowId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
-    );
-    // console.log("searchingResult:", searchingResult.rows[0]);
-    if (searchingResult.rows.length === 1) {
-      return { success: true, data: searchingResult.rows[0] };
-    } else {
-      return { success: false, data: [] };
-    }
-  } catch (err) {
-    return { success: false, data: [] };
+    const query = "SELECT * FROM public.cashflow_trade WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3";
+    const result = await pool.query(query, [data.cashflowId, data.tradeId, data.userId]);
+
+    return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
+  } catch (error) {
+    return handleDbError(error);
   }
 }
 
 export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
-  // console.log("data:", data);
+  const query = `
+    INSERT INTO public.cashflow_trade(
+      trade_id, cashflow_id, user_id, trade_datetime, trade_category,
+      transaction_type, trade_amount, currency, trade_description, trade_note
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  `;
 
-  try {
-    const insertResult = await pool.query(
-      `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note) VALUES ('CF-${data.currency}-${getCurrentTimestamp()}', '${data.cashflowId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
-    );
-    // console.log("insertResult:", insertResult);
+  const params = [
+    `CF-${data.currency}-${getCurrentTimestamp()}`,
+    data.cashflowId,
+    data.userId,
+    data.tradeDatetime,
+    data.tradeCategory,
+    data.transactionType,
+    data.tradeAmount,
+    data.currency,
+    data.tradeDescription,
+    data.tradeNote,
+  ];
 
-    if (insertResult.rowCount === 1) {
-      // const insertBalanceResult = await accountBalanceServices.insertBalance({
-      //   tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
-      //   accountId: `CF-${getCurrentTimestamp()}`,
-      //   userId: data.userId,
-      //   transactionType: data.transactionType,
-      //   tradeCode: data.tradeCategory,
-      //   tradeAmount: data.tradeAmount,
-      //   accountBalance: 0,
-      //   eventDatetimes: getTimeStampWithZone(),
-      // });
-      // if (insertBalanceResult === true) {
-        return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-      // } else {
-      //   return { success: false, userData: [] };
-      // }
-    } else {
-      return { success: false, userData: [] };
-    }
-  } catch (err) {
-    return { success: false, userData: [] };
-  }
+  return executeOperation(query, params);
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
-  // console.log("data:", data);
-  const updateResult = await pool.query(
-    `UPDATE public.cashflow_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', transaction_type='${data.transactionType}', trade_amount=${data.tradeAmount}, trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}' WHERE trade_id='${data.tradeId}' AND cashflow_id='${data.cashflowId}' AND user_id='${data.userId}'`,
-  );
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return { success: true, userData: keysToCamel(updateResult.rows[0]) };
-  } else {
-    return { success: false, userData: [] };
-  }
+  const query = `
+    UPDATE public.cashflow_trade
+    SET trade_datetime=$1, trade_category=$2, transaction_type=$3,
+        trade_amount=$4, trade_description=$5, trade_note=$6
+    WHERE trade_id=$7 AND cashflow_id=$8 AND user_id=$9
+  `;
+
+  const params = [
+    data.tradeDatetime,
+    data.tradeCategory,
+    data.transactionType,
+    data.tradeAmount,
+    data.tradeDescription,
+    data.tradeNote,
+    data.tradeId,
+    data.cashflowId,
+    data.userId,
+  ];
+
+  return executeOperation(query, params);
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-  const deleteResult = await pool.query(
-    `DELETE FROM public.cashflow_trade WHERE trade_id='${data.tradeId}' AND cashflow_id='${data.cashflowId}' AND user_id='${data.userId}'`,
-  );
-  // console.log("insertResult:", insertResult);
-  if (deleteResult.rowCount === 1) {
-    return { success: true, message: "刪除成功" };
-  } else {
+  try {
+    const query = "DELETE FROM public.cashflow_trade WHERE trade_id=$1 AND cashflow_id=$2 AND user_id=$3";
+    const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
+
+    return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
+  } catch (error) {
+    console.error("Delete error:", error);
     return { success: false, message: "刪除失敗" };
   }
 }
