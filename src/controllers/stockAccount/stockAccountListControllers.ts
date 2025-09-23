@@ -27,12 +27,12 @@ export async function searchingStockAccountById(req: Request, res: Response) {
 
   try {
     const searchingResult =
-      await pool.query(`SELECT * FROM stock_account_list WHERE account_id = '${req.params.stockAccountId}' AND user_id='${req.body.userId}'`);
+      await pool.query(`SELECT * FROM public.stock_account_list WHERE account_id = '${req.params.stockAccountId}' AND user_id='${req.body.userId}'`);
     // console.log("searchingResult:", searchingResult.rows);
     if (searchingResult.rows.length === 1) {
       res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
     } else {
-      res.json(error({ message: "存款帳戶不存在", req, res }));
+      res.json(error({ message: "證券帳戶不存在", req, res }));
     }
   } catch (err) {
     res.json(error({ req, res }));
@@ -107,7 +107,7 @@ export async function disableStockAccount(req: Request, res: Response) {
 
 
 export async function stockAccountDelete(req: Request, res: Response) {
-  req.body.accountId = req.params.accountId;
+  req.body.accountId = req.params.stockAccountId;
 
   try {
     const removeResult = await stockAccountServices.removeStockAccountData(req.body);
