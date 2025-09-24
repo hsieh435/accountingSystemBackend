@@ -137,12 +137,11 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   try {
-    const query = "DELETE FROM public.cashflow_trade WHERE trade_id=$1 AND cashflow_id=$2 AND user_id=$3";
+    const query = `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
     const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
   } catch (error) {
-    console.error("Delete error:", error);
     return { success: false, message: "刪除失敗" };
   }
 }

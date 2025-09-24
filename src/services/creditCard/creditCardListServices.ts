@@ -21,104 +21,164 @@ export interface ICreditCardData {
   note: string;
 }
 
-export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
-  // console.log("data:", data);
+// Helper function for consistent error handling
+const handleDbError = (error: any, defaultData: any = []) => {
+  console.error("Database error:", error);
+  return { success: false, data: defaultData };
+};
 
+// Helper function for update operations
+const executeUpdate = async (query: string, params: any[]): Promise<boolean> => {
   try {
-    const searchingResult = await pool.query(`SELECT creditcard_list.*, currency_list.currency_name FROM creditcard_list
-        LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
-        WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`);
-    // console.log("searchingResult:", searchingResult);
-    return { success: true, data: keysToCamel(searchingResult.rows) };
-  } catch (err) {
-    return { success: false, data: [] };
+    const result = await pool.query(query, params);
+    return result.rowCount === 1;
+  } catch (error) {
+    console.error("Update error:", error);
+    return false;
+  }
+};
+
+export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
+  try {
+    const query = `
+      SELECT creditcard_list.*, currency_list.currency_name
+      FROM creditcard_list
+      LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
+      WHERE currency LIKE $1 AND user_id = $2
+      ORDER BY created_date
+    `;
+    const result = await pool.query(query, [`%${data.currencyId}%`, data.userId]);
+    return { success: true, data: keysToCamel(result.rows) };
+  } catch (error) {
+    return handleDbError(error);
+  }
+}
+
+export async function getCreditCardById(creditcardId: string, userId: string) {
+  try {
+    const query = "SELECT * FROM creditcard_list WHERE creditcard_id = $1 AND user_id = $2";
+    const result = await pool.query(query, [creditcardId, userId]);
+
+    if (result.rows.length === 0) {
+      return { success: false, data: null };
+    }
+
+    return { success: true, data: keysToCamel(result.rows[0]) };
+  } catch (error) {
+    return handleDbError(error, null);
   }
 }
 
 export async function insertCreditCardData(data: ICreditCardData) {
-  const currentTimestamp = getCurrentTimestamp();
-  const timeStampWithZone = getTimeStampWithZone();
+  try {
+    const currentTimestamp = getCurrentTimestamp();
+    const timeStampWithZone = getTimeStampWithZone();
+    const creditcardId = `CC-${currentTimestamp}`;
 
-  const insertResult = await pool.query(
-    `INSERT INTO public.creditcard_list(creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, credit_per_month, expiration_date, alert_value, open_alert, enable, created_date, note)	VALUES  ('CC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.creditcardName}', '${data.creditcardBankCode}', '${data.creditcardBankName}', '${data.creditcardSchema}', '${data.currency}', ${data.creditPerMonth}, '${data.expirationDate}', ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
-  );
-  // console.log("insertResult:", insertResult);
-  if (insertResult.rowCount === 1) {
-    const insertBalanceResult = await accountBalanceServices.insertBalance({
-      tradeId: `CC-${data.currency}-${currentTimestamp}`,
-      accountId: `CC-${currentTimestamp}`,
-      userId: data.userId,
-      transactionType: "expense",
-      tradeCode: "default",
-      tradeAmount: 0,
-      accountBalance: 0,
-      eventDatetimes: timeStampWithZone,
-    });
-    if (insertBalanceResult === true) {
-      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-    } else {
-      return { success: false, userData: [] };
+    const insertQuery = `
+      INSERT INTO public.creditcard_list(
+        creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
+        creditcard_bank_name, creditcard_schema, currency, credit_per_month,
+        expiration_date, alert_value, open_alert, enable, created_date, note
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `;
+
+    const insertParams = [
+      creditcardId,
+      data.userId,
+      data.accountType,
+      data.creditcardName,
+      data.creditcardBankCode,
+      data.creditcardBankName,
+      data.creditcardSchema,
+      data.currency,
+      data.creditPerMonth,
+      data.expirationDate,
+      data.alertValue,
+      data.openAlert,
+      data.enable,
+      timeStampWithZone,
+      data.note,
+    ];
+
+    const insertResult = await pool.query(insertQuery, insertParams);
+
+    if (insertResult.rowCount === 1) {
+      const balanceSuccess = await accountBalanceServices.insertBalance({
+        tradeId: `CC-${data.currency}-${currentTimestamp}`,
+        accountId: creditcardId,
+        userId: data.userId,
+        transactionType: "expense",
+        tradeCode: "default",
+        tradeAmount: 0,
+        accountBalance: 0,
+        eventDatetimes: timeStampWithZone,
+      });
+
+      return {
+        success: balanceSuccess,
+        userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
+      };
     }
-  } else {
+
+    return { success: false, userData: [] };
+  } catch (error) {
+    console.error("Insert credit card error:", error);
     return { success: false, userData: [] };
   }
 }
 
 export async function updateCreditCardData(data: ICreditCardData) {
-  // console.log("data:", data);
-  const updateResult = await pool.query(
-    `UPDATE public.creditcard_list SET creditcard_name = '${data.creditcardName}', creditcard_bank_code = '${data.creditcardBankCode}', creditcard_bank_name = '${data.creditcardBankName}', credit_per_month = ${data.creditPerMonth}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}' WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-  );
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
+  const query = `
+    UPDATE public.creditcard_list
+    SET creditcard_name=$1, creditcard_bank_code=$2, creditcard_bank_name=$3,
+        credit_per_month=$4, alert_value=$5, open_alert=$6, note=$7
+    WHERE creditcard_id=$8 AND user_id=$9
+  `;
+  const params = [
+    data.creditcardName,
+    data.creditcardBankCode,
+    data.creditcardBankName,
+    data.creditPerMonth,
+    data.alertValue,
+    data.openAlert,
+    data.note,
+    data.creditcardId,
+    data.userId,
+  ];
+
+  return executeUpdate(query, params);
 }
 
 export async function enableCreditCardStatus(data: ICreditCardData) {
-  // console.log("data:", data);
-
-  const updateResult = await pool.query(
-    `UPDATE public.creditcard_list SET enable = ${true} WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-  );
-  console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
+  const query = "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3";
+  return executeUpdate(query, [true, data.creditcardId, data.userId]);
 }
 
 export async function disableCreditCardStatus(data: ICreditCardData) {
-  const updateResult = await pool.query(
-    `UPDATE public.creditcard_list SET enable = ${false} WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-  );
-  // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
+  const query = "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3";
+  return executeUpdate(query, [false, data.creditcardId, data.userId]);
 }
 
 export async function removeCreditCardData(data: ICreditCardData) {
-  const searchingResult = await pool.query(
-    `SELECT * FROM creditcard_trade WHERE credit_card_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-  );
-  // console.log("searchingResult:", searchingResult);
-  if (searchingResult.rows.length > 0) {
-    return { success: false, message: "已有收支紀錄，無法刪除" };
-  } else {
-    const deleteResult = await pool.query(
-      `DELETE FROM public.creditcard_list WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-    );
-    // console.log("deleteResult:", deleteResult);
-    if (deleteResult.rowCount === 1) {
-      return { success: true, message: "刪除成功" };
-    } else {
-      return { success: false, message: "刪除失敗" };
+  try {
+    // Check if there are existing records
+    const checkQuery = "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2";
+    const searchingResult = await pool.query(checkQuery, [data.creditcardId, data.userId]);
+
+    if (searchingResult.rows.length > 0) {
+      return { success: false, message: "已有收支紀錄，無法刪除" };
     }
+
+    // Delete the credit card
+    const deleteQuery = "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2";
+    const deleteResult = await pool.query(deleteQuery, [data.creditcardId, data.userId]);
+
+    return deleteResult.rowCount === 1
+      ? { success: true, message: "刪除成功" }
+      : { success: false, message: "刪除失敗" };
+  } catch (error) {
+    console.error("Remove credit card error:", error);
+    return { success: false, message: "刪除失敗" };
   }
 }

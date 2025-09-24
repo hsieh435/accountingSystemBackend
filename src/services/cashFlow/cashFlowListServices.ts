@@ -24,7 +24,6 @@ export interface IAccountSearchingParams {
 
 // Helper function for consistent error handling
 const handleDbError = (error: any, defaultData: any = []) => {
-  // console.error("Database error:", error);
   return { success: false, data: defaultData };
 };
 
@@ -34,21 +33,18 @@ const executeUpdate = async (query: string, params: any[]): Promise<boolean> => 
     const result = await pool.query(query, params);
     return result.rowCount === 1;
   } catch (error) {
-    console.error("Update error:", error);
     return false;
   }
 };
 
 export async function searchingCashFlowList(data: IAccountSearchingParams) {
   try {
-    const query = `
+    const result = await pool.query(`
       SELECT cashflow_list.*, currency_list.currency_name
       FROM cashflow_list
       LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
-      WHERE currency LIKE $1 AND user_id = $2
-      ORDER BY created_date
-    `;
-    const result = await pool.query(query, [`%${data.currencyId}%`, data.userId]);
+      WHERE currency LIKE '${data.currencyId}' AND user_id = '${data.userId}'
+      ORDER BY created_date`);
     return { success: true, data: keysToCamel(result.rows) };
   } catch (error) {
     return handleDbError(error);
@@ -57,9 +53,13 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 
 export async function getCashFlowById(cashflowId: string, userId: string) {
   try {
-    const query = "SELECT * FROM cashflow_list WHERE cashflow_id = $1 AND user_id = $2";
-    const result = await pool.query(query, [cashflowId, userId]);
-    return { success: true, data: keysToCamel(result.rows[0]) };
+    const result = await pool.query(
+      `SELECT * FROM cashflow_list WHERE cashflow_id = '${cashflowId}' AND user_id = '${userId}'`);
+    if (result.rows.length === 1) {
+      return { success: true, data: keysToCamel(result.rows[0]) };
+    } else {
+      return { success: false, data: [] };
+    }
   } catch (error) {
     return handleDbError(error);
   }
@@ -115,7 +115,6 @@ export async function insertCashflowData(data: ICashFlowData) {
 
     return { success: false, userData: [] };
   } catch (error) {
-    console.error("Insert cashflow error:", error);
     return { success: false, userData: [] };
   }
 }
