@@ -23,7 +23,6 @@ export interface ICreditCardData {
 
 // Helper function for consistent error handling
 const handleDbError = (error: any, defaultData: any = []) => {
-  console.error("Database error:", error);
   return { success: false, data: defaultData };
 };
 
@@ -33,7 +32,6 @@ const executeUpdate = async (query: string, params: any[]): Promise<boolean> => 
     const result = await pool.query(query, params);
     return result.rowCount === 1;
   } catch (error) {
-    console.error("Update error:", error);
     return false;
   }
 };
@@ -123,7 +121,6 @@ export async function insertCreditCardData(data: ICreditCardData) {
 
     return { success: false, userData: [] };
   } catch (error) {
-    console.error("Insert credit card error:", error);
     return { success: false, userData: [] };
   }
 }
@@ -178,7 +175,6 @@ export async function removeCreditCardData(data: ICreditCardData) {
       ? { success: true, message: "刪除成功" }
       : { success: false, message: "刪除失敗" };
   } catch (error) {
-    console.error("Remove credit card error:", error);
     return { success: false, message: "刪除失敗" };
   }
 }

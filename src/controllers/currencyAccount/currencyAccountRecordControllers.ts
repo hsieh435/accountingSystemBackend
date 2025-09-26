@@ -1,90 +1,80 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as currencyAccountRecordServices from "@/services/currencyAccount/currencyAccountRecordServices";
-import { keysToCamel } from "@/utils/tools";
 
-
+// Helper function for consistent response handling
+const handleServiceResponse = (
+  res: Response,
+  result: any,
+  req: Request,
+  successMessage: string = "操作成功",
+  errorMessage: string = "操作失敗"
+) => {
+  if (result?.success) {
+    return res.json(success({
+      data: result.data || result,
+      message: successMessage,
+      req,
+      res
+    }));
+  }
+  return res.json(error({
+    message: result?.message || errorMessage,
+    req,
+    res
+  }));
+};
 
 export async function currencyAccountRecordList(req: Request, res: Response) {
-  // console.log("Request body:", req.body);
-
   try {
-    const searchingResult = await currencyAccountRecordServices.searchingCurrencyAccountRecordList(req.body);
-    // console.log("searchingResult:", searchingResult);
-    if (searchingResult.success === true) {
-      res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
-    } else {
-      res.json(error({ message: "發生錯誤", req, res }));
-    }
+    const result = await currencyAccountRecordServices.searchingCurrencyAccountRecordList(req.body);
+    handleServiceResponse(res, result, req, "查詢成功", "發生錯誤");
   } catch (err) {
     res.json(error({ message: "發生錯誤", req, res }));
   }
 }
 
-
-
 export async function searchingCurrencyAccountRecordById(req: Request, res: Response) {
-
   try {
-    const searchingResult =
-      await pool.query(`SELECT * FROM currency_account_trade WHERE trade_id = '${req.body.tradeId}' AND account_id = '${req.body.accountId}' AND user_id='${req.body.userId}'`);
-    // console.log("searchingResult:", searchingResult.rows);
-    if (searchingResult.rows.length === 1) {
-      res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
+    const result = await currencyAccountRecordServices.getCurrencyAccountRecordById(req.body);
+
+    if (result.success) {
+      res.json(success({ data: result.data, req, res }));
     } else {
-      res.json(error({ message: "存款帳戶不存在", req, res }));
+      res.json(error({ message: "記錄不存在", req, res }));
     }
   } catch (err) {
     res.json(error({ req, res }));
   }
 }
-
-
 
 export async function currencyAccountRecordCreate(req: Request, res: Response) {
-
   try {
-    const createResult = await currencyAccountRecordServices.insertCurrencyAccountRecord(req.body);
-    // console.log("createResult:", createResult);
-    if (createResult.success === true) {
-      res.json(success({ data: createResult, message: "建立成功", req, res }));
-    } else {
-      res.json(error({ message: "資料錯誤", req, res }));
-    }
+    const result = await currencyAccountRecordServices.insertCurrencyAccountRecord(req.body);
+    handleServiceResponse(res, result, req, "建立成功", "資料錯誤");
   } catch (err) {
     res.json(error({ req, res }));
   }
 }
 
-
-
 export async function currencyAccountRecordUpdate(req: Request, res: Response) {
-
   try {
-    const updateResult = await currencyAccountRecordServices.updateCurrencyAccountRecord(req.body);
-    if (updateResult) {
-      res.json(success({ message: "修改成功", req, res }));
-    } else {
-      res.json(error({ message: "修改失敗", req, res }));
-    }
+    const result = await currencyAccountRecordServices.updateCurrencyAccountRecord(req.body);
+    const response = result
+      ? success({ message: "修改成功", req, res })
+      : error({ message: "修改失敗", req, res });
+
+    res.status(result ? 200 : 500).json(response);
   } catch (err) {
     res.status(500).json(error({ req, res }));
   }
 }
 
-
-
 export async function currencyAccountRecordDelete(req: Request, res: Response) {
-
   try {
-    const removeResult = await currencyAccountRecordServices.removeCurrencyAccountRecord(req.body);
-    if (removeResult.success === true) {
-      res.json(success({ message: removeResult.message, req, res }));
-    } else {
-      res.json(error({ message: removeResult.message, req, res }));
-    }
+    const result = await currencyAccountRecordServices.removeCurrencyAccountRecord(req.body);
+    handleServiceResponse(res, result, req, result?.message || "刪除成功", result?.message || "刪除失敗");
   } catch (err) {
     res.json(error({ req, res }));
   }
-};
+}

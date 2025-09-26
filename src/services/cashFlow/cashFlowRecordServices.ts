@@ -26,7 +26,6 @@ export interface IFinanceRecordSearchingParams {
 
 // Helper function for consistent error handling
 const handleDbError = (error: any, defaultData: any = []) => {
-  console.error("Database error:", error);
   return { success: false, data: defaultData };
 };
 
@@ -42,7 +41,6 @@ const executeOperation = async (query: string, params: any[], successData?: any)
     }
     return { success: false, userData: [] };
   } catch (error) {
-    console.error("Operation error:", error);
     return { success: false, userData: [] };
   }
 };
