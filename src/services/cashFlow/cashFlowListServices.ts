@@ -1,6 +1,7 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import * as accountBalanceServices from "@/services/accountBalanceServices";
+import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
 export interface ICashFlowData {
   cashflowId: string;
@@ -72,19 +73,16 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
 
 export async function insertCashflowData(data: ICashFlowData) {
   try {
-    const cashflowId = `CF-${getCurrentTimestamp()}`;
-    const timestamp = getTimeStampWithZone();
-
     const insertQuery = `
       INSERT INTO public.cashflow_list(
         cashflow_id, user_id, account_type, cashflow_name, currency,
         starting_amount, present_amount, minimum_value_allowed,
-        alert_value, open_alert, created_date, note
+        alert_value, open_alert, enable,created_date, note
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     `;
 
     const insertParams = [
-      cashflowId,
+      `CF-${getCurrentTimestamp()}`,
       data.userId,
       data.accountType,
       data.cashflowName,
@@ -94,33 +92,37 @@ export async function insertCashflowData(data: ICashFlowData) {
       data.minimumValueAllowed,
       data.alertValue,
       data.openAlert,
-      timestamp,
+      true,
+      getTimeStampWithZone(),
       data.note,
     ];
 
     const insertResult = await pool.query(insertQuery, insertParams);
 
     if (insertResult.rowCount === 1) {
-      const balanceSuccess = await accountBalanceServices.insertBalance({
-        tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
-        accountId: cashflowId,
-        userId: data.userId,
-        transactionType: "income",
-        tradeCode: "default",
-        tradeAmount: data.startingAmount,
-        accountBalance: data.startingAmount,
-        eventDatetimes: timestamp,
-      });
+      try {
+        const balanceSuccess = await accountBalanceServices.insertBalance({
+          tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
+          accountId: `CF-${getCurrentTimestamp()}`,
+          userId: data.userId,
+          transactionType: "income",
+          tradeCode: "default",
+          tradeAmount: data.startingAmount,
+          accountBalance: data.startingAmount,
+          eventDatetimes: getTimeStampWithZone(),
+        });
 
-      return {
-        success: balanceSuccess,
-        userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
-      };
+        return {
+          success: balanceSuccess,
+          userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
+        };
+      } catch (error) {
+        return { success: false, userData: [] };
+      }
     }
 
     return { success: false, userData: [] };
   } catch (error) {
-    console.error("Insert cashflow error:", error);
     return { success: false, userData: [] };
   }
 }
@@ -155,19 +157,26 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
 }
 
 export async function removeCashflowData(data: ICashFlowData) {
-  try {
-    const deleteMainQuery = "DELETE FROM public.cashflow_list WHERE cashflow_id=$1 AND user_id=$2";
-    const deleteResult = await pool.query(deleteMainQuery, [data.cashflowId, data.userId]);
+  const cashFlowData = await getCashFlowById(data.cashflowId, data.userId);
+  const recordData = await searchingCashFlowRecordList(cashFlowData.data);
+  if (cashFlowData.success && recordData.data.length > 0) {
+    // console.log("data:", recordData.data);
+    return { success: false, message: "已有收支紀錄" };
+  } else if (cashFlowData.success && recordData.data.length === 0) {
+    // console.log("data:", recordData.data);
+    try {
+      const deleteMainQuery = "DELETE FROM public.cashflow_list WHERE cashflow_id=$1 AND user_id=$2";
+      const deleteResult = await pool.query(deleteMainQuery, [data.cashflowId, data.userId]);
 
-    if (deleteResult.rowCount === 1) {
-      const deleteTradeQuery = "DELETE FROM public.cashflow_trade WHERE cashflow_id=$1 AND user_id=$2";
-      await pool.query(deleteTradeQuery, [data.cashflowId, data.userId]);
-      return { success: true, message: "刪除成功" };
+      if (deleteResult.rowCount === 1) {
+        return { success: true, message: "刪除成功" };
+      } else {
+        return { success: false, message: "刪除失敗" };
+      }
+    } catch (error) {
+      return { success: false, message: "刪除失敗" };
     }
-
-    return { success: false, message: "刪除失敗" };
-  } catch (error) {
-    console.error("Remove cashflow error:", error);
+  } else {
     return { success: false, message: "刪除失敗" };
   }
 }
