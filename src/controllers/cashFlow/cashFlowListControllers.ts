@@ -34,7 +34,7 @@ export async function cashFlowCreate(req: Request, res: Response) {
     // console.log("result:", result);
     res.json(
       result.success
-        ? success({ data: result, message: "建立成功", req, res })
+        ? success({ data: result.data, message: "建立成功", req, res })
         : error({ message: "資料錯誤", req, res }),
     );
   } catch (err) {

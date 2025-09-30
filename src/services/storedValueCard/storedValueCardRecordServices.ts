@@ -10,6 +10,7 @@ export interface IStoredValueCardRecordList {
   transactionType: string;
   tradeCategory: string;
   tradeAmount: number;
+  remainingAmount: number;
   currency: string;
   tradeDescription: string;
   tradeNote: string;

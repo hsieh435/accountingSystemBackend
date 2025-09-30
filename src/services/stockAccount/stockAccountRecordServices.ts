@@ -17,6 +17,7 @@ export interface IStockAccountRecordList {
   transactionTax: number;
   stockTotalPrice: number;
   tradeTotalPrice: number;
+  remainingAmount: number;
   currency: string;
   tradeDescription: string;
   tradeNote: string;

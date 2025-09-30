@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalanceServices";
+import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 
 export interface ICreditCardData {
   creditcardId: string;

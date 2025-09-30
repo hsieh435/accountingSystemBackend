@@ -11,6 +11,7 @@ export interface IcurrencyAccountRecordList {
   transactionType: string;
   tradeCategory: string;
   tradeAmount: number;
+  remainingAmount: number;
   currency: string;
   tradeDescription: string;
   tradeNote: string;

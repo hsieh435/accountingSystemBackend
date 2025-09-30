@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalanceServices";
+import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
 export interface ICashFlowData {
@@ -72,17 +72,17 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
 }
 
 export async function insertCashflowData(data: ICashFlowData) {
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
+  const cashflowId = `CF-${currentTimestamp}`;
   try {
     const insertQuery = `
       INSERT INTO public.cashflow_list(
-        cashflow_id, user_id, account_type, cashflow_name, currency,
-        starting_amount, present_amount, minimum_value_allowed,
-        alert_value, open_alert, enable,created_date, note
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `;
 
     const insertParams = [
-      `CF-${getCurrentTimestamp()}`,
+      cashflowId,
       data.userId,
       data.accountType,
       data.cashflowName,
@@ -93,7 +93,7 @@ export async function insertCashflowData(data: ICashFlowData) {
       data.alertValue,
       data.openAlert,
       true,
-      getTimeStampWithZone(),
+      timeStampWithZone,
       data.note,
     ];
 
@@ -102,28 +102,28 @@ export async function insertCashflowData(data: ICashFlowData) {
     if (insertResult.rowCount === 1) {
       try {
         const balanceSuccess = await accountBalanceServices.insertBalance({
-          tradeId: `CF-${data.currency}-${getCurrentTimestamp()}`,
-          accountId: `CF-${getCurrentTimestamp()}`,
+          tradeId: `CF-${data.currency}-${currentTimestamp}`,
+          accountId: cashflowId,
           userId: data.userId,
           transactionType: "income",
           tradeCode: "default",
           tradeAmount: data.startingAmount,
           accountBalance: data.startingAmount,
-          eventDatetimes: getTimeStampWithZone(),
+          eventDatetimes: timeStampWithZone,
         });
 
         return {
           success: balanceSuccess,
-          userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
+          data: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
         };
       } catch (error) {
-        return { success: false, userData: [] };
+        return { success: false, data: [] };
       }
     }
 
-    return { success: false, userData: [] };
+    return { success: false, data: [] };
   } catch (error) {
-    return { success: false, userData: [] };
+    return { success: false, data: [] };
   }
 }
 
@@ -159,10 +159,10 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
 export async function removeCashflowData(data: ICashFlowData) {
   const cashFlowData = await getCashFlowById(data.cashflowId, data.userId);
   const recordData = await searchingCashFlowRecordList(cashFlowData.data);
-  if (cashFlowData.success && recordData.data.length > 0) {
+  if (recordData.success && recordData.data.length > 0) {
     // console.log("data:", recordData.data);
     return { success: false, message: "已有收支紀錄" };
-  } else if (cashFlowData.success && recordData.data.length === 0) {
+  } else if (recordData.success && recordData.data.length === 0) {
     // console.log("data:", recordData.data);
     try {
       const deleteMainQuery = "DELETE FROM public.cashflow_list WHERE cashflow_id=$1 AND user_id=$2";
