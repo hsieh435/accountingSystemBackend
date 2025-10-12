@@ -34,6 +34,19 @@ export async function searchingStockAccountList(data: { currencyId: string; user
   }
 }
 
+export async function getStockAccountById(data: { accountId: string; userId: string }) {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM public.stock_account_list WHERE account_id = '${data.accountId}' AND user_id='${data.userId}'`,
+    );
+    return result.rows.length === 1
+      ? { success: true, data: keysToCamel(result.rows[0]) }
+      : { success: false, data: [] };
+  } catch {
+    return { success: false, data: [] };
+  }
+}
+
 export async function insertStockAccountData(data: IStockAccountList) {
   const currentTimestamp = getCurrentTimestamp();
   const timeStampWithZone = getTimeStampWithZone();
@@ -59,7 +72,8 @@ export async function insertStockAccountData(data: IStockAccountList) {
 
 export async function updateStockAccountData(data: IStockAccountList) {
   const result = await pool.query(
-    `UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, note='${data.note}' WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    `UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', currency='${data.currency}', starting_amount=${data.startingAmount}, present_amount=${data.presentAmount}, minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, enable=${data.enable}, created_date='${data.createdDate}', note='${data.note}'
+    WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
   );
   return result.rowCount === 1;
 }

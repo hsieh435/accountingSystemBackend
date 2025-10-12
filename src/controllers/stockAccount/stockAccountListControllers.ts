@@ -20,11 +20,12 @@ export async function stockAccountList(req: Request, res: Response) {
 
 export async function searchingStockAccountById(req: Request, res: Response) {
   try {
-    const { rows } = await pool.query(
-      `SELECT * FROM public.stock_account_list WHERE account_id = '${req.params.stockAccountId}' AND user_id='${req.body.userId}'`
-    );
-    res.json(rows.length === 1
-      ? success({ data: keysToCamel(rows[0]), req, res })
+    const result = await stockAccountServices.getStockAccountById({
+      accountId: req.params.stockAccountId,
+      userId: req.body.userId
+    });
+    res.json(result.success
+      ? success({ data: result.data, req, res })
       : error({ message: "證券帳戶不存在", req, res })
     );
   } catch {

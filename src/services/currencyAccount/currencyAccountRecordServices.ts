@@ -1,6 +1,7 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 
+
 export interface IcurrencyAccountRecordList {
   tradeId: string;
   accountId: string;
@@ -78,11 +79,7 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
 }
 
 export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
-  const query = `
-    INSERT INTO public.currency_account_trade(
-      trade_id, account_id, trade_datetime, user_id, trade_category,
-      transaction_type, trade_amount, currency, trade_description, trade_note
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  const query = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
 
   const params = [
@@ -93,6 +90,7 @@ export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordLi
     data.tradeCategory,
     data.transactionType,
     data.tradeAmount,
+    data.remainingAmount,
     data.currency,
     data.tradeDescription,
     data.tradeNote,

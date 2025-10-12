@@ -47,14 +47,16 @@ export async function searchingStoredValueCardRecordList(data: IFinanceRecordSea
   }
 }
 
-export async function searchingStoredValueCardRecordById(data: { storedValueCardId: string; tradeId: string; userId: string }) {
+export async function searchingStoredValueCardRecordById(data: {
+  storedValueCardId: string;
+  tradeId: string;
+  userId: string;
+}) {
   try {
     const result = await pool.query(
       `SELECT * FROM public.stored_value_card_trade WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
     );
-    return result.rows.length === 1
-      ? { success: true, data: result.rows[0] }
-      : { success: false, data: [] };
+    return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
   } catch {
     return { success: false, data: [] };
   }
@@ -63,8 +65,7 @@ export async function searchingStoredValueCardRecordById(data: { storedValueCard
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordList) {
   try {
     const insertResult = await pool.query(
-      `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, currency, trade_description, trade_note)
-       VALUES ('SVC-${data.currency}-${getCurrentTimestamp()}', '${data.storedValueCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
+      `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.currency}-${getCurrentTimestamp()}', '${data.storedValueCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
     );
     return insertResult.rowCount === 1
       ? { success: true, userData: keysToCamel(insertResult.rows[0]) }

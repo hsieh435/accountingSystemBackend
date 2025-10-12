@@ -73,8 +73,6 @@ export async function cashFlowRecordUpdate(req: Request, res: Response) {
   }
 }
 
-
-
 // export async function cashFlowDelete(req: Request, res: Response) {
 //   req.body.cashflowId = req.params.cashflowId;
 
