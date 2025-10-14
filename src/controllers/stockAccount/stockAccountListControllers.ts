@@ -1,4 +1,3 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as stockAccountServices from "@/services/stockAccount/stockAccountListServices";

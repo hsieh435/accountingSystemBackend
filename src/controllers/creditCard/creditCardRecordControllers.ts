@@ -1,10 +1,7 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as creditCardRecordServices from "@/services/creditCard/creditCardRecordServices";
 import { keysToCamel } from "@/utils/tools";
-
-
 
 export async function creditCardRecordList(req: Request, res: Response) {
   // console.log("Request body:", req.body);
@@ -22,17 +19,18 @@ export async function creditCardRecordList(req: Request, res: Response) {
   }
 }
 
-
-
 export async function searchingCreditCardRecordById(req: Request, res: Response) {
   // console.log("req:", req.body);
 
   try {
-    const searchingResult =
-      await pool.query(`SELECT * FROM creditcard_trade WHERE trade_id = '${req.body.tradeId}' AND credit_card_id = '${req.body.creditCardId}' AND user_id='${req.body.userId}'`);
+    const searchingResult = await creditCardRecordServices.getCreditCardRecordById(
+      req.body.tradeId,
+      req.body.creditCardId,
+      req.body.userId,
+    );
     // console.log("searchingResult:", searchingResult.rows);
-    if (searchingResult.rows.length === 1) {
-      res.json(success({ data: keysToCamel(searchingResult.rows[0]), req, res }));
+    if (searchingResult.success === true) {
+      res.json(success({ data: keysToCamel(searchingResult.data), req, res }));
     } else {
       res.json(error({ message: "信用卡不存在", req, res }));
     }
@@ -41,10 +39,7 @@ export async function searchingCreditCardRecordById(req: Request, res: Response)
   }
 }
 
-
-
 export async function creditCardRecordCreate(req: Request, res: Response) {
-
   try {
     const createResult = await creditCardRecordServices.insertCreditCardData(req.body);
     // console.log("createResult:", createResult);
@@ -58,10 +53,7 @@ export async function creditCardRecordCreate(req: Request, res: Response) {
   }
 }
 
-
-
 export async function creditCardRecordUpdate(req: Request, res: Response) {
-
   try {
     const updateResult = await creditCardRecordServices.updateCreditCardData(req.body);
     if (updateResult) {
@@ -74,10 +66,7 @@ export async function creditCardRecordUpdate(req: Request, res: Response) {
   }
 }
 
-
-
 export async function creditCardRecordDelete(req: Request, res: Response) {
-
   try {
     const removeResult = await creditCardRecordServices.removeCreditCardData(req.body);
     if (removeResult.success === true) {
@@ -88,4 +77,4 @@ export async function creditCardRecordDelete(req: Request, res: Response) {
   } catch (err) {
     res.json(error({ req, res }));
   }
-};
+}

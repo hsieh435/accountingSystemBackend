@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -102,24 +101,10 @@ export async function insertCreditCardData(data: ICreditCardData) {
     const insertResult = await pool.query(insertQuery, insertParams);
 
     if (insertResult.rowCount === 1) {
-      const balanceSuccess = await accountBalanceServices.insertBalance({
-        tradeId: `CC-${data.currency}-${currentTimestamp}`,
-        accountId: creditcardId,
-        userId: data.userId,
-        transactionType: "expense",
-        tradeCode: "default",
-        tradeAmount: 0,
-        accountBalance: 0,
-        eventDatetimes: timeStampWithZone,
-      });
-
-      return {
-        success: balanceSuccess,
-        userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
-      };
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
     }
-
-    return { success: false, userData: [] };
   } catch (error) {
     return { success: false, userData: [] };
   }

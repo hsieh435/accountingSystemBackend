@@ -44,6 +44,22 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
   }
 }
 
+export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM creditcard_trade
+      WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`
+    );
+    if (result.rowCount === 1) {
+      return { success: true, data: keysToCamel(result.rows[0]) };
+    }
+    return { success: false, data: null };
+  } catch {
+    return { success: false, data: null };
+  }
+}
+
 export async function insertCreditCardData(data: ICreditCardTradeData) {
   const insertResult = await pool.query(
     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.currency}-${getCurrentTimestamp()}', '${data.creditCardId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}')`,

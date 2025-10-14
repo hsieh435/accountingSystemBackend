@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
 export interface ICashFlowData {
@@ -78,7 +77,8 @@ export async function insertCashflowData(data: ICashFlowData) {
   try {
     const insertQuery = `
       INSERT INTO public.cashflow_list(
-        cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `;
 
     const insertParams = [
@@ -100,28 +100,10 @@ export async function insertCashflowData(data: ICashFlowData) {
     const insertResult = await pool.query(insertQuery, insertParams);
 
     if (insertResult.rowCount === 1) {
-      try {
-        const balanceSuccess = await accountBalanceServices.insertBalance({
-          tradeId: `CF-${data.currency}-${currentTimestamp}`,
-          accountId: cashflowId,
-          userId: data.userId,
-          transactionType: "income",
-          tradeCode: "default",
-          tradeAmount: data.startingAmount,
-          accountBalance: data.startingAmount,
-          eventDatetimes: timeStampWithZone,
-        });
-
-        return {
-          success: balanceSuccess,
-          data: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
-        };
-      } catch (error) {
-        return { success: false, data: [] };
-      }
+      return { success: true, data: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, data: [] };
     }
-
-    return { success: false, data: [] };
   } catch (error) {
     return { success: false, data: [] };
   }

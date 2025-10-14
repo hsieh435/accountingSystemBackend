@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -78,7 +77,8 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
 
 export async function searchingCashFlowRecordById(data: { cashflowId: string; tradeId: string; userId: string }) {
   try {
-    const query = "SELECT * FROM public.cashflow_trade WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3";
+    const query = `SELECT * FROM public.cashflow_trade
+    WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3`;
     const result = await pool.query(query, [data.cashflowId, data.tradeId, data.userId]);
 
     return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
@@ -92,7 +92,8 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
 
   try {
     const query = `
-    INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
     const params = [
       data.tradeId,
@@ -108,17 +109,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
       data.tradeNote,
     ];
 
-    // await accountBalanceServices.insertBalance({
-    //   tradeId: data.tradeId,
-    //   accountId: data.cashflowId,
-    //   userId: data.userId,
-    //   transactionType: data.transactionType,
-    //   tradeCode: data.tradeCategory,
-    //   tradeAmount: data.tradeAmount,
-    //   accountBalance: data.tradeAmount,
-    //   eventDatetimes: data.tradeDatetime,
-    // });
-
     return executeOperation(query, params);
   } catch (error) {
     return { success: false, message: "新增失敗" };
@@ -127,7 +117,8 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
   const query = `
-    UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7 WHERE trade_id=$8 AND cashflow_id=$9 AND user_id=$10
+    UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7
+    WHERE trade_id=$8 AND cashflow_id=$9 AND user_id=$10
   `;
 
   const params = [
@@ -148,7 +139,8 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   try {
-    const query = `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
+    const query = `DELETE FROM public.cashflow_trade
+    WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
     const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };

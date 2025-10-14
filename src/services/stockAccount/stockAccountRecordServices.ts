@@ -57,6 +57,19 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
   }
 }
 
+
+export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM stock_account_trade
+      WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'`
+    );
+    return { success: true, data: keysToCamel(result.rows[0]) };
+  } catch {
+    return { success: false, data: [] };
+  }
+}
+
 export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   const insertResult = await pool.query(
     `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note) VALUES ('ST-${data.currency}-${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.stockTotalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradeTotalPrice}, ${data.remainingAmount}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}')`,
@@ -81,7 +94,8 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
   const result = await pool.query(
-    `DELETE FROM public.stock_account_trade WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    `DELETE FROM public.stock_account_trade
+    WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
   );
   return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
 }

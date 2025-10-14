@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 
 export interface IStoredValueCardData {
   storedValueCardId: string;
@@ -32,29 +31,33 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
   }
 }
 
+export async function getStoredValueCardData(storedValueCardId: string, userId: string) {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM stored_value_card_list
+      WHERE stored_value_card_id = '${storedValueCardId}' AND user_id='${userId}'`,
+    );
+    if (result.rowCount === 1) {
+      return { success: true, data: keysToCamel(result.rows[0]) };
+    }
+    return { success: false, data: null };
+  } catch {
+    return { success: false, data: null };
+  }
+}
+
 export async function insertStoredValueCardData(data: IStoredValueCardData) {
   const currentTimestamp = getCurrentTimestamp();
   const timeStampWithZone = getTimeStampWithZone();
   const insertResult = await pool.query(
     `INSERT INTO public.stored_value_card_list(stored_value_card_id, user_id, account_type, stored_value_card_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, enable, created_date, note)
-     VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
+    VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
   );
   if (insertResult.rowCount === 1) {
-    const insertBalanceResult = await accountBalanceServices.insertBalance({
-      tradeId: `SVC-${data.currency}-${currentTimestamp}`,
-      accountId: `SVC-${currentTimestamp}`,
-      userId: data.userId,
-      transactionType: "income",
-      tradeCode: "default",
-      tradeAmount: data.startingAmount,
-      accountBalance: data.startingAmount,
-      eventDatetimes: timeStampWithZone,
-    });
-    if (insertBalanceResult === true) {
-      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-    }
+    return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+  } else {
+    return { success: false, userData: [] };
   }
-  return { success: false, userData: [] };
 }
 
 export async function updateStoredValueCardData(data: IStoredValueCardData) {

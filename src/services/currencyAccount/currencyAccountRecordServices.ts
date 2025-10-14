@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-
+import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
 
 export interface IcurrencyAccountRecordList {
   tradeId: string;
@@ -78,11 +78,26 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
   }
 }
 
+export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
+  try {
+    const query = "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3";
+    const result = await pool.query(query, [data.tradeId, data.accountId, data.userId]);
+
+    if (result.rows.length === 0) {
+      return { success: false, data: null };
+    }
+
+    return { success: true, data: keysToCamel(result.rows[0]) };
+  } catch (error) {
+    return handleDbError(error, null);
+  }
+}
+
 export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
-  const query = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+  const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
 
-  const params = [
+  const insertParams = [
     `CA-${data.currency}-${getCurrentTimestamp()}`,
     data.accountId,
     data.tradeDatetime,
@@ -95,16 +110,28 @@ export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordLi
     data.tradeDescription,
     data.tradeNote,
   ];
+  const insertResult = await pool.query(insertQuery, insertParams);
 
-  return executeOperation(query, params);
+  // return executeOperation(insertQuery, insertParams);
+
+  if (insertResult.rowCount === 1) {
+    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(data.accountId, data.userId);
+    accountTarget.data.presentAmount = data.remainingAmount;
+    await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
+
+    return {
+      success: insertResult,
+      userData: insertResult ? keysToCamel(insertResult.rows[0]) : [],
+    };
+  }
+  return { success: false, userData: [] };
 }
 
 export async function updateCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
   try {
     const query = `
       UPDATE public.currency_account_trade
-      SET trade_datetime=$1, trade_category=$2, transaction_type=$3,
-          trade_amount=$4, currency=$5, trade_description=$6, trade_note=$7
+      SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, currency=$5, trade_description=$6, trade_note=$7
       WHERE trade_id=$8 AND account_id=$9 AND user_id=$10
     `;
 
@@ -138,20 +165,5 @@ export async function removeCurrencyAccountRecord(data: IcurrencyAccountRecordLi
   } catch (error) {
     console.error("Delete error:", error);
     return { success: false, message: "刪除失敗" };
-  }
-}
-
-export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
-  try {
-    const query = "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3";
-    const result = await pool.query(query, [data.tradeId, data.accountId, data.userId]);
-
-    if (result.rows.length === 0) {
-      return { success: false, data: null };
-    }
-
-    return { success: true, data: keysToCamel(result.rows[0]) };
-  } catch (error) {
-    return handleDbError(error, null);
   }
 }

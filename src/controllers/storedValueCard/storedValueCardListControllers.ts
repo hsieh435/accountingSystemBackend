@@ -1,8 +1,6 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as storedValueCardListServices from "@/services/storedValueCard/storedValueCardListServices";
-import { keysToCamel } from "@/utils/tools";
 
 
 
@@ -19,12 +17,12 @@ export async function storedValueCardDataList(req: Request, res: Response) {
 }
 
 export async function searchingStoredValueCardById(req: Request, res: Response) {
+
   try {
-    const { rows } = await pool.query(
-      `SELECT * FROM stored_value_card_list WHERE stored_value_card_id = '${req.params.storedValueCardId}' AND user_id='${req.body.userId}'`
-    );
-    res.json(rows.length === 1
-      ? success({ data: keysToCamel(rows[0]), req, res })
+    const result = await storedValueCardListServices.getStoredValueCardData(req.params.storedValueCardId, req.body.userId);
+
+    res.json(result.success
+      ? success({ data: result.data, req, res })
       : error({ message: "現金流不存在", req, res })
     );
   } catch {

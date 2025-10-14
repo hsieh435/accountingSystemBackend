@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel, getTimeStampWithZone, getCurrentTimestamp } from "@/utils/tools";
-import * as accountBalanceServices from "@/services/accountBalance/cashflowBalanceServices";
 
 export interface ICurrencyAccountData {
   accountId: string;
@@ -106,26 +105,11 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
     const insertResult = await pool.query(insertQuery, insertParams);
 
     if (insertResult.rowCount === 1) {
-      const balanceSuccess = await accountBalanceServices.insertBalance({
-        tradeId: `CA-${data.currency}-${currentTimestamp}`,
-        accountId: `CA-${data.accountId}`,
-        userId: data.userId,
-        transactionType: "income",
-        tradeCode: "default",
-        tradeAmount: data.startingAmount,
-        accountBalance: data.startingAmount,
-        eventDatetimes: timeStampWithZone,
-      });
-
-      return {
-        success: balanceSuccess,
-        userData: balanceSuccess ? keysToCamel(insertResult.rows[0]) : [],
-      };
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
     }
-
-    return { success: false, userData: [] };
   } catch (error) {
-    console.error("Insert currency account error:", error);
     return { success: false, userData: [] };
   }
 }

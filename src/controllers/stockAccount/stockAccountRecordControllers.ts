@@ -1,4 +1,3 @@
-import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
 import * as stockAccountRecordServices from "@/services/stockAccount/stockAccountRecordServices";
@@ -22,11 +21,14 @@ export async function stockAccountRecordList(req: Request, res: Response) {
 
 export async function searchingStockAccountRecordById(req: Request, res: Response) {
   try {
-    const { rows } = await pool.query(
-      `SELECT * FROM stock_account_trade WHERE trade_id = '${req.body.tradeId}' AND account_id = '${req.body.accountId}' AND user_id='${req.body.userId}'`
+    const searchingResult = await stockAccountRecordServices.getStockAccountRecordById(
+      req.params.tradeId,
+      req.params.accountId,
+      req.body.userId,
     );
-    res.json(rows.length === 1
-      ? success({ data: keysToCamel(rows[0]), req, res })
+
+    res.json(searchingResult.success
+      ? success({ data: keysToCamel(searchingResult.data), req, res })
       : error({ message: "存款帳戶不存在", req, res })
     );
   } catch {
