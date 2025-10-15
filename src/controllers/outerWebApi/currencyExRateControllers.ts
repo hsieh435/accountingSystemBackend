@@ -72,5 +72,5 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
   }
 }
 
-// https://app.exchangerate-api.com/sign-up
+// https://app.exchangerate-api.com/sign-in
 // https://www.exchangerate-api.com/docs/historical-data-requests
