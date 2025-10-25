@@ -22,8 +22,8 @@ export async function stockAccountRecordList(req: Request, res: Response) {
 export async function searchingStockAccountRecordById(req: Request, res: Response) {
   try {
     const searchingResult = await stockAccountRecordServices.getStockAccountRecordById(
-      req.params.tradeId,
-      req.params.accountId,
+      req.body.tradeId,
+      req.body.accountId,
       req.body.userId,
     );
 
