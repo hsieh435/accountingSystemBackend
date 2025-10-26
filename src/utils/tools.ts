@@ -1,3 +1,6 @@
+import pool from "@/db";
+
+
 
 // 把 snake_case 轉 camelCase
 export function toCamelCase(str: string): string {
@@ -36,7 +39,6 @@ export function decodeJWT(token: string) {
 
 
 
-
 // 取得今日日期 yyyy-mm-dd
 export function getCurrentYMD() {
   const date = new Date();
@@ -67,19 +69,6 @@ export function getCurrentTimestamp() {
   return new Date().getTime();
 }
 
-
-
-// 取得西元年月格式 yyyy-mm
-export function yearMonthFormat(dateString: string) {
-
-  if (!dateString) return "";
-  let date = new Date(dateString);
-
-  if (isNaN(date.getFullYear()) || isNaN(date.getMonth())) return "";
-
-  const month = ("00" + (date.getMonth() + 1)).slice(-2);
-  return `${date.getFullYear()}-${month}`;
-}
 
 
 // 西元年日期格式 yyyy / mm / dd hh:mm:ss 或 yyyy / mm / dd

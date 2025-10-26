@@ -65,7 +65,8 @@ export async function cashFlowRecordCreate(req: Request, res: Response) {
 export async function cashFlowRecordUpdate(req: Request, res: Response) {
   try {
     const result = await cashFlowRecordServices.updateCashFlowRecordData(req.body);
-    const response = result ? success({ message: "修改成功", req, res }) : error({ message: "修改失敗", req, res });
+    const response =
+      result ? success({ message: "修改成功", req, res }) : error({ message: "修改失敗", req, res });
 
     res.status(result ? 200 : 500).json(response);
   } catch (err) {

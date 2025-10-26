@@ -1,5 +1,14 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
+
+export interface IFinanceRecordSearchingParams {
+  accountId: string;
+  currencyId: string;
+  tradeCategory: string;
+  startingDate: string;
+  endDate: string;
+  userId: string;
+}
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -15,14 +24,25 @@ export interface ICashFlowRecordList {
   tradeNote: string;
 }
 
-export interface IFinanceRecordSearchingParams {
-  accountId: string;
-  currencyId: string;
-  tradeCategory: string;
-  startingDate: string;
-  endDate: string;
-  userId: string;
+export interface IOriData {
+  oriTradeDatetime: string;
+  oriTradeAmount: number;
+  oriRemainingAmount: number;
+  oriTransactionType: string;
 }
+
+
+const latestTimestamp =
+  async (): Promise<any> => setTimezone((await pool.query(`SELECT MAX(trade_datetime) AS latest_timestamp FROM public.cashflow_trade`)).rows[0]?.latest_timestamp);
+
+
+  // const latestTimestamp =
+  //   (await pool.query(`SELECT MAX(trade_datetime) AS latest_timestamp FROM public.cashflow_trade`)).rows[0]?.latest_timestamp;
+  // console.log("latestTimestamp:", latestTimestamp);
+  // console.log("tradeDatetime:", data.updateData.tradeDatetime);
+  // console.log("COMPAIR:", data.updateData.tradeDatetime > latestTimestamp);
+
+
 
 // Helper function for consistent error handling
 const handleDbError = (error: any, defaultData: any = []) => {
@@ -87,8 +107,16 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
   }
 }
 
-export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
-  data.tradeId = `CF-${data.currency}-${getCurrentTimestamp()}`;
+export async function insertCashFlowRecordData(data: {
+  insertData: ICashFlowRecordList,
+  oriData: IOriData,
+}) {
+  data.insertData.tradeId = `CF-${data.insertData.currency}-${getCurrentTimestamp()}`;
+
+
+  // if (await latestTimestamp() > data.insertData.tradeDatetime) {
+  //   console.log("時間錯誤");
+  // }
 
   try {
     const query = `
@@ -96,42 +124,55 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
     const params = [
-      data.tradeId,
-      data.cashflowId,
-      data.userId,
-      data.tradeDatetime,
-      data.tradeCategory,
-      data.transactionType,
-      data.tradeAmount,
-      data.remainingAmount,
-      data.currency,
-      data.tradeDescription,
-      data.tradeNote,
+      data.insertData.tradeId,
+      data.insertData.cashflowId,
+      data.insertData.userId,
+      data.insertData.tradeDatetime,
+      data.insertData.tradeCategory,
+      data.insertData.transactionType,
+      data.insertData.tradeAmount,
+      data.insertData.remainingAmount,
+      data.insertData.currency,
+      data.insertData.tradeDescription,
+      data.insertData.tradeNote,
     ];
 
     return executeOperation(query, params);
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
+
 }
 
-export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
+export async function updateCashFlowRecordData(data: {
+  updateData: ICashFlowRecordList,
+  oriData: IOriData,
+}) {
+
+  // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
+  // console.log("latestTimestamp():", await latestTimestamp());
+  if (await latestTimestamp() > setTimezone(data.updateData.tradeDatetime)) {
+    console.log(100);
+  }
+  //
+
+
   const query = `
     UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7
     WHERE trade_id=$8 AND cashflow_id=$9 AND user_id=$10
   `;
 
   const params = [
-    data.tradeDatetime,
-    data.tradeCategory,
-    data.transactionType,
-    data.tradeAmount,
-    data.remainingAmount,
-    data.tradeDescription,
-    data.tradeNote,
-    data.tradeId,
-    data.cashflowId,
-    data.userId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeCategory,
+    data.updateData.transactionType,
+    data.updateData.tradeAmount,
+    data.updateData.remainingAmount,
+    data.updateData.tradeDescription,
+    data.updateData.tradeNote,
+    data.updateData.tradeId,
+    data.updateData.cashflowId,
+    data.updateData.userId,
   ];
 
   return executeOperation(query, params);
@@ -139,8 +180,8 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   try {
-    const query = `DELETE FROM public.cashflow_trade
-    WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
+    const query =
+      `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
     const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
