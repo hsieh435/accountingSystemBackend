@@ -1,5 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
+import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -32,19 +33,7 @@ export interface IOriData {
 }
 
 
-const latestTimestamp =
-  async (): Promise<any> => setTimezone((await pool.query(`SELECT MAX(trade_datetime) AS latest_timestamp FROM public.cashflow_trade`)).rows[0]?.latest_timestamp);
 
-
-  // const latestTimestamp =
-  //   (await pool.query(`SELECT MAX(trade_datetime) AS latest_timestamp FROM public.cashflow_trade`)).rows[0]?.latest_timestamp;
-  // console.log("latestTimestamp:", latestTimestamp);
-  // console.log("tradeDatetime:", data.updateData.tradeDatetime);
-  // console.log("COMPAIR:", data.updateData.tradeDatetime > latestTimestamp);
-
-
-
-// Helper function for consistent error handling
 const handleDbError = (error: any, defaultData: any = []) => {
   return { success: false, data: defaultData };
 };
@@ -151,8 +140,9 @@ export async function updateCashFlowRecordData(data: {
 
   // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
   // console.log("latestTimestamp():", await latestTimestamp());
-  if (await latestTimestamp() > setTimezone(data.updateData.tradeDatetime)) {
+  if (await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime") > setTimezone(data.updateData.tradeDatetime)) {
     console.log(100);
+    console.log(await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime"));
   }
   //
 

@@ -1,6 +1,7 @@
 import pool from "@/db";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IStockAccountRecordList {
   tradeId: string;

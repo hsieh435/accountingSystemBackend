@@ -13,9 +13,10 @@ import functionListRoutes from "@/routes/functionListRoutes";
 import generalRoutes from "@/routes/generalRoutes";
 import outerWebApiRoutes from "@/routes/outerWebApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
-import stockAccountRoutes from "@/routes/stockAccountRoutes";
-import userDataRoutes from "@/routes/userDataRoutes";
 import storedValueCardRoutes from "@/routes/storedValueCardRoutes";
+import stockAccountRoutes from "@/routes/stockAccountRoutes";
+import stockStorageRoutes from "@/routes/stockStorageRoutes";
+import userDataRoutes from "@/routes/userDataRoutes";
 
 
 
@@ -40,10 +41,13 @@ app.use("/accounting_system_backend", functionListRoutes);
 app.use("/accounting_system_backend", generalRoutes);
 app.use("/accounting_system_backend", outerWebApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
-app.use("/accounting_system_backend", stockAccountRoutes);
 app.use("/accounting_system_backend", storedValueCardRoutes);
+app.use("/accounting_system_backend", stockAccountRoutes);
+app.use("/accounting_system_backend", stockStorageRoutes);
 app.use("/accounting_system_backend", userDataRoutes);
 
+
+
 app.listen(port, () => {
-  console.log(`${port} port`);
+  console.log(`Usingn port: ${port}`);
 });

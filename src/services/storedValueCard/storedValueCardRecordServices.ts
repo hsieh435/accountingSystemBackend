@@ -1,5 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IStoredValueCardRecordList {
   tradeId: string;
