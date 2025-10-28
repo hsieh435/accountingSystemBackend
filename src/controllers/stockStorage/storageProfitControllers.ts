@@ -5,12 +5,15 @@ import * as storageProfitServices from "@/services/stockStorage/storageProfitSer
 
 
 export async function storageProfitList(req: Request, res: Response) {
+  // console.log("params:", req.params.stockAccountId, req.body.userId);
   try {
     const result = await storageProfitServices.searchingStorageProfitList(req.params.stockAccountId, req.body.userId);
     res.json(result.success
       ? success({ data: result.data, message: "查詢成功", req, res })
       : error({ message: "發生錯誤", req, res })
     );
+
+    console.log("result:", result);
   } catch {
     res.json(error({ message: "發生錯誤", req, res }));
   }

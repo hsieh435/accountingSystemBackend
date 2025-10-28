@@ -49,5 +49,5 @@ app.use("/accounting_system_backend", userDataRoutes);
 
 
 app.listen(port, () => {
-  console.log(`Usingn port: ${port}`);
+  console.log(`using port: ${port}`);
 });
