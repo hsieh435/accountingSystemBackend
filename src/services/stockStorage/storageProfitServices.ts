@@ -11,6 +11,7 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
       ssl.user_id,
       ssl.stock_no,
       ssl.stock_name,
+      ssl.storage_quantity,
       json_agg(
         json_build_object(
           'stock_no', ssd.stock_no,
@@ -25,13 +26,13 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
           'currency', ssd.currency
         )
       ) FILTER (WHERE ssd.stock_no IS NOT NULL) AS stock_storage_detail
-       FROM public.stock_storage_list AS ssl
-       LEFT JOIN stock_storage_detail AS ssd ON ssl.stock_account_id = ssd.account_id AND ssl.stock_no = ssd.stock_no
-       WHERE ssl.stock_account_id = '${stockAccountId}' AND ssl.user_id = '${userId}'
-       GROUP BY ssl.stock_account_id, ssl.user_id, ssl.stock_no`
+      FROM public.stock_storage_list AS ssl
+      LEFT JOIN stock_storage_detail AS ssd ON ssl.stock_account_id = ssd.account_id AND ssl.stock_no = ssd.stock_no
+      WHERE ssl.stock_account_id = '${stockAccountId}' AND ssl.user_id = '${userId}'
+      GROUP BY ssl.stock_account_id, ssl.user_id, ssl.stock_no`
     );
 
-    console.log("data:", keysToCamel(result.rows));
+    // console.log("data:", keysToCamel(result.rows));
     return { success: true, data: keysToCamel(result.rows) };
   } catch {
     return { success: false, data: [] };
