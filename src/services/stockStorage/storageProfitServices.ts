@@ -1,8 +1,10 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 
+
+
 export async function searchingStorageProfitList(stockAccountId: string, userId: string) {
-  console.log("params:", stockAccountId, userId);
+  // console.log("params:", stockAccountId, userId);
 
   try {
     const result = await pool.query(
@@ -33,6 +35,25 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
     );
 
     // console.log("data:", keysToCamel(result.rows));
+    return { success: true, data: keysToCamel(result.rows) };
+  } catch {
+    return { success: false, data: [] };
+  }
+}
+
+
+
+
+export async function searchingStockSProfitDetail(data: { stockAccountId: string; userId: string; stockNo: string }) {
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM public.stock_storage_detail
+      WHERE account_id = '${data.stockAccountId}' AND user_id = '${data.userId}' AND stock_no = '${data.stockNo}'
+      ORDER BY trade_datetime`,
+    );
+
+    console.log("data:", keysToCamel(result.rows));
     return { success: true, data: keysToCamel(result.rows) };
   } catch {
     return { success: false, data: [] };

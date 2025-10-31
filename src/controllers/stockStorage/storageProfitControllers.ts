@@ -18,3 +18,20 @@ export async function storageProfitList(req: Request, res: Response) {
     res.json(error({ message: "發生錯誤", req, res }));
   }
 }
+
+
+
+export async function eachStorageProfitData(req: Request, res: Response) {
+
+  try {
+    const result = await storageProfitServices.searchingStockSProfitDetail(req.body);
+    res.json(result.success
+      ? success({ data: result.data, message: "查詢成功", req, res })
+      : error({ message: "發生錯誤", req, res })
+    );
+
+    console.log("result:", result);
+  } catch {
+    res.json(error({ message: "發生錯誤", req, res }));
+  }
+}
