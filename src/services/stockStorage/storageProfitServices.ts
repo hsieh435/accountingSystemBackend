@@ -53,7 +53,7 @@ export async function searchingStockSProfitDetail(data: { stockAccountId: string
       ORDER BY trade_datetime`,
     );
 
-    console.log("data:", keysToCamel(result.rows));
+    // console.log("data:", keysToCamel(result.rows));
     return { success: true, data: keysToCamel(result.rows) };
   } catch {
     return { success: false, data: [] };
