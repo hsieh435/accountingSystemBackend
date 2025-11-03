@@ -13,7 +13,6 @@ export async function storageProfitList(req: Request, res: Response) {
       : error({ message: "發生錯誤", req, res })
     );
 
-    console.log("result:", result);
   } catch {
     res.json(error({ message: "發生錯誤", req, res }));
   }

@@ -6,7 +6,8 @@ import * as outerWebApiCurrencyExRateControllers from "@/controllers/outerWebApi
 
 const router = Router();
 
-router.post("/api/outerWebApi/testConnection", outerSystemLogin.loginFinMindSystem);
+router.post("/api/outerWebApi/findMind/testConnection", outerSystemLogin.loginFinMindSystem);
+router.get("/api/outerWebApi/findMind/accountInfo", outerSystemLogin.checkFinMindTokenUsage);
 
 
 

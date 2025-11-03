@@ -34,7 +34,6 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
       GROUP BY ssl.stock_account_id, ssl.user_id, ssl.stock_no`
     );
 
-    // console.log("data:", keysToCamel(result.rows));
     return { success: true, data: keysToCamel(result.rows) };
   } catch {
     return { success: false, data: [] };
