@@ -67,7 +67,7 @@ export async function stockAccountRecordUpdate(req: Request, res: Response) {
 
 
 export async function stockAccountRecordDelete(req: Request, res: Response) {
-  req.body.stockAccountId = req.params.stockAccountId;
+
   try {
     const result = await stockAccountRecordServices.removeStockAccountRecord(req.body);
     res.json(result.success

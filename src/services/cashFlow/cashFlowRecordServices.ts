@@ -141,7 +141,6 @@ export async function updateCashFlowRecordData(data: {
   // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
   // console.log("latestTimestamp():", await latestTimestamp());
   if (await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime") > setTimezone(data.updateData.tradeDatetime)) {
-    console.log(100);
     console.log(await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime"));
   }
   //
