@@ -68,7 +68,7 @@ export async function creditCardRecordUpdate(req: Request, res: Response) {
 
 export async function creditCardRecordDelete(req: Request, res: Response) {
   try {
-    const removeResult = await creditCardRecordServices.removeCreditCardData(req.body);
+    const removeResult = await creditCardRecordServices.removeCreditCardRecordData(req.body);
     if (removeResult.success === true) {
       res.json(success({ message: removeResult.message, req, res }));
     } else {

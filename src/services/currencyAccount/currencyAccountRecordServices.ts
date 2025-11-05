@@ -3,7 +3,16 @@ import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
 import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
-export interface IcurrencyAccountRecordList {
+export interface IFinanceRecordSearchingParams {
+  accountId: string;
+  currencyId: string;
+  tradeCategory: string;
+  startingDate: string;
+  endDate: string;
+  userId: string;
+}
+
+export interface ICreditCardRecordList {
   tradeId: string;
   accountId: string;
   userId: string;
@@ -19,13 +28,10 @@ export interface IcurrencyAccountRecordList {
   tradeNote: string;
 }
 
-export interface IFinanceRecordSearchingParams {
-  accountId: string;
-  currencyId: string;
-  tradeCategory: string;
-  startingDate: string;
-  endDate: string;
-  userId: string;
+
+export interface ICreditCardRecordData {
+  updateData: ICreditCardRecordList;
+  oriData: any;
 }
 
 // Helper function for consistent error handling
@@ -94,30 +100,30 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
   }
 }
 
-export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
+export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
   const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
 
   const insertParams = [
-    `CA-${data.currency}-${getCurrentTimestamp()}`,
-    data.accountId,
-    data.tradeDatetime,
-    data.userId,
-    data.tradeCategory,
-    data.transactionType,
-    data.tradeAmount,
-    data.remainingAmount,
-    data.currency,
-    data.tradeDescription,
-    data.tradeNote,
+    `CA-${data.updateData.currency}-${getCurrentTimestamp()}`,
+    data.updateData.accountId,
+    data.updateData.tradeDatetime,
+    data.updateData.userId,
+    data.updateData.tradeCategory,
+    data.updateData.transactionType,
+    data.updateData.tradeAmount,
+    data.updateData.remainingAmount,
+    data.updateData.currency,
+    data.updateData.tradeDescription,
+    data.updateData.tradeNote,
   ];
   const insertResult = await pool.query(insertQuery, insertParams);
 
   // return executeOperation(insertQuery, insertParams);
 
   if (insertResult.rowCount === 1) {
-    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(data.accountId, data.userId);
-    accountTarget.data.presentAmount = data.remainingAmount;
+    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(data.updateData.accountId, data.updateData.userId);
+    accountTarget.data.presentAmount = data.updateData.remainingAmount;
     await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
 
     return {
@@ -128,7 +134,7 @@ export async function insertCurrencyAccountRecord(data: IcurrencyAccountRecordLi
   return { success: false, userData: [] };
 }
 
-export async function updateCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
+export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
   try {
     const query = `
       UPDATE public.currency_account_trade
@@ -137,16 +143,16 @@ export async function updateCurrencyAccountRecord(data: IcurrencyAccountRecordLi
     `;
 
     const params = [
-      data.tradeDatetime,
-      data.tradeCategory,
-      data.transactionType,
-      data.tradeAmount,
-      data.currency,
-      data.tradeDescription,
-      data.tradeNote,
-      data.tradeId,
-      data.accountId,
-      data.userId,
+      data.updateData.tradeDatetime,
+      data.updateData.tradeCategory,
+      data.updateData.transactionType,
+      data.updateData.tradeAmount,
+      data.updateData.currency,
+      data.updateData.tradeDescription,
+      data.updateData.tradeNote,
+      data.updateData.tradeId,
+      data.updateData.accountId,
+      data.updateData.userId,
     ];
 
     const result = await pool.query(query, params);
@@ -157,10 +163,10 @@ export async function updateCurrencyAccountRecord(data: IcurrencyAccountRecordLi
   }
 }
 
-export async function removeCurrencyAccountRecord(data: IcurrencyAccountRecordList) {
+export async function removeCurrencyAccountRecord(data: ICreditCardRecordData) {
   try {
     const query = "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3";
-    const result = await pool.query(query, [data.tradeId, data.accountId, data.userId]);
+    const result = await pool.query(query, [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
   } catch (error) {

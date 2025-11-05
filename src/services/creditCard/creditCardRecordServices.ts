@@ -2,7 +2,16 @@ import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, getCurrentYMD } from "@/utils/tools";
 import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
-export interface ICreditCardTradeData {
+export interface IFinanceRecordSearchingParams {
+  accountId: string;
+  currencyId: string;
+  tradeCategory: string;
+  startingDate: string;
+  endDate: string;
+  userId: string;
+}
+
+export interface ICreditCardRecordList {
   tradeId: string;
   userId: string;
   creditCardId: string;
@@ -17,13 +26,9 @@ export interface ICreditCardTradeData {
   tradeNote: string;
 }
 
-export interface IFinanceRecordSearchingParams {
-  accountId: string;
-  currencyId: string;
-  tradeCategory: string;
-  startingDate: string;
-  endDate: string;
-  userId: string;
+export interface ICreditCardTradeData {
+  updateData: ICreditCardRecordList;
+  oriData: any;
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
@@ -63,7 +68,7 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {
   const insertResult = await pool.query(
-    `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.currency}-${getCurrentTimestamp()}', '${data.creditCardId}', '${data.tradeDatetime}', '${data.userId}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}')`,
+    `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
   );
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {
@@ -76,8 +81,8 @@ export async function insertCreditCardData(data: ICreditCardTradeData) {
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
   const updateResult =
-    await pool.query(`UPDATE public.creditcard_trade SET trade_datetime='${data.tradeDatetime}', trade_category='${data.tradeCategory}', trade_amount=${data.tradeAmount}, currency='${data.currency}', bill_month='${data.billMonth}', trade_description='${data.tradeDescription}', trade_note='${data.tradeNote}'
-    WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`);
+    await pool.query(`UPDATE public.creditcard_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', bill_month='${data.updateData.billMonth}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
+    WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;
@@ -86,7 +91,7 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
   }
 }
 
-export async function removeCreditCardData(data: { tradeId: string; creditCardId: string; userId: string }) {
+export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
   const deleteResult = await pool.query(
     `DELETE FROM public.creditcard_trade WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
   );

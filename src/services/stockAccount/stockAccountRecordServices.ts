@@ -90,9 +90,6 @@ export async function insertStockAccountRecord(data: {
     }
 
 
-
-
-
   const insertResult = await pool.query(
     `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note) VALUES ('ST-${data.insertData.currency}-${getCurrentTimestamp()}', ${data.insertData.accountId}, '${data.insertData.userId}', '${data.insertData.tradeDatetime}', '${data.insertData.tradeCategory}', '${data.insertData.transactionType}', '${data.insertData.stockNo}', '${data.insertData.stockName}', ${data.insertData.pricePerShare}, ${data.insertData.quantity}, ${data.insertData.stockTotalPrice}, ${data.insertData.handlingFee}, ${data.insertData.transactionTax}, ${data.insertData.tradeTotalPrice}, ${data.insertData.remainingAmount}, '${data.insertData.currency}', '${data.insertData.tradeDescription}', '${data.insertData.tradeNote}')`,
   );
