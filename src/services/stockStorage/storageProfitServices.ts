@@ -1,5 +1,20 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { keysToCamel } from "@/utils/tools";
+
+
+
+export async function getStockStorageList(data: { stockAccountId: string, userId: string }) {
+  try {
+  const result = await pool.query(
+    `SELECT * FROM public.stock_storage_list
+    WHERE stock_account_id LIKE '%${data.stockAccountId}%' AND user_id = '${data.userId}'`,
+  );
+  return { success: true, data: keysToCamel(result.rows) }
+
+  } catch {
+    return { success: false, data: [] };
+  }
+}
 
 
 
@@ -42,13 +57,12 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
 
 
 
-
 export async function searchingStockSProfitDetail(data: { stockAccountId: string; userId: string; stockNo: string }) {
 
   try {
     const result = await pool.query(
       `SELECT * FROM public.stock_storage_detail
-      WHERE account_id = '${data.stockAccountId}' AND user_id = '${data.userId}' AND stock_no = '${data.stockNo}'
+      WHERE account_id LIKE '%${data.stockAccountId}%' AND user_id = '${data.userId}' AND stock_no = '${data.stockNo}'
       ORDER BY trade_datetime`,
     );
 
