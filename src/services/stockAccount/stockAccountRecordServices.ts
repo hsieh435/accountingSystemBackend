@@ -85,9 +85,9 @@ export async function insertStockAccountRecord(data: {
   oriData: IOriData,
 }) {
 
-    if (await getLatestTradeRecordDateTime("public.stock_account_trade", "trade_datetime") < setTimezone(data.insertData.tradeDatetime)) {
-      console.log(await getLatestTradeRecordDateTime("public.stock_account_trade", "trade_datetime"));
-    }
+    // if (await getLatestTradeRecordDateTime("public.stock_account_trade", "trade_datetime") < setTimezone(data.insertData.tradeDatetime)) {
+    //   console.log(await getLatestTradeRecordDateTime("public.stock_account_trade", "trade_datetime"));
+    // }
 
 
   const insertResult = await pool.query(

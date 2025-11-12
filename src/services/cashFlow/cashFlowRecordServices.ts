@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
+import { getLatestTradeRecordDateTime, updateRemainingAmount } from "@/services/serviceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -101,32 +101,42 @@ export async function insertCashFlowRecordData(data: {
   oriData: IOriData,
 }) {
   data.insertData.tradeId = `CF-${data.insertData.currency}-${getCurrentTimestamp()}`;
+  const latestTradeDateTime =
+    await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime", data.insertData.cashflowId);
+  console.log("latestTradeDateTime");
+  console.log("latestTradeDateTime:", latestTradeDateTime);
 
-
-  // if (await latestTimestamp() > data.insertData.tradeDatetime) {
-  //   console.log("時間錯誤");
-  // }
+  if (latestTradeDateTime > setTimezone(data.insertData.tradeDatetime)) {
+    console.log(100);
+  } else if (latestTradeDateTime === setTimezone(data.insertData.tradeDatetime)) {
+    console.log(200);
+    return { success: false, message: "新增失敗，交易時間不可與現有紀錄相同" };
+  }
+  else if (latestTradeDateTime < setTimezone(data.insertData.tradeDatetime)) {
+    console.log(300);
+  }
 
   try {
-    const query = `
-    INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    // const query = `
+    // INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    // VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
-    const params = [
-      data.insertData.tradeId,
-      data.insertData.cashflowId,
-      data.insertData.userId,
-      data.insertData.tradeDatetime,
-      data.insertData.tradeCategory,
-      data.insertData.transactionType,
-      data.insertData.tradeAmount,
-      data.insertData.remainingAmount,
-      data.insertData.currency,
-      data.insertData.tradeDescription,
-      data.insertData.tradeNote,
-    ];
+    // const params = [
+    //   data.insertData.tradeId,
+    //   data.insertData.cashflowId,
+    //   data.insertData.userId,
+    //   data.insertData.tradeDatetime,
+    //   data.insertData.tradeCategory,
+    //   data.insertData.transactionType,
+    //   data.insertData.tradeAmount,
+    //   data.insertData.remainingAmount,
+    //   data.insertData.currency,
+    //   data.insertData.tradeDescription,
+    //   data.insertData.tradeNote,
+    // ];
 
-    return executeOperation(query, params);
+    // return executeOperation(query, params);
+    return { success: false, message: "新增失敗" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
@@ -140,11 +150,6 @@ export async function updateCashFlowRecordData(data: {
 
   // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
   // console.log("latestTimestamp():", await latestTimestamp());
-  if (await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime") > setTimezone(data.updateData.tradeDatetime)) {
-    console.log(await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime"));
-  }
-  //
-
 
   const query = `
     UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7
