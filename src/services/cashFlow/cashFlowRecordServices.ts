@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime, updateRemainingAmount } from "@/services/serviceTools";
+import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -97,22 +97,23 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 }
 
 export async function insertCashFlowRecordData(data: {
-  insertData: ICashFlowRecordList,
+  updateData: ICashFlowRecordList,
   oriData: IOriData,
 }) {
-  data.insertData.tradeId = `CF-${data.insertData.currency}-${getCurrentTimestamp()}`;
-  const latestTradeDateTime =
-    await getLatestTradeRecordDateTime("public.cashflow_trade", "trade_datetime", data.insertData.cashflowId);
-  console.log("latestTradeDateTime");
-  console.log("latestTradeDateTime:", latestTradeDateTime);
+  // console.log("data:", data);
+  data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-  if (latestTradeDateTime > setTimezone(data.insertData.tradeDatetime)) {
+  const latestTradeDateTimes =
+    await getLatestTradeRecordDateTime("cashflow_trade", "cashflow_id", data.updateData.cashflowId);
+  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
+  console.log("latestTradeDateTimes:", latestTradeDateTimes);
+  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
+
+  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
     console.log(100);
-  } else if (latestTradeDateTime === setTimezone(data.insertData.tradeDatetime)) {
+  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
     console.log(200);
-    return { success: false, message: "新增失敗，交易時間不可與現有紀錄相同" };
-  }
-  else if (latestTradeDateTime < setTimezone(data.insertData.tradeDatetime)) {
+  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
     console.log(300);
   }
 
@@ -122,21 +123,21 @@ export async function insertCashFlowRecordData(data: {
     // VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
     // const params = [
-    //   data.insertData.tradeId,
-    //   data.insertData.cashflowId,
-    //   data.insertData.userId,
-    //   data.insertData.tradeDatetime,
-    //   data.insertData.tradeCategory,
-    //   data.insertData.transactionType,
-    //   data.insertData.tradeAmount,
-    //   data.insertData.remainingAmount,
-    //   data.insertData.currency,
-    //   data.insertData.tradeDescription,
-    //   data.insertData.tradeNote,
+    //   data.updateData.tradeId,
+    //   data.updateData.cashflowId,
+    //   data.updateData.userId,
+    //   data.updateData.tradeDatetime,
+    //   data.updateData.tradeCategory,
+    //   data.updateData.transactionType,
+    //   data.updateData.tradeAmount,
+    //   data.updateData.remainingAmount,
+    //   data.updateData.currency,
+    //   data.updateData.tradeDescription,
+    //   data.updateData.tradeNote,
     // ];
 
     // return executeOperation(query, params);
-    return { success: false, message: "新增失敗" };
+    return { success: true, message: "新增成功" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
@@ -148,8 +149,15 @@ export async function updateCashFlowRecordData(data: {
   oriData: IOriData,
 }) {
 
+  const latestTradeDateTimes = await getLatestTradeRecordDateTime("public.cashflow_trade", "cashflow_id", data.updateData.cashflowId);
+  console.log("latestTradeDateTimes:", latestTradeDateTimes);
   // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
   // console.log("latestTimestamp():", await latestTimestamp());
+  if (latestTradeDateTimes > setTimezone(data.updateData.tradeDatetime)) {
+    console.log(latestTradeDateTimes);
+  }
+  //
+
 
   const query = `
     UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7

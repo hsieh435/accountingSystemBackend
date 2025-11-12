@@ -54,8 +54,10 @@ export async function searchingCashFlowRecordById(req: Request, res: Response) {
 }
 
 export async function cashFlowRecordCreate(req: Request, res: Response) {
+  // console.log("body:", req.body);
   try {
     const result = await cashFlowRecordServices.insertCashFlowRecordData(req.body);
+    // console.log("result:", result);
     handleServiceResponse(res, result, req, "建立成功", "資料錯誤");
   } catch (err) {
     res.json(error({ req, res }));
