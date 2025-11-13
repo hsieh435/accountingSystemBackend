@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -26,9 +26,17 @@ export interface IStoredValueCardRecordList {
   tradeNote: string;
 }
 
+export interface IOriData {
+  oriTradeDatetime: string;
+  oriTradeAmount: number;
+  oriRemainingAmount: number;
+  oriTransactionType: string;
+}
+
 export interface IStoredValueCardRecordData {
   updateData: IStoredValueCardRecordList;
-  oriData: any;
+  oriData: IOriData;
+  userId: string;
 }
 
 
@@ -71,9 +79,26 @@ export async function searchingStoredValueCardRecordById(data: {
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
+
+
+  const latestTradeDateTimes =
+    await getLatestTradeRecordDateTime("stored_value_card_trade", "stored_value_card_id", data.updateData.storedValueCardId);
+  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
+  console.log("latestTradeDateTimes:", latestTradeDateTimes);
+  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
+
+  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
+    console.log(100);
+  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
+    console.log(200);
+  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
+    console.log(300);
+  }
+
+
   try {
     const insertResult = await pool.query(
-      `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+      `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
     );
     return insertResult.rowCount === 1
       ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
@@ -86,7 +111,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
   const result = await pool.query(
     `UPDATE public.stored_value_card_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', transaction_type='${data.updateData.transactionType}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
-    WHERE trade_id='${data.updateData.tradeId}' AND stored_value_card_id='${data.updateData.storedValueCardId}' AND user_id='${data.updateData.userId}'`,
+    WHERE trade_id='${data.updateData.tradeId}' AND stored_value_card_id='${data.updateData.storedValueCardId}' AND user_id='${data.userId}'`,
   );
   return result.rowCount === 1
     ? { success: true, userData: keysToCamel(result.rows[0]) }

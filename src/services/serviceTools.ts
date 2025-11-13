@@ -18,8 +18,8 @@ export async function getLatestTradeRecordDateTime(
 
   try {
     const result =
-      await pool.query(`SELECT MAX(trade_datetime) AS latestTradeDatetime FROM ${table} WHERE ${column} = $1`, [flowId]);
-    const latestTradeDatetime = result.rows[0].latesttradedatetime || null;
+      await pool.query(`SELECT MAX(trade_datetime) AS latestTradeDatetime FROM ${table} WHERE ${column} = '${flowId}'`);
+    const latestTradeDatetime = setTimezone(result.rows[0].latesttradedatetime || null);
 
     return latestTradeDatetime;
   } catch (err) {

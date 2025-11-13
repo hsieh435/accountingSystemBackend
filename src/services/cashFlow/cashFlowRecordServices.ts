@@ -32,7 +32,11 @@ export interface IOriData {
   oriTransactionType: string;
 }
 
-
+export interface ICashFlowRecordData {
+  updateData: ICashFlowRecordList;
+  oriData: IOriData;
+  userId: string;
+}
 
 const handleDbError = (error: any, defaultData: any = []) => {
   return { success: false, data: defaultData };
@@ -96,10 +100,7 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
   }
 }
 
-export async function insertCashFlowRecordData(data: {
-  updateData: ICashFlowRecordList,
-  oriData: IOriData,
-}) {
+export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
@@ -110,11 +111,11 @@ export async function insertCashFlowRecordData(data: {
   console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
 
   if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    console.log(100);
+    // console.log(100);
   } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log(200);
+    console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
   } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    console.log(300);
+    // console.log(300);
   }
 
   try {
@@ -125,7 +126,7 @@ export async function insertCashFlowRecordData(data: {
     // const params = [
     //   data.updateData.tradeId,
     //   data.updateData.cashflowId,
-    //   data.updateData.userId,
+    //   data.userId,
     //   data.updateData.tradeDatetime,
     //   data.updateData.tradeCategory,
     //   data.updateData.transactionType,
@@ -137,27 +138,16 @@ export async function insertCashFlowRecordData(data: {
     // ];
 
     // return executeOperation(query, params);
-    return { success: true, message: "新增成功" };
+    return { success: false, message: "新增成功" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
 
 }
 
-export async function updateCashFlowRecordData(data: {
-  updateData: ICashFlowRecordList,
-  oriData: IOriData,
-}) {
+export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 
-  const latestTradeDateTimes = await getLatestTradeRecordDateTime("public.cashflow_trade", "cashflow_id", data.updateData.cashflowId);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  // console.log("data.updateData.tradeDatetime:", setTimezone(data.updateData.tradeDatetime));
-  // console.log("latestTimestamp():", await latestTimestamp());
-  if (latestTradeDateTimes > setTimezone(data.updateData.tradeDatetime)) {
-    console.log(latestTradeDateTimes);
-  }
-  //
-
+  // console.log("data:", data);
 
   const query = `
     UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7
@@ -174,7 +164,7 @@ export async function updateCashFlowRecordData(data: {
     data.updateData.tradeNote,
     data.updateData.tradeId,
     data.updateData.cashflowId,
-    data.updateData.userId,
+    data.userId,
   ];
 
   return executeOperation(query, params);

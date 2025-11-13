@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
+import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -28,10 +28,17 @@ export interface ICreditCardRecordList {
   tradeNote: string;
 }
 
+export interface IOriData {
+  oriTradeDatetime: string;
+  oriTradeAmount: number;
+  oriRemainingAmount: number;
+  oriTransactionType: string;
+}
 
 export interface ICreditCardRecordData {
   updateData: ICreditCardRecordList;
-  oriData: any;
+  oriData: IOriData;
+  userId: string;
 }
 
 // Helper function for consistent error handling
@@ -101,6 +108,23 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 }
 
 export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
+
+
+  const latestTradeDateTimes =
+    await getLatestTradeRecordDateTime("currency_account_trade", "account_id", data.updateData.accountId);
+  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
+  console.log("latestTradeDateTimes:", latestTradeDateTimes);
+  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
+
+  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
+    console.log(100);
+  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
+    console.log(200);
+  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
+    console.log(300);
+  }
+
+
   const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
 
@@ -108,7 +132,7 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     `CA-${data.updateData.currency}-${getCurrentTimestamp()}`,
     data.updateData.accountId,
     data.updateData.tradeDatetime,
-    data.updateData.userId,
+    data.userId,
     data.updateData.tradeCategory,
     data.updateData.transactionType,
     data.updateData.tradeAmount,
@@ -152,7 +176,7 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
       data.updateData.tradeNote,
       data.updateData.tradeId,
       data.updateData.accountId,
-      data.updateData.userId,
+      data.userId,
     ];
 
     const result = await pool.query(query, params);

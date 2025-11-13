@@ -93,8 +93,8 @@ export function yearMonthDayTimeFormat(dateString: Date | string | number, hasTi
 }
 
 // 時間格式設定 Timezone
-export function setTimezone(dateString: string): string {
-  return new Date(dateString).toISOString();
+export function setTimezone(dateString: string | null = null): string {
+  return dateString ? new Date(dateString).toISOString() : "";
 }
 
 // 取得當前時間戳，並轉換為 UTC 字串
