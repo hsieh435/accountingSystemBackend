@@ -1,8 +1,7 @@
 import pool from "@/db";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
-
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -48,7 +47,6 @@ export interface IStockAccountRecordData {
   userId: string;
 }
 
-
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
   try {
     const result = await pool.query(
@@ -73,7 +71,6 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
   }
 }
 
-
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
   try {
     const result = await pool.query(
@@ -87,24 +84,17 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "currency_account_trade",
+    "account_id",
+    data.updateData.accountId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeTotalPrice - data.oriData.oriTradeAmount,
+  );
 
+  //
 
-  const latestTradeDateTimes =
-    await getLatestTradeRecordDateTime("currency_account_trade", "account_id", data.updateData.accountId);
-  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
-
-  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    console.log(100);
-  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log(200);
-  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    console.log(300);
-  }
-
-
- const insertResult = await pool.query(
+  const insertResult = await pool.query(
     `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note) VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
   );
 

@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -38,8 +38,6 @@ export interface IStoredValueCardRecordData {
   oriData: IOriData;
   userId: string;
 }
-
-
 
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
   try {
@@ -79,22 +77,15 @@ export async function searchingStoredValueCardRecordById(data: {
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "stored_value_card_trade",
+    "stored_value_card_id",
+    data.updateData.storedValueCardId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+  );
 
-
-  const latestTradeDateTimes =
-    await getLatestTradeRecordDateTime("stored_value_card_trade", "stored_value_card_id", data.updateData.storedValueCardId);
-  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
-
-  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    console.log(100);
-  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log(200);
-  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    console.log(300);
-  }
-
+  //
 
   try {
     const insertResult = await pool.query(

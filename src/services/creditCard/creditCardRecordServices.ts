@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -59,11 +59,10 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-
   try {
     const result = await pool.query(
       `SELECT * FROM creditcard_trade
-      WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`
+      WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`,
     );
     if (result.rowCount === 1) {
       return { success: true, data: keysToCamel(result.rows[0]) };
@@ -75,22 +74,15 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 }
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "creditcard_trade",
+    "credit_card_id",
+    data.updateData.creditCardId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+  );
 
-
-  const latestTradeDateTimes =
-    await getLatestTradeRecordDateTime("creditcard_trade", "credit_card_id", data.updateData.creditCardId);
-  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
-
-  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    console.log(100);
-  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log(200);
-  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    console.log(300);
-  }
-
+  //
 
   const insertResult = await pool.query(
     `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,

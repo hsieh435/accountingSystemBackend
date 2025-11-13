@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -104,19 +104,15 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-  const latestTradeDateTimes =
-    await getLatestTradeRecordDateTime("cashflow_trade", "cashflow_id", data.updateData.cashflowId);
-  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "cashflow_trade",
+    "cashflow_id",
+    data.updateData.cashflowId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+  );
 
-  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    // console.log(100);
-  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
-  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    // console.log(300);
-  }
+  //
 
   try {
     // const query = `
@@ -142,11 +138,9 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
-
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
-
   // console.log("data:", data);
 
   const query = `
@@ -172,8 +166,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   try {
-    const query =
-      `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
+    const query = `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
     const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };

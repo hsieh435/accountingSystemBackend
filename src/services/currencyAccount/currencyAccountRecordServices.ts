@@ -1,7 +1,7 @@
 import pool from "@/db";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
-import { keysToCamel, getCurrentTimestamp, setTimezone } from "@/utils/tools";
-import { getLatestTradeRecordDateTime } from "@/services/serviceTools";
+import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -108,22 +108,15 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 }
 
 export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "currency_account_trade",
+    "account_id",
+    data.updateData.accountId,
+    data.updateData.tradeDatetime,
+    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+  );
 
-
-  const latestTradeDateTimes =
-    await getLatestTradeRecordDateTime("currency_account_trade", "account_id", data.updateData.accountId);
-  const tradeDatetimeWithTimezone = setTimezone(data.updateData.tradeDatetime);
-  console.log("latestTradeDateTimes:", latestTradeDateTimes);
-  console.log("tradeDatetimeWithTimezone:", tradeDatetimeWithTimezone);
-
-  if (latestTradeDateTimes > tradeDatetimeWithTimezone) {
-    console.log(100);
-  } else if (latestTradeDateTimes === tradeDatetimeWithTimezone) {
-    console.log(200);
-  } else if (!latestTradeDateTimes || latestTradeDateTimes < tradeDatetimeWithTimezone) {
-    console.log(300);
-  }
-
+  //
 
   const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
@@ -146,7 +139,10 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
   // return executeOperation(insertQuery, insertParams);
 
   if (insertResult.rowCount === 1) {
-    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(data.updateData.accountId, data.updateData.userId);
+    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(
+      data.updateData.accountId,
+      data.updateData.userId,
+    );
     accountTarget.data.presentAmount = data.updateData.remainingAmount;
     await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
 
@@ -190,7 +186,11 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
 export async function removeCurrencyAccountRecord(data: ICreditCardRecordData) {
   try {
     const query = "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3";
-    const result = await pool.query(query, [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId]);
+    const result = await pool.query(query, [
+      data.updateData.tradeId,
+      data.updateData.accountId,
+      data.updateData.userId,
+    ]);
 
     return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
   } catch (error) {
