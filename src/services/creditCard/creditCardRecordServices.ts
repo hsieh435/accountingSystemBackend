@@ -110,7 +110,8 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
   const deleteResult = await pool.query(
-    `DELETE FROM public.creditcard_trade WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+    `DELETE FROM public.creditcard_trade
+    WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
   );
   // console.log("deleteResult:", deleteResult);
   if (deleteResult.rowCount === 1) {

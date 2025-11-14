@@ -68,7 +68,8 @@ export async function searchingStoredValueCardRecordById(data: {
 }) {
   try {
     const result = await pool.query(
-      `SELECT * FROM public.stored_value_card_trade WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
+      `SELECT * FROM public.stored_value_card_trade
+      WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
     );
     return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
   } catch {

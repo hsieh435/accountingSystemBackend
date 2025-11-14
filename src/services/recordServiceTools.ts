@@ -31,26 +31,42 @@ export async function latestTradeDateTimeDetect(
     );
     const latestTradeDatetime = setTimezone(result.rows[0].latesttradedatetime || null);
     const dataTradeDatetime = setTimezone(recordTradeDatetime);
+    // console.log("latestTradeDatetime:", latestTradeDatetime);
+    // console.log("dataTradeDatetime:", dataTradeDatetime);
 
     if (latestTradeDatetime > dataTradeDatetime) {
-      // console.log(100);
-      // return { success: true };
-      // await updateRemainingAmount(
-      //   tableName,
-      //   "remaining_amount",
-      //   100,
-      //   dataTradeDatetime,
-      //   latestTradeDatetime,
-      // )
-
-      const table = sanitizeIdentifier(tableName);
+      // console.log("table:", table);
+      // console.log("recordTradeDatetime:", recordTradeDatetime);
+      // console.log("column:", column);
+      // console.log("flowId:", flowId);
 
       try {
-        const result = await pool.query(`UPDATE ${table}
-          SET remaining_amount = remaining_amount + ${amountDifference}
-          WHERE trade_datetime BETWEEN ${dataTradeDatetime} AND ${latestTradeDatetime}
-        `);
-        return { success: true, rowCount: result.rowCount };
+        const result = await pool.query(
+          `SELECT * FROM ${table} WHERE trade_datetime = '${recordTradeDatetime}' AND ${column} = '${flowId}'`
+        );
+        if (result.rows.length === 1) {
+          return { success: false, message: "時間點重複" };
+        } else if ((result.rows = [])) {
+          // console.log(100);
+          // return { success: true };
+          // await updateRemainingAmount(
+          //   tableName,
+          //   "remaining_amount",
+          //   100,
+          //   dataTradeDatetime,
+          //   latestTradeDatetime,
+          // )
+
+          try {
+            const result = await pool.query(`UPDATE ${table}
+              SET remaining_amount = remaining_amount + ${amountDifference}
+              WHERE trade_datetime BETWEEN ${dataTradeDatetime} AND ${latestTradeDatetime}
+            `);
+            return { success: true, rowCount: result.rowCount };
+          } catch (error) {
+            return { success: false, error };
+          }
+        }
       } catch (error) {
         return { success: false, error };
       }
@@ -61,8 +77,6 @@ export async function latestTradeDateTimeDetect(
       // console.log(300);
       return { success: true };
     }
-
-    // return latestTradeDatetime;
   } catch (err) {
     throw err;
   }

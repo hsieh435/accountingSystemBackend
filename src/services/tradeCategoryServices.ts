@@ -32,7 +32,8 @@ export async function createTradeCategory(data: ITradeCategory) {
 
 export async function updateTradeCategory(data: ITradeCategory) {
   const result = await pool.query(
-    `UPDATE trade_category SET trade_name = '${data.tradeName}', is_cashflow_able = ${data.isCashflowAble}, is_storedvaluecard_able = ${data.isStoredvaluecardAble}, is_creditcard_able = ${data.isCreditcardAble}, is_cuaccount_able = ${data.isCuaccountAble}, is_staccount_able = ${data.isStaccountAble}, sort = ${data.sort} WHERE trade_code = '${data.tradeCode}';`,
+    `UPDATE trade_category SET trade_name = '${data.tradeName}', is_cashflow_able = ${data.isCashflowAble}, is_storedvaluecard_able = ${data.isStoredvaluecardAble}, is_creditcard_able = ${data.isCreditcardAble}, is_cuaccount_able = ${data.isCuaccountAble}, is_staccount_able = ${data.isStaccountAble}, sort = ${data.sort}
+    WHERE trade_code = '${data.tradeCode}';`,
   );
   return keysToCamel(result.rows[0]);
 }
