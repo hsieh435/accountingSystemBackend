@@ -113,7 +113,10 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     "account_id",
     data.updateData.accountId,
     data.updateData.tradeDatetime,
-    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeAmount,
+    data.oriData.oriTradeAmount,
   );
 
   //

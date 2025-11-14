@@ -83,7 +83,10 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     "stored_value_card_id",
     data.updateData.storedValueCardId,
     data.updateData.tradeDatetime,
-    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeAmount,
+    data.oriData.oriTradeAmount,
   );
 
   //

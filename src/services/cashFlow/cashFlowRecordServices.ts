@@ -104,16 +104,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-  const dateDetectResult = await latestTradeDateTimeDetect(
-    "cashflow_trade",
-    "cashflow_id",
-    data.updateData.cashflowId,
-    data.updateData.tradeDatetime,
-    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
-  );
-
-  //
-
   try {
     // const query = `
     // INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
@@ -132,6 +122,19 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     //   data.updateData.tradeDescription,
     //   data.updateData.tradeNote,
     // ];
+
+
+    const dateDetectResult = await latestTradeDateTimeDetect(
+      "cashflow_trade",
+      "cashflow_id",
+      data.updateData.cashflowId,
+      data.updateData.tradeDatetime,
+      data.updateData.transactionType,
+      data.oriData.oriTransactionType,
+      data.updateData.tradeAmount,
+      data.oriData.oriTradeAmount,
+    );
+
 
     // return executeOperation(query, params);
     return { success: false, message: "新增成功" };

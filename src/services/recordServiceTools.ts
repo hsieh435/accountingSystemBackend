@@ -20,10 +20,28 @@ export async function latestTradeDateTimeDetect(
   flowColumn: string,
   flowId: string,
   recordTradeDatetime: string,
-  amountDifference: number,
+  dataTransactionType: string,
+  oriTransactionType: string,
+  dataTradeAmount: number,
+  oriTradeAmount: number,
 ): Promise<any> {
   const table = sanitizeIdentifier(tableName);
   const column = sanitizeIdentifier(flowColumn);
+
+  // ...existing code...
+  const amountDifference = (() => {
+    switch (true) {
+      case dataTransactionType === oriTransactionType:
+        return dataTradeAmount - oriTradeAmount;
+      case dataTransactionType === "income" && oriTransactionType === "expense":
+        return dataTradeAmount + oriTradeAmount;
+      case dataTransactionType === "expense" && oriTransactionType === "income":
+        return -dataTradeAmount - oriTradeAmount;
+      default:
+        return 0;
+    }
+  })();
+  // ...existing code...
 
   try {
     const result = await pool.query(
@@ -42,7 +60,7 @@ export async function latestTradeDateTimeDetect(
 
       try {
         const result = await pool.query(
-          `SELECT * FROM ${table} WHERE trade_datetime = '${recordTradeDatetime}' AND ${column} = '${flowId}'`
+          `SELECT * FROM ${table} WHERE trade_datetime = '${recordTradeDatetime}' AND ${column} = '${flowId}'`,
         );
         if (result.rows.length === 1) {
           return { success: false, message: "時間點重複" };

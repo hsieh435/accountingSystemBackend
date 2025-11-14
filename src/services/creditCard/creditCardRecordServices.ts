@@ -79,7 +79,10 @@ export async function insertCreditCardData(data: ICreditCardTradeData) {
     "credit_card_id",
     data.updateData.creditCardId,
     data.updateData.tradeDatetime,
-    data.updateData.tradeAmount - data.oriData.oriTradeAmount,
+    "expense",
+    "expense",
+    data.updateData.tradeAmount,
+    data.oriData.oriTradeAmount,
   );
 
   //
