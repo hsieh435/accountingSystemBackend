@@ -108,19 +108,6 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 }
 
 export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
-  const dateDetectResult = await latestTradeDateTimeDetect(
-    "currency_account_trade",
-    "account_id",
-    data.updateData.accountId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
-  );
-
-  //
-
   const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
   `;
 
@@ -148,6 +135,17 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     );
     accountTarget.data.presentAmount = data.updateData.remainingAmount;
     await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
+
+    const dateDetectResult = await latestTradeDateTimeDetect(
+      "currency_account_trade",
+      "account_id",
+      data.updateData.accountId,
+      data.updateData.tradeDatetime,
+      data.updateData.transactionType,
+      data.oriData.oriTransactionType,
+      data.updateData.tradeAmount,
+      data.oriData.oriTradeAmount,
+    );
 
     return {
       success: insertResult,

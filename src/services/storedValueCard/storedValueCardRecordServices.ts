@@ -78,23 +78,24 @@ export async function searchingStoredValueCardRecordById(data: {
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
-  const dateDetectResult = await latestTradeDateTimeDetect(
-    "stored_value_card_trade",
-    "stored_value_card_id",
-    data.updateData.storedValueCardId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
-  );
-
-  //
-
   try {
     const insertResult = await pool.query(
       `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
     );
+
+    const dateDetectResult = await latestTradeDateTimeDetect(
+      "stored_value_card_trade",
+      "stored_value_card_id",
+      data.updateData.storedValueCardId,
+      data.updateData.tradeDatetime,
+      data.updateData.transactionType,
+      data.oriData.oriTransactionType,
+      data.updateData.tradeAmount,
+      data.oriData.oriTradeAmount,
+    );
+
+    //
+
     return insertResult.rowCount === 1
       ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
       : { success: false, userData: [] };

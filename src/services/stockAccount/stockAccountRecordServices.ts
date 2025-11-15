@@ -84,6 +84,14 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
+  const insertResult = await pool.query(
+    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note) VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+  );
+
+  const accountTarget = await getStockAccountById({ accountId: data.updateData.accountId, userId: data.userId });
+  accountTarget.data.presentAmount = data.updateData.remainingAmount;
+  const updateResult = await updateStockAccountData(accountTarget.data);
+
   const dateDetectResult = await latestTradeDateTimeDetect(
     "currency_account_trade",
     "account_id",
@@ -96,14 +104,6 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   );
 
   //
-
-  const insertResult = await pool.query(
-    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note) VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
-  );
-
-  const accountTarget = await getStockAccountById({ accountId: data.updateData.accountId, userId: data.userId });
-  accountTarget.data.presentAmount = data.updateData.remainingAmount;
-  const updateResult = await updateStockAccountData(accountTarget.data);
 
   return insertResult.rowCount === 1 && updateResult
     ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
