@@ -1,21 +1,16 @@
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
 import * as creditCardRecordServices from "@/services/creditCard/creditCardRecordServices";
-import { keysToCamel } from "@/utils/tools";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 
 export async function creditCardRecordList(req: Request, res: Response) {
   // console.log("Request body:", req.body);
 
   try {
-    const searchingResult = await creditCardRecordServices.searchingCreditCardRecordList(req.body);
+    const result = await creditCardRecordServices.searchingCreditCardRecordList(req.body);
     // console.log("searchingResult:", searchingResult);
-    if (searchingResult.success === true) {
-      res.json(success({ data: searchingResult.data, message: "查詢成功", req, res }));
-    } else {
-      res.json(error({ message: "發生錯誤", req, res }));
-    }
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ message: "發生錯誤", req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -23,58 +18,42 @@ export async function searchingCreditCardRecordById(req: Request, res: Response)
   // console.log("req:", req.body);
 
   try {
-    const searchingResult = await creditCardRecordServices.getCreditCardRecordById(
+    const result = await creditCardRecordServices.getCreditCardRecordById(
       req.body.tradeId,
       req.body.creditCardId,
       req.body.userId,
     );
     // console.log("searchingResult:", searchingResult.rows);
-    if (searchingResult.success === true) {
-      res.json(success({ data: keysToCamel(searchingResult.data), req, res }));
-    } else {
-      res.json(error({ message: "信用卡不存在", req, res }));
-    }
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
 export async function creditCardRecordCreate(req: Request, res: Response) {
   try {
-    const createResult = await creditCardRecordServices.insertCreditCardData(req.body);
+    const result = await creditCardRecordServices.insertCreditCardData(req.body);
     // console.log("createResult:", createResult);
-    if (createResult.success === true) {
-      res.json(success({ data: createResult, message: "建立成功", req, res }));
-    } else {
-      res.json(error({ message: "資料錯誤", req, res }));
-    }
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
 export async function creditCardRecordUpdate(req: Request, res: Response) {
   try {
-    const updateResult = await creditCardRecordServices.updateCreditCardData(req.body);
-    if (updateResult) {
-      res.json(success({ message: "修改成功", req, res }));
-    } else {
-      res.json(error({ message: "修改失敗", req, res }));
-    }
+    const result = await creditCardRecordServices.updateCreditCardData(req.body);
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
 export async function creditCardRecordDelete(req: Request, res: Response) {
   try {
-    const removeResult = await creditCardRecordServices.removeCreditCardRecordData(req.body);
-    if (removeResult.success === true) {
-      res.json(success({ message: removeResult.message, req, res }));
-    } else {
-      res.json(error({ message: removeResult.message, req, res }));
-    }
+    const result = await creditCardRecordServices.removeCreditCardRecordData(req.body);
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }

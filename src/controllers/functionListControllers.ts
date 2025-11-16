@@ -1,9 +1,8 @@
 import pool from "@/db";
 import { Request, Response } from "express";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 import { success, error } from "@/utils/response";
 import { keysToCamel } from "@/utils/tools";
-
-
 
 // 功能群組列表 interface
 export interface IFunctionGroupList {
@@ -21,14 +20,13 @@ export interface IFunctionGroupList {
   }[];
 }
 
-
-
 export async function functionListSearching(req: Request, res: Response) {
   try {
     const searchingFunctionGroup = await pool.query(`SELECT * FROM public.function_group ORDER BY sort ASC`);
 
-    const searchingFunction = 
-      await pool.query(`SELECT * FROM public.function ORDER BY function_group_id ASC, sort ASC`);
+    const searchingFunction = await pool.query(
+      `SELECT * FROM public.function ORDER BY function_group_id ASC, sort ASC`,
+    );
 
     const functionGroupList: IFunctionGroupList[] = searchingFunctionGroup.rows.map((group) => {
       const functions = searchingFunction.rows
@@ -53,6 +51,6 @@ export async function functionListSearching(req: Request, res: Response) {
     // console.log("functionGroupList:", functionGroupList);
     res.json(success({ message: "查詢成功", req, res, data: keysToCamel(functionGroupList) }));
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }

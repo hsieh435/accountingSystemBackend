@@ -25,21 +25,21 @@ export async function getCurrencyListByOuterApi(req: Request, res: Response) {
       }
     });
 
-    const dataFiltered = currencyList.filter((item: { currencyCode: string; currencyName: string }) =>
-      item.currencyCode.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-      item.currencyName.toLowerCase().includes(req.params.keyword.toLowerCase())
+    const dataFiltered = currencyList.filter(
+      (item: { currencyCode: string; currencyName: string }) =>
+        item.currencyCode.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+        item.currencyName.toLowerCase().includes(req.params.keyword.toLowerCase()),
     );
 
     res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 
 // https://open.er-api.com/v6/latest/TWD
 // 查詢最新匯率
 export async function getLatestCurrencyExchangeRate(req: Request, res: Response) {
-
   try {
     const response = await fetch(`https://open.er-api.com/v6/latest/${req.params.currencyCode}`, {
       method: "GET",
@@ -48,7 +48,7 @@ export async function getLatestCurrencyExchangeRate(req: Request, res: Response)
     const data = await response.json();
     res.json(success({ data: data, message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 
@@ -68,7 +68,7 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
     // console.log("data:", data);
     res.json(success({ data: data, message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 

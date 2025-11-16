@@ -20,28 +20,9 @@ export async function latestTradeDateTimeDetect(
   flowColumn: string,
   flowId: string,
   recordTradeDatetime: string,
-  dataTransactionType: string,
-  oriTransactionType: string,
-  dataTradeAmount: number,
-  oriTradeAmount: number,
 ): Promise<any> {
   const table = sanitizeIdentifier(tableName);
   const column = sanitizeIdentifier(flowColumn);
-
-  // ...existing code...
-  const amountDifference = (() => {
-    switch (true) {
-      case dataTransactionType === oriTransactionType:
-        return dataTradeAmount - oriTradeAmount;
-      case dataTransactionType === "income" && oriTransactionType === "expense":
-        return dataTradeAmount + oriTradeAmount;
-      case dataTransactionType === "expense" && oriTransactionType === "income":
-        return -dataTradeAmount - oriTradeAmount;
-      default:
-        return 0;
-    }
-  })();
-  // ...existing code...
 
   try {
     const result = await pool.query(
@@ -63,62 +44,97 @@ export async function latestTradeDateTimeDetect(
           `SELECT * FROM ${table} WHERE trade_datetime = '${recordTradeDatetime}' AND ${column} = '${flowId}'`,
         );
         if (result.rows.length === 1) {
-          return { success: false, message: "時間點重複" };
+          return { success: false, message: "收支時間點重複" };
         } else if ((result.rows = [])) {
-          // console.log(100);
-          // return { success: true };
-          // await updateRemainingAmount(
-          //   tableName,
-          //   "remaining_amount",
-          //   100,
-          //   dataTradeDatetime,
-          //   latestTradeDatetime,
-          // )
-
-          try {
-            const result = await pool.query(`UPDATE ${table}
-              SET remaining_amount = remaining_amount + ${amountDifference}
-              WHERE trade_datetime BETWEEN ${dataTradeDatetime} AND ${latestTradeDatetime}
-            `);
-            return { success: true, rowCount: result.rowCount };
-          } catch (error) {
-            return { success: false, error };
-          }
+          return { success: true, message: "" };
         }
       } catch (error) {
         return { success: false, error };
       }
     } else if (latestTradeDatetime === dataTradeDatetime) {
-      console.log("dataTradeDatetime:", dataTradeDatetime);
-      return { success: false, message: "時間點重複" };
+      return { success: false, message: "收支時間點重複" };
     } else if (!latestTradeDatetime || latestTradeDatetime < dataTradeDatetime) {
-      // console.log(300);
-      return { success: true };
+      return { success: true, message: "" };
     }
   } catch (err) {
-    throw err;
+    return { success: false, message: err instanceof Error ? err.message : String(err) };
   }
 }
 
 export async function updateRemainingAmount(
-  tableName: string,
-  remainingAmountColumnName: string,
-  amountDifference: number,
-  startDateTime: string,
-  endDateTime: string,
+  flowListTableName: string,
+  recordTableName: string,
+  flowColumn: string,
+  flowId: string,
+  tradeDatetime: string,
+  dataTransactionType: string,
+  oriTransactionType: string,
+  dataTradeAmount: number,
+  oriTradeAmount: number,
 ) {
-  const table = sanitizeIdentifier(tableName);
-  const remainingAmountColumn = sanitizeIdentifier(remainingAmountColumnName);
+  const flowListTable = sanitizeIdentifier(flowListTableName);
+  const recordTable = sanitizeIdentifier(recordTableName);
+  const column = sanitizeIdentifier(flowColumn);
+
+  const amountDifference = (() => {
+    switch (true) {
+      case dataTransactionType === oriTransactionType:
+        return dataTradeAmount - oriTradeAmount;
+      case dataTransactionType === "income" && oriTransactionType === "expense":
+        return dataTradeAmount + oriTradeAmount;
+      case dataTransactionType === "expense" && oriTransactionType === "income":
+        return -dataTradeAmount - oriTradeAmount;
+      default:
+        return 0;
+    }
+  })();
 
   try {
-    const sql = `
-      UPDATE ${table}
-      SET ${remainingAmountColumn} = ${remainingAmountColumn} + $1
-      WHERE trade_datetime BETWEEN $2 AND $3
-    `;
-    const result = await pool.query(sql, [amountDifference, startDateTime, endDateTime]);
+    const result = await pool.query(`UPDATE ${recordTable}
+      SET remaining_amount = remaining_amount + $1
+      WHERE trade_datetime > $2 AND ${column} = $3`,
+      [amountDifference, tradeDatetime, flowId],
+    );
+
+    // 加上 await 確保同步執行
+    const flowUpdateResult = await updateFlowDataRemainingAmount(flowListTable, recordTable, flowColumn, flowId);
+
+    if (!flowUpdateResult.success) {
+      return { success: false, error: "更新餘額失敗" };
+    }
+
     return { success: true, rowCount: result.rowCount };
   } catch (error) {
-    return { success: false, error };
+    console.error("Error updating remaining amount:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+export async function updateFlowDataRemainingAmount(
+  flowListTable: string,
+  recordTable: string,
+  flowColumn: string,
+  flowId: string,
+) {
+  console.log("flowListTable:", flowListTable);
+  console.log("recordTable:", recordTable);
+  console.log("flowColumn:", flowColumn);
+  console.log("flowId:", flowId);
+
+  try {
+    const result = await pool.query(`
+      UPDATE ${flowListTable} SET present_amount = (
+        SELECT frt.remaining_amount FROM ${recordTable} AS frt
+        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable})
+        AND frt.${flowColumn} = '${flowId}')
+      WHERE ${flowColumn} = '${flowId}'
+    `);
+    console.log("result:", result);
+    return { success: true };
+  } catch (error) {
+    return { success: false };
   }
 }

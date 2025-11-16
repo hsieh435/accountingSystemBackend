@@ -1,11 +1,9 @@
 import pool from "@/db";
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
-import * as tradeService from "@/services/tradeCategoryServices";
+import * as tradeService from "@/services/tradeCategory/tradeCategoryServices";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 import { keysToCamel } from "@/utils/tools";
-
-
-
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {
@@ -19,8 +17,9 @@ export async function getSchemasList(req: Request, res: Response) {
 }
 
 export async function getSchemaById(req: Request, res: Response) {
-  const searchingSchemaResult =
-    await pool.query(`SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`);
+  const searchingSchemaResult = await pool.query(
+    `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
+  );
   if (searchingSchemaResult.rows.length === 1) {
     return res.json(success({ data: keysToCamel(searchingSchemaResult.rows[0]), req, res }));
   } else {
@@ -30,8 +29,9 @@ export async function getSchemaById(req: Request, res: Response) {
 
 export async function createSchema(req: Request, res: Response) {
   const { schemaCode, schemaName, sort } = req.body;
-  const result =
-    await pool.query(`INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`);
+  const result = await pool.query(
+    `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`,
+  );
   if (result.rows.length === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
   } else if (result.rows.length === 0) {
@@ -60,8 +60,6 @@ export async function deleteSchema(req: Request, res: Response) {
   }
 }
 
-
-
 // currency
 export interface ICurrencyList {
   currencyCode: string;
@@ -70,7 +68,6 @@ export interface ICurrencyList {
   minimumDenomination: number;
   sort: number;
 }
-
 
 export async function getCurrencyList(req: Request, res: Response) {
   const searchingCurrencyResult = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
@@ -96,7 +93,7 @@ export async function createCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
   const data: ICurrencyList = req.body;
   const result = await pool.query(
-    `INSERT INTO public.currency_list(currency_code, currency_name, currency_symbol, minimum_denomination, sort) VALUES ('${data.currencyCode}', '${data.currencyName}', '${data.currencySymbol}', ${data.minimumDenomination}, ${data.sort});`
+    `INSERT INTO public.currency_list(currency_code, currency_name, currency_symbol, minimum_denomination, sort) VALUES ('${data.currencyCode}', '${data.currencyName}', '${data.currencySymbol}', ${data.minimumDenomination}, ${data.sort});`,
   );
   if (result.rowCount === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
@@ -109,7 +106,7 @@ export async function updateCurrency(req: Request, res: Response) {
   const { currencyCode, currencyName, sort } = req.body;
   const data: ICurrencyList = req.body;
   const result = await pool.query(
-    `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`
+    `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`,
   );
   if (result.rowCount === 1) {
     return res.json(success({ data: keysToCamel(result.rows[0]), req, res }));
@@ -140,10 +137,11 @@ export async function deleteCurrency(req: Request, res: Response) {
   // console.log("searchingCurrencyResult:", searchingCurrencyResult.rows[0]);
 
   if (searchingCurrencyResult.rows[0].total > 0) {
-    return res.json(error({ message: "貨幣已被使用，無法刪除", req, res }));
+    return res.status(500).json(error({ message: "貨幣已被使用，無法刪除", req, res }));
   } else if (searchingCurrencyResult.rows[0].total === 0) {
-    const deleteResult =
-      await pool.query(`DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,);
+    const deleteResult = await pool.query(
+      `DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,
+    );
 
     if (deleteResult.rowCount === 1) {
       return res.json(success({ data: { message: "刪除成功" }, req, res }));
@@ -151,66 +149,54 @@ export async function deleteCurrency(req: Request, res: Response) {
       return res.status(400).json(error({ message: "刪除失敗", req, res }));
     }
   } else {
-
   }
 }
 
-
-
 // tradeCategory
 export const getAll = async (req: Request, res: Response) => {
-
   try {
     const result = await tradeService.getAllTradeCategory();
     // console.log("result:", result);
-    res.json(success({ data: result, message: "查詢成功", req, res }));
+    return await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    return await handleControllersResponse(res, req, err);
   }
 };
-
-
 
 export const getOne = async (req: Request, res: Response) => {
   try {
     const result = await tradeService.getTradeCategoryByCode(req.params.code);
-    res.json(success({ data: result, req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 };
-
-
 
 export const create = async (req: Request, res: Response) => {
   //
   try {
     const result = await tradeService.createTradeCategory(req.body);
-    res.json(success({ data: result, req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 };
-
-
 
 export async function update(req: Request, res: Response) {
   //
   try {
     const result = await tradeService.updateTradeCategory(req.body);
-    res.json(success({ data: result, req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
-};
-
-
+}
 
 export async function remove(req: Request, res: Response) {
   try {
     const result = await tradeService.removeTradeCategory(req.params.code);
-    res.json(success({ message: "刪除成功", req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
-};
+}

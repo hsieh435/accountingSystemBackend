@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
@@ -97,11 +98,11 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     "account_id",
     data.updateData.accountId,
     data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeTotalPrice,
-    data.oriData.oriTradeAmount,
   );
+  // console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  }
 
   //
 

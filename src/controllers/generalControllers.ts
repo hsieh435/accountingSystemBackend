@@ -1,8 +1,7 @@
 import { Request, Response } from "express";
 import { success, error } from "@/utils/response";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 const jwt = require("jsonwebtoken");
-
-
 
 export async function jwtVerify(req: Request, res: Response) {
   try {
@@ -23,9 +22,9 @@ export async function jwtVerify(req: Request, res: Response) {
       if (err) {
         return res.status(403).json(error({ message: "Invalid token", req, res }));
       }
-      res.json(success({ data: decoded, req, res }));
+      res.status(200).json(success({ data: decoded, req, res }));
     });
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
-};
+}

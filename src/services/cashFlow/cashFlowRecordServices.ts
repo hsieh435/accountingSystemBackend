@@ -1,6 +1,7 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
+import { latestTradeDateTimeDetect, updateRemainingAmount } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -38,25 +39,7 @@ export interface ICashFlowRecordData {
   userId: string;
 }
 
-const handleDbError = (error: any, defaultData: any = []) => {
-  return { success: false, data: defaultData };
-};
 
-// Helper function for update/insert operations
-const executeOperation = async (query: string, params: any[], successData?: any) => {
-  try {
-    const result = await pool.query(query, params);
-    if (result.rowCount === 1) {
-      return {
-        success: true,
-        userData: successData ? keysToCamel(successData) : keysToCamel(result.rows[0]),
-      };
-    }
-    return { success: false, userData: [] };
-  } catch (error) {
-    return { success: false, userData: [] };
-  }
-};
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   try {
@@ -104,27 +87,39 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
+  const dateDetectResult = await latestTradeDateTimeDetect(
+    "cashflow_trade",
+    "cashflow_id",
+    data.updateData.cashflowId,
+    data.updateData.tradeDatetime,
+  );
+
+  // console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  }
+
   try {
-    // const query = `
-    // INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    // VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    const query = `
+    INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
-    // const params = [
-    //   data.updateData.tradeId,
-    //   data.updateData.cashflowId,
-    //   data.userId,
-    //   data.updateData.tradeDatetime,
-    //   data.updateData.tradeCategory,
-    //   data.updateData.transactionType,
-    //   data.updateData.tradeAmount,
-    //   data.updateData.remainingAmount,
-    //   data.updateData.currency,
-    //   data.updateData.tradeDescription,
-    //   data.updateData.tradeNote,
-    // ];
+    const params = [
+      data.updateData.tradeId,
+      data.updateData.cashflowId,
+      data.userId,
+      data.updateData.tradeDatetime,
+      data.updateData.tradeCategory,
+      data.updateData.transactionType,
+      data.updateData.tradeAmount,
+      data.updateData.remainingAmount,
+      data.updateData.currency,
+      data.updateData.tradeDescription,
+      data.updateData.tradeNote,
+    ];
 
-
-    const dateDetectResult = await latestTradeDateTimeDetect(
+    await updateRemainingAmount(
+      "cashflow_list",
       "cashflow_trade",
       "cashflow_id",
       data.updateData.cashflowId,
@@ -135,9 +130,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.oriData.oriTradeAmount,
     );
 
-
-    // return executeOperation(query, params);
-    return { success: false, message: "新增成功" };
+    return executeOperation(query, params);
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }

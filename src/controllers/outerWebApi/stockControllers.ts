@@ -4,13 +4,12 @@ import { getCurrentYear } from "@/utils/tools";
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
-
   try {
     const response = await fetch("https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockInfo", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`
+        Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
       },
     });
     if (response.status === 200) {
@@ -30,10 +29,10 @@ export async function getAllStockList(req: Request, res: Response) {
       );
       res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
     } else {
-      res.json(error({ data: [], req, res }));
+      res.status(500).json(error({ data: [], req, res }));
     }
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 
@@ -57,11 +56,9 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
     // console.log("response:", jsonData);
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
-
-
 
 // 股利政策表
 export async function getStockDividendPolicy(req: Request, res: Response) {
@@ -70,7 +67,6 @@ export async function getStockDividendPolicy(req: Request, res: Response) {
   if (new Date(data.startDate) < new Date("2006-01-01 00:00:00")) {
     data.startDate = "2006-01-01";
   }
-
 }
 
 // 除權除息結果表
@@ -87,7 +83,7 @@ export async function getStockDividendResult(req: Request, res: Response) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`
+          Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
         },
       },
     );
@@ -95,7 +91,7 @@ export async function getStockDividendResult(req: Request, res: Response) {
     // console.log("jsonData:", jsonData);
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 
@@ -117,11 +113,12 @@ export async function getStockPerPbrInfo(req: Request, res: Response) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
         },
-      });
+      },
+    );
     const jsonData = await response.json();
     res.json(success({ data: jsonData, message: "查詢成功", req, res }));
   } catch (err) {
-    res.json(error({ data: [], req, res }));
+    res.status(500).json(error({ data: [], req, res }));
   }
 }
 

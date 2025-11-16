@@ -15,7 +15,7 @@ export interface ITradeCategory {
 
 export async function getAllTradeCategory() {
   const result = await pool.query("SELECT * FROM trade_category ORDER BY sort");
-  return keysToCamel(result.rows);
+  return { success: true, message: "查詢成功", data: result.rows };
 }
 
 export async function getTradeCategoryByCode(code: string) {

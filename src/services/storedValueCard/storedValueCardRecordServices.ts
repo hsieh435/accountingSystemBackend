@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
@@ -88,11 +89,11 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
       "stored_value_card_id",
       data.updateData.storedValueCardId,
       data.updateData.tradeDatetime,
-      data.updateData.transactionType,
-      data.oriData.oriTransactionType,
-      data.updateData.tradeAmount,
-      data.oriData.oriTradeAmount,
     );
+    // console.log("dateDetectResult:", dateDetectResult);
+    if (!dateDetectResult.success) {
+      return { success: false, message: dateDetectResult.message };
+    }
 
     //
 

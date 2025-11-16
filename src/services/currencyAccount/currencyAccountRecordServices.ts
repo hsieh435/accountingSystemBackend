@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
@@ -41,27 +42,7 @@ export interface ICreditCardRecordData {
   userId: string;
 }
 
-// Helper function for consistent error handling
-const handleDbError = (error: any, defaultData: any = []) => {
-  console.error("Database error:", error);
-  return { success: false, data: defaultData };
-};
 
-// Helper function for operations that return success/failure
-const executeOperation = async (query: string, params: any[], successData?: any) => {
-  try {
-    const result = await pool.query(query, params);
-    if (result.rowCount === 1) {
-      return successData
-        ? { success: true, userData: keysToCamel(successData) }
-        : { success: true, userData: keysToCamel(result.rows[0]) };
-    }
-    return { success: false, userData: [] };
-  } catch (error) {
-    console.error("Operation error:", error);
-    return { success: false, userData: [] };
-  }
-};
 
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
   try {
@@ -103,7 +84,7 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 
     return { success: true, data: keysToCamel(result.rows[0]) };
   } catch (error) {
-    return handleDbError(error, null);
+    return handleDbError(error, "查無紀錄");
   }
 }
 
@@ -141,11 +122,11 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
       "account_id",
       data.updateData.accountId,
       data.updateData.tradeDatetime,
-      data.updateData.transactionType,
-      data.oriData.oriTransactionType,
-      data.updateData.tradeAmount,
-      data.oriData.oriTradeAmount,
     );
+    // console.log("dateDetectResult:", dateDetectResult);
+    if (!dateDetectResult.success) {
+      return { success: false, message: dateDetectResult.message };
+    }
 
     return {
       success: insertResult,

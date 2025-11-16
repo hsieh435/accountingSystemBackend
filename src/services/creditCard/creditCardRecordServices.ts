@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
@@ -83,11 +84,11 @@ export async function insertCreditCardData(data: ICreditCardTradeData) {
     "credit_card_id",
     data.updateData.creditCardId,
     data.updateData.tradeDatetime,
-    "expense",
-    "expense",
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
   );
+  // console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  }
 
   // console.log("insertResult:", insertResult);
   if (insertResult.rowCount === 1) {

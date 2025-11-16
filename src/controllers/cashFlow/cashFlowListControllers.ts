@@ -1,30 +1,22 @@
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
 import * as cashFlowServices from "@/services/cashFlow/cashFlowListServices";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 
 export async function cashFlowList(req: Request, res: Response) {
   try {
     const result = await cashFlowServices.searchingCashFlowList(req.body);
-    res.json(
-      result.success
-        ? success({ data: result.data, message: "查詢成功", req, res })
-        : error({ message: "發生錯誤", req, res }),
-    );
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ message: "發生錯誤", req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
 export async function searchingCashFlowById(req: Request, res: Response) {
   try {
     const result = await cashFlowServices.getCashFlowById(req.params.cashflowId, req.body.userId);
-    res.json(
-      result.success
-        ? success({ data: result.data, req, res })
-        : error({ message: "現金流不存在", req, res }),
-    );
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -32,22 +24,18 @@ export async function cashFlowCreate(req: Request, res: Response) {
   try {
     const result = await cashFlowServices.insertCashflowData(req.body);
     // console.log("result:", result);
-    res.json(
-      result.success
-        ? success({ data: result.data, message: "建立成功", req, res })
-        : error({ message: "資料錯誤", req, res }),
-    );
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
 export async function cashFlowUpdate(req: Request, res: Response) {
   try {
     const result = await cashFlowServices.updateCashflowData(req.body);
-    res.json(result ? success({ message: "修改成功", req, res }) : error({ message: "修改失敗", req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.status(500).json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -65,11 +53,10 @@ export async function cashFlowDelete(req: Request, res: Response) {
       ...req.body,
       cashflowId: req.params.cashflowId,
     });
-    res.json(
-      result.success ? success({ message: result.message, req, res }) : error({ message: result.message, req, res }),
-    );
+
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -84,8 +71,8 @@ async function toggleCashFlowStatus(req: Request, res: Response, action: "enable
       cashflowId: req.params.cashflowId,
     });
 
-    res.json(result ? success({ message: successMessage, req, res }) : error({ req, res }));
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    res.json(error({ req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }

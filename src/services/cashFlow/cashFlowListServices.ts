@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
@@ -22,11 +23,6 @@ export interface IAccountSearchingParams {
   userId: string;
 }
 
-// Helper function for consistent error handling
-const handleDbError = (error: any, defaultData: any = []) => {
-  console.error("Database error:", error);
-  return { success: false, data: defaultData };
-};
 
 // Helper function for update operations
 const executeUpdate = async (query: string, params: any[]): Promise<boolean> => {
@@ -34,7 +30,6 @@ const executeUpdate = async (query: string, params: any[]): Promise<boolean> => 
     const result = await pool.query(query, params);
     return result.rowCount === 1;
   } catch (error) {
-    console.error("Update error:", error);
     return false;
   }
 };
@@ -66,7 +61,7 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
 
     return { success: true, data: keysToCamel(result.rows[0]) };
   } catch (error) {
-    return handleDbError(error, null);
+    return handleDbError(error, "查無紀錄");
   }
 }
 
