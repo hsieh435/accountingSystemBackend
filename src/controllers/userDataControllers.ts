@@ -12,7 +12,7 @@ export async function userDataList(req: Request, res: Response) {
   try {
     const result = await pool.query("SELECT * FROM user_data");
     // console.log("result:", result);
-    await handleControllersResponse(res, req, result);
+    await handleControllersResponse(res, req, { success: true, data: result.rows });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }

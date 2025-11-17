@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeOperation, handleDbError } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect, updateRemainingAmount } from "@/services/recordServiceTools";
+import { latestTradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -38,8 +38,6 @@ export interface ICashFlowRecordData {
   oriData: IOriData;
   userId: string;
 }
-
-
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   try {
@@ -117,8 +115,9 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
     ];
+    await pool.query(query, params);
 
-    await updateRemainingAmount(
+    await updateRelatedData(
       "cashflow_list",
       "cashflow_trade",
       "cashflow_id",
@@ -129,8 +128,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.tradeAmount,
       data.oriData.oriTradeAmount,
     );
-
-    return executeOperation(query, params);
+    return { success: true, message: "新增成功" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
