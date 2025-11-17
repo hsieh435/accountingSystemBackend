@@ -49,7 +49,7 @@ export async function functionListSearching(req: Request, res: Response) {
     });
 
     // console.log("functionGroupList:", functionGroupList);
-    res.json(success({ message: "查詢成功", req, res, data: keysToCamel(functionGroupList) }));
+    await handleControllersResponse(res, req, { success: true, data: functionGroupList, message: "查詢成功" });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }

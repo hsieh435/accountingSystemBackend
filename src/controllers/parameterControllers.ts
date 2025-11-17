@@ -7,24 +7,43 @@ import { keysToCamel } from "@/utils/tools";
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {
-  const searchingSchemasResult = await pool.query(`SELECT * FROM creditcard_schema_list ORDER BY sort`);
-  // console.log("searchingSchemasResult:", searchingSchemasResult.rows);
-  if (searchingSchemasResult.rows.length > 0) {
-    return res.json(success({ data: searchingSchemasResult.rows.map(keysToCamel), req, res }));
-  } else if (searchingSchemasResult.rows.length === 0) {
-    return res.status(404).json(error({ message: "查無資料", req, res }));
+
+  try {
+    const result = await pool.query("SELECT * FROM creditcard_schema_list ORDER BY sort");
+    // console.log("result:", result);
+    await handleControllersResponse(res, req, { success: true, data: result.rows });
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
   }
+  // const searchingSchemasResult = await pool.query(`SELECT * FROM creditcard_schema_list ORDER BY sort`);
+  // // console.log("searchingSchemasResult:", searchingSchemasResult.rows);
+  // if (searchingSchemasResult.rows.length > 0) {
+  //   return res.json(success({ data: searchingSchemasResult.rows.map(keysToCamel), req, res }));
+  // } else if (searchingSchemasResult.rows.length === 0) {
+  //   return res.status(404).json(error({ message: "查無資料", req, res }));
+  // }
 }
 
 export async function getSchemaById(req: Request, res: Response) {
-  const searchingSchemaResult = await pool.query(
-    `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
-  );
-  if (searchingSchemaResult.rows.length === 1) {
-    return res.json(success({ data: keysToCamel(searchingSchemaResult.rows[0]), req, res }));
-  } else {
-    return res.status(404).json(error({ message: "查無資料", req, res }));
+
+
+  try {
+    const result =
+      await pool.query(`SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`);
+    // console.log("result:", result);
+    await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
   }
+
+  // const searchingSchemaResult = await pool.query(
+  //   `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
+  // );
+  // if (searchingSchemaResult.rows.length === 1) {
+  //   return res.json(success({ data: keysToCamel(searchingSchemaResult.rows[0]), req, res }));
+  // } else {
+  //   return res.status(404).json(error({ message: "查無資料", req, res }));
+  // }
 }
 
 export async function createSchema(req: Request, res: Response) {
