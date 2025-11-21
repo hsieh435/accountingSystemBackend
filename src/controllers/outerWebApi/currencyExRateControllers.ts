@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
+// import { success, error } from "@/utils/response";
 import { exchangerateApiKeys } from "@/apiKey";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 
 // 貨幣匯率查詢參數 interface
 export interface ICurrencyExRateSearchingParams {
@@ -31,9 +32,9 @@ export async function getCurrencyListByOuterApi(req: Request, res: Response) {
         item.currencyName.toLowerCase().includes(req.params.keyword.toLowerCase()),
     );
 
-    res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
+    await handleControllersResponse(res, req, dataFiltered);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -45,10 +46,10 @@ export async function getLatestCurrencyExchangeRate(req: Request, res: Response)
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    const data = await response.json();
-    res.json(success({ data: data, message: "查詢成功", req, res }));
+    // const data = await response.json();
+    await handleControllersResponse(res, req, response);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -64,11 +65,11 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
         headers: { "Content-Type": "application/json" },
       },
     );
-    const data = await response.json();
+    // const data = await response.json();
     // console.log("data:", data);
-    res.json(success({ data: data, message: "查詢成功", req, res }));
+    await handleControllersResponse(res, req, response);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 

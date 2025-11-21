@@ -40,17 +40,13 @@ export async function cashFlowRecordUpdate(req: Request, res: Response) {
   }
 }
 
-// export async function cashFlowDelete(req: Request, res: Response) {
-//   req.body.cashflowId = req.params.cashflowId;
+export async function cashFlowDelete(req: Request, res: Response) {
+  req.body.cashflowId = req.params.cashflowId;
 
-//   try {
-//     const removeResult = await cashFlowRecordServices.removeCashflowData(req.body);
-//     if (removeResult.success === true) {
-//       res.json(success({ message: removeResult.message, req, res }));
-//     } else {
-//       res.status(500).json(error({ message: removeResult.message, req, res }));
-//     }
-//   } catch (err) {
-//     await handleControllersResponse(res, req, err);
-//   }
-// }
+  // try {
+  //   const result = await cashFlowRecordServices.removeCashflowData(req.body);
+  //   await handleControllersResponse(res, req, result);
+  // } catch (err) {
+  //   await handleControllersResponse(res, req, err);
+  // }
+}

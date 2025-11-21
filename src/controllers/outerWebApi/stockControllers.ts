@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 import { getCurrentYear } from "@/utils/tools";
 
 // 搜尋股票列表
@@ -12,27 +12,24 @@ export async function getAllStockList(req: Request, res: Response) {
         Authorization: `Bearer ${process.env.FinMind_API_TOKEN}`,
       },
     });
-    if (response.status === 200) {
-      const jsonData = await response.json();
-      // console.log("jsonData:", jsonData.data.length);
-      const data: { stock_id: string; stock_name: string }[] = [];
-      jsonData.data.forEach(function (item: { stock_id: string; stock_name: string }) {
-        if (!data.some((i) => i.stock_id === item.stock_id)) {
-          data.push(item);
-        }
-      });
+    const jsonData = await response.json();
+    // console.log("jsonData:", jsonData.data.length);
+    const data: { stock_id: string; stock_name: string }[] = [];
+    jsonData.data.forEach(function (item: { stock_id: string; stock_name: string }) {
+      if (!data.some((i) => i.stock_id === item.stock_id)) {
+        data.push(item);
+      }
+    });
 
-      const dataFiltered = data.filter(
-        (item: { stock_id: string; stock_name: string }) =>
-          item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
-          item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
-      );
-      res.json(success({ data: JSON.stringify(dataFiltered), message: "查詢成功", req, res }));
-    } else {
-      res.status(500).json(error({ data: [], req, res }));
-    }
+    const dataFiltered = data.filter(
+      (item: { stock_id: string; stock_name: string }) =>
+        item.stock_id.toLowerCase().includes(req.params.keyword.toLowerCase()) ||
+        item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
+    );
+
+    await handleControllersResponse(res, req, dataFiltered);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -52,11 +49,11 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
         },
       },
     );
-    const jsonData = await response.json();
-    // console.log("response:", jsonData);
-    res.json(success({ data: jsonData, message: "查詢成功", req, res }));
+    // const jsonData = await response.json();
+    // console.log("response:", response);
+    await handleControllersResponse(res, req, response);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -87,11 +84,11 @@ export async function getStockDividendResult(req: Request, res: Response) {
         },
       },
     );
-    const jsonData = await dividendResultResponse.json();
-    // console.log("jsonData:", jsonData);
-    res.json(success({ data: jsonData, message: "查詢成功", req, res }));
+    // const jsonData = await response.json();
+    // console.log("response:", response);
+    await handleControllersResponse(res, req, dividendResultResponse);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 
@@ -115,10 +112,11 @@ export async function getStockPerPbrInfo(req: Request, res: Response) {
         },
       },
     );
-    const jsonData = await response.json();
-    res.json(success({ data: jsonData, message: "查詢成功", req, res }));
+    // const jsonData = await response.json();
+    // console.log("response:", response);
+    await handleControllersResponse(res, req, response);
   } catch (err) {
-    res.status(500).json(error({ data: [], req, res }));
+    await handleControllersResponse(res, req, err);
   }
 }
 

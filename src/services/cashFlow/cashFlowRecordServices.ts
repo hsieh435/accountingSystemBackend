@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { executeOperation, handleDbError } from "@/services/servicesTools";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -63,7 +63,7 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
     const params = [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, data.startingDate, data.endDate];
 
     const result = await pool.query(query, params);
-    return { success: true, data: keysToCamel(result.rows) };
+    return { success: true, data: result.rows };
   } catch (error) {
     return handleDbError(error);
   }

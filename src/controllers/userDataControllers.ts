@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
 import * as userDataServices from "@/services/userData/userDataServices";
 import { handleControllersResponse } from "@/controllers/controllersTools";
 
@@ -34,9 +33,9 @@ export async function userLogin(req: Request, res: Response) {
         JWT_SECRET,
         { expiresIn: "10h" },
       );
-      res.json(success({ data: { jwt: token }, message: "登入成功", req, res }));
+      await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "登入成功" });
     } else {
-      res.status(500).json(error({ message: "帳號或密碼錯誤", req, res }));
+      await handleControllersResponse(res, req, { message: "帳號或密碼錯誤"}, 500);
     }
   } catch (err) {
     await handleControllersResponse(res, req, err);
@@ -69,9 +68,9 @@ export async function userDataUpdate(req: Request, res: Response) {
         JWT_SECRET,
         { expiresIn: "10h" },
       );
-      res.json(success({ data: { jwt: token }, message: "修改成功", req, res }));
+      await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "修改成功" });
     } else {
-      res.status(500).json(error({ message: "修改失敗", req, res }));
+      await handleControllersResponse(res, req, { message: "修改失敗"}, 500);
     }
   } catch (err) {
     await handleControllersResponse(res, req, err);
