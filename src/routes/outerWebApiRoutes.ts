@@ -1,13 +1,13 @@
 import { Router } from "express";
 import authenticateToken from "@/utils/authMiddleware";
-import * as outerSystemLogin from "@/controllers/outerWebApi/outerSystemLogin";
+import * as outerSystemLoginControllers from "@/controllers/outerWebApi/outerSystemLoginControllers";
 import * as outerWebApiStockControllers from "@/controllers/outerWebApi/stockControllers";
 import * as outerWebApiCurrencyExRateControllers from "@/controllers/outerWebApi/currencyExRateControllers";
 
 const router = Router();
 
-router.post("/api/outerWebApi/findMind/testConnection", outerSystemLogin.loginFinMindSystem);
-router.get("/api/outerWebApi/findMind/accountInfo", outerSystemLogin.checkFinMindTokenUsage);
+router.post("/api/outerWebApi/findMind/testConnection", outerSystemLoginControllers.loginFinMindSystem);
+router.get("/api/outerWebApi/findMind/accountInfo", outerSystemLoginControllers.checkFinMindTokenUsage);
 
 
 

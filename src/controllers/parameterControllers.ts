@@ -6,75 +6,70 @@ import { keysToCamel } from "@/utils/tools";
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {
-
   try {
     const result = await pool.query("SELECT * FROM creditcard_schema_list ORDER BY sort");
     // console.log("result:", result);
     await handleControllersResponse(res, req, { success: true, data: result.rows });
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
-  // const searchingSchemasResult = await pool.query(`SELECT * FROM creditcard_schema_list ORDER BY sort`);
-  // // console.log("searchingSchemasResult:", searchingSchemasResult.rows);
-  // if (searchingSchemasResult.rows.length > 0) {
-  //   return res.json(success({ data: searchingSchemasResult.rows.map(keysToCamel), req, res }));
-  // } else if (searchingSchemasResult.rows.length === 0) {
-  //   return res.status(404).json(error({ message: "查無資料", req, res }));
-  // }
 }
 
 export async function getSchemaById(req: Request, res: Response) {
-
-
   try {
-    const result =
-      await pool.query(`SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`);
+    const result = await pool.query(
+      `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
+    );
     // console.log("result:", result);
     await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
-
-  // const searchingSchemaResult = await pool.query(
-  //   `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
-  // );
-  // if (searchingSchemaResult.rows.length === 1) {
-  //   return res.json(success({ data: keysToCamel(searchingSchemaResult.rows[0]), req, res }));
-  // } else {
-  //   return res.status(404).json(error({ message: "查無資料", req, res }));
-  // }
 }
 
 export async function createSchema(req: Request, res: Response) {
   const { schemaCode, schemaName, sort } = req.body;
-  const result = await pool.query(
-    `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`,
-  );
-  if (result.rows.length === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
-  } else if (result.rows.length === 0) {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "新增失敗" }, 400);
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`,
+    );
+    if (result.rows.length === 1) {
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
+    } else if (result.rows.length === 0) {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "新增失敗" }, 400);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
 export async function updateSchema(req: Request, res: Response) {
   const { schemaCode, schemaName, sort } = req.body;
-  const result = await pool.query(
-    `UPDATE creditcard_schema_list SET schema_name = '${schemaName}', sort = ${sort} WHERE schema_code = '${schemaCode}';`,
-  );
-  if (result.rowCount === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
-  } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "更新失敗" }, 400);
+  try {
+    const result = await pool.query(
+      `UPDATE creditcard_schema_list SET schema_name = '${schemaName}', sort = ${sort} WHERE schema_code = '${schemaCode}';`,
+    );
+    if (result.rowCount === 1) {
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
+    } else {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "更新失敗" }, 400);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
 export async function deleteSchema(req: Request, res: Response) {
-  const result = await pool.query(`DELETE FROM creditcard_schema_list WHERE schema_code = '${req.body.schemaCode}'`);
-  if (result.rowCount === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "刪除成功" });
-  } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "刪除失敗" }, 400);
+  try {
+    const result = await pool.query(`DELETE FROM creditcard_schema_list WHERE schema_code = '${req.body.schemaCode}'`);
+    if (result.rowCount === 1) {
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "刪除成功" });
+    } else {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "刪除失敗" }, 400);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
@@ -88,48 +83,70 @@ export interface ICurrencyList {
 }
 
 export async function getCurrencyList(req: Request, res: Response) {
-  const result = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
-  if (result.rows.length > 0) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows.map(keysToCamel), message: "查詢成功" });
-  } else if (result.rows.length === 0) {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "查無資料" }, 404);
+  try {
+    const result = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
+    if (result.rows.length > 0) {
+      await handleControllersResponse(res, req, {
+        success: true,
+        data: result.rows.map(keysToCamel),
+        message: "查詢成功",
+      });
+    } else if (result.rows.length === 0) {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "查無資料" }, 404);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
 export async function getEachCurrency(req: Request, res: Response) {
-  const result = await pool.query(
-    `SELECT * FROM currency_list WHERE currency_code = '${req.params.currencyCode}'`,
-  );
-  if (result.rows.length === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows.map(keysToCamel), message: "查詢成功" });
-  } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "查無資料" }, 404);
+  try {
+    const result = await pool.query(`SELECT * FROM currency_list WHERE currency_code = '${req.params.currencyCode}'`);
+    if (result.rows.length === 1) {
+      await handleControllersResponse(res, req, {
+        success: true,
+        data: result.rows.map(keysToCamel),
+        message: "查詢成功",
+      });
+    } else {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "查無資料" }, 404);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
 export async function createCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
   const data: ICurrencyList = req.body;
-  const result = await pool.query(
-    `INSERT INTO public.currency_list(currency_code, currency_name, currency_symbol, minimum_denomination, sort) VALUES ('${data.currencyCode}', '${data.currencyName}', '${data.currencySymbol}', ${data.minimumDenomination}, ${data.sort});`,
-  );
-  if (result.rowCount === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "新增成功" });
-  } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "新增失敗" }, 400);
+  try {
+    const result = await pool.query(
+      `INSERT INTO public.currency_list(currency_code, currency_name, currency_symbol, minimum_denomination, sort) VALUES ('${data.currencyCode}', '${data.currencyName}', '${data.currencySymbol}', ${data.minimumDenomination}, ${data.sort});`,
+    );
+    if (result.rowCount === 1) {
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "新增成功" });
+    } else {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "新增失敗" }, 400);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
 export async function updateCurrency(req: Request, res: Response) {
   const { currencyCode, currencyName, sort } = req.body;
   const data: ICurrencyList = req.body;
-  const result = await pool.query(
-    `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`,
-  );
-  if (result.rowCount === 1) {
-    await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "更新成功" });
-  } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "更新失敗" }, 400);
+  try {
+    const result = await pool.query(
+      `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`,
+    );
+    if (result.rowCount === 1) {
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "更新成功" });
+    } else {
+      await handleControllersResponse(res, req, { success: false, data: [], message: "更新失敗" }, 400);
+    }
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 
@@ -137,8 +154,9 @@ export async function deleteCurrency(req: Request, res: Response) {
   // console.log("req.body:", req.body);
   // console.log("req.params:", req.params);
 
-  const searchingCurrencyResult = await pool.query(
-    `SELECT COUNT(*)::INTEGER AS total
+  try {
+    const searchingCurrencyResult = await pool.query(
+      `SELECT COUNT(*)::INTEGER AS total
       FROM (
       SELECT 1 FROM cashflow_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       UNION ALL
@@ -151,23 +169,26 @@ export async function deleteCurrency(req: Request, res: Response) {
       SELECT 1 FROM stock_account_list WHERE currency = '${req.params.currencyCode}' AND user_id = '${req.body.userId}'
       ) AS combined;
     `,
-  );
-  // console.log("searchingCurrencyResult:", searchingCurrencyResult.rows[0]);
-
-  if (searchingCurrencyResult.rows[0].total > 0) {
-    await handleControllersResponse(res, req, { success: false, message: "貨幣已被使用，無法刪除" }, 500);
-    // return res.status(500).json(error({ message: "貨幣已被使用，無法刪除", req, res }));
-  } else if (searchingCurrencyResult.rows[0].total === 0) {
-    const deleteResult = await pool.query(
-      `DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,
     );
+    // console.log("searchingCurrencyResult:", searchingCurrencyResult.rows[0]);
 
-    if (deleteResult.rowCount === 1) {
-    await handleControllersResponse(res, req, { success: true, message: "刪除成功" });
+    if (searchingCurrencyResult.rows[0].total > 0) {
+      await handleControllersResponse(res, req, { success: false, message: "貨幣已被使用，無法刪除" }, 500);
+      // return res.status(500).json(error({ message: "貨幣已被使用，無法刪除", req, res }));
+    } else if (searchingCurrencyResult.rows[0].total === 0) {
+      const deleteResult = await pool.query(
+        `DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,
+      );
+
+      if (deleteResult.rowCount === 1) {
+        await handleControllersResponse(res, req, { success: true, message: "刪除成功" });
+      } else {
+        await handleControllersResponse(res, req, { success: false, data: [], message: "刪除失敗" }, 400);
+      }
     } else {
-    await handleControllersResponse(res, req, { success: false, data: [], message: "刪除失敗" }, 400);
     }
-  } else {
+  } catch (err) {
+    await handleControllersResponse(res, req, { success: false, data: [], message: "發生錯誤" }, 404);
   }
 }
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { success, error } from "@/utils/response";
+import { handleControllersResponse } from "@/controllers/controllersTools";
 
 // https://finmind.github.io
 // https://api.finmindtrade.com/api/v4/login
@@ -24,9 +24,9 @@ export async function loginFinMindSystem(req: Request, res: Response) {
     // console.log("FinMind 回傳資料:", jsonData);
     process.env.FinMind_API_TOKEN = jsonData.token;
 
-    res.json(success({ data: jsonData, message: jsonData.msg, req, res }));
+    await handleControllersResponse(res, req, { success: true, data: jsonData, message: jsonData.msg });
   } catch (err) {
-    res.status(500).json(error({ message: String(err), req, res }));
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }
 
@@ -43,8 +43,8 @@ export async function checkFinMindTokenUsage(req: Request, res: Response) {
       },
     });
     const jsonData = await infoResponse.json();
-    res.json(success({ data: jsonData, req, res }));
+    await handleControllersResponse(res, req, { success: true, data: jsonData }, 200);
   } catch (err) {
-    res.status(500).json(error({ message: String(err), req, res }));
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }

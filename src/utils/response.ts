@@ -33,8 +33,7 @@ export const success = ({ data = [], message = "成功", req, res }: { data?: an
 
 
 
-
-export const error = ({ data = [], message = "網路錯誤", req, res }: { data?: any; message?: string; req: Request; res: Response }) => {
+export const error = ({ data = [], message = "網路錯誤", req, res, statusCode = 400 }: { data?: any; message?: string; req: Request; res: Response; statusCode?: number }) => {
 
   const response = {
     config: {
@@ -53,7 +52,7 @@ export const error = ({ data = [], message = "網路錯誤", req, res }: { data?
       ip: req.ip,
       userAgent: req.get('User-Agent')
     },
-    status: 0,
+    status: statusCode,
     statusText: "OK",
   };
   // res.json(response);

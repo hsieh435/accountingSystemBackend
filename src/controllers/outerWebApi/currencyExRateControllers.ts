@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-// import { success, error } from "@/utils/response";
 import { exchangerateApiKeys } from "@/apiKey";
 import { handleControllersResponse } from "@/controllers/controllersTools";
 
@@ -34,7 +33,7 @@ export async function getCurrencyListByOuterApi(req: Request, res: Response) {
 
     await handleControllersResponse(res, req, dataFiltered);
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }
 
@@ -49,7 +48,7 @@ export async function getLatestCurrencyExchangeRate(req: Request, res: Response)
     // const data = await response.json();
     await handleControllersResponse(res, req, response);
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }
 
@@ -69,7 +68,7 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
     // console.log("data:", data);
     await handleControllersResponse(res, req, response);
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }
 

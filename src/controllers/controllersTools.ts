@@ -20,6 +20,7 @@ export async function handleControllersResponse(res: Response, req: Request, res
         message: result.message || "操作失敗",
         req,
         res,
+        statusCode: returnCode,
       }),
     );
   }

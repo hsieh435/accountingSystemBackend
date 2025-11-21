@@ -28,10 +28,9 @@ export async function searchingStockAccountRecordById(req: Request, res: Respons
 export async function stockAccountRecordCreate(req: Request, res: Response) {
   try {
     const result = await stockAccountRecordServices.insertStockAccountRecord(req.body);
-
     await handleControllersResponse(res, req, result);
   } catch (err) {
-    await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, { message: String(err) }, 500);
   }
 }
 
