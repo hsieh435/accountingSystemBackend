@@ -1,7 +1,7 @@
 import pool from "@/db";
-import { executeOperation, handleDbError } from "@/services/servicesTools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -42,50 +42,41 @@ export interface ICreditCardRecordData {
   userId: string;
 }
 
-
-
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
-  try {
-    const query = `
-      SELECT currency_account_trade.*,
-        currency_list.currency_name,
-        currency_account_list.account_name,
-        trade_category.trade_name,
-        transaction_category.transaction_name
-      FROM currency_account_trade
-      LEFT JOIN currency_list ON currency_account_trade.currency = currency_list.currency_code
-      LEFT JOIN currency_account_list ON currency_account_trade.account_id = currency_account_list.account_id
-      LEFT JOIN trade_category ON currency_account_trade.trade_category = trade_category.trade_code
-      LEFT JOIN transaction_category ON currency_account_trade.transaction_type = transaction_category.transaction_code
-      WHERE currency_account_trade.currency LIKE $1
-        AND currency_account_trade.account_id LIKE $2
-        AND currency_account_trade.user_id = $3
-        AND trade_datetime BETWEEN $4 AND $5
-      ORDER BY trade_datetime
-    `;
+  const query = `
+    SELECT currency_account_trade.*,
+      currency_list.currency_name,
+      currency_account_list.account_name,
+      trade_category.trade_name,
+      transaction_category.transaction_name
+    FROM currency_account_trade
+    LEFT JOIN currency_list ON currency_account_trade.currency = currency_list.currency_code
+    LEFT JOIN currency_account_list ON currency_account_trade.account_id = currency_account_list.account_id
+    LEFT JOIN trade_category ON currency_account_trade.trade_category = trade_category.trade_code
+    LEFT JOIN transaction_category ON currency_account_trade.transaction_type = transaction_category.transaction_code
+    WHERE currency_account_trade.currency LIKE $1
+      AND currency_account_trade.account_id LIKE $2
+      AND currency_account_trade.user_id = $3
+      AND trade_datetime BETWEEN $4 AND $5
+    ORDER BY trade_datetime
+  `;
 
-    const params = [`%${data.currencyId}%`, `%${data.accountId}%`, data.userId, data.startingDate, data.endDate];
-
-    const result = await pool.query(query, params);
-    return { success: true, data: keysToCamel(result.rows) };
-  } catch (error) {
-    return handleDbError(error);
-  }
+  return executeSQLsyntax({
+    query: query,
+    params: [`%${data.currencyId}%`, `%${data.accountId}%`, data.userId, data.startingDate, data.endDate],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
-  try {
-    const query = "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3";
-    const result = await pool.query(query, [data.tradeId, data.accountId, data.userId]);
 
-    if (result.rows.length === 0) {
-      return { success: false, data: null };
-    }
-
-    return { success: true, data: keysToCamel(result.rows[0]) };
-  } catch (error) {
-    return handleDbError(error, "查無紀錄");
-  }
+  return executeSQLsyntax({
+    query: "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3",
+    params: [data.tradeId, data.accountId, data.userId],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
@@ -107,7 +98,7 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
   ];
   const insertResult = await pool.query(insertQuery, insertParams);
 
-  // return executeOperation(insertQuery, insertParams);
+  // return executeSQLsyntax(insertQuery, insertParams);
 
   if (insertResult.rowCount === 1) {
     const accountTarget = await currencyAccountListServices.getCurrencyAccountById(
@@ -130,7 +121,7 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
 
     return {
       success: insertResult,
-      userData: insertResult ? keysToCamel(insertResult.rows[0]) : [],
+      userData: insertResult ? insertResult.rows[0] : [],
     };
   }
   return { success: false, userData: [] };
@@ -166,17 +157,11 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
 }
 
 export async function removeCurrencyAccountRecord(data: ICreditCardRecordData) {
-  try {
-    const query = "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3";
-    const result = await pool.query(query, [
-      data.updateData.tradeId,
-      data.updateData.accountId,
-      data.updateData.userId,
-    ]);
 
-    return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
-  } catch (error) {
-    console.error("Delete error:", error);
-    return { success: false, message: "刪除失敗" };
-  }
+  return executeSQLsyntax({
+    query: "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3",
+    params:  [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId],
+    successMessage: "刪除成功",
+    errorMessage: "刪除失敗"
+  });
 }

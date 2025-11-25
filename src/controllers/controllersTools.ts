@@ -3,7 +3,7 @@ import { success, error } from "@/utils/response";
 import { keysToCamel } from "@/utils/tools";
 
 // Helper function for consistent response handling
-export async function handleControllersResponse(res: Response, req: Request, result: any, returnCode: number = 400) {
+export async function handleControllersResponse(res: Response, req: Request, result: any, statusCode: number = 404) {
   if (result.success) {
     return res.status(200).json(
       success({
@@ -14,13 +14,13 @@ export async function handleControllersResponse(res: Response, req: Request, res
       }),
     );
   } else {
-    return res.status(returnCode).json(
+    return res.status(statusCode).json(
       error({
         data: [],
         message: result.message || "操作失敗",
         req,
         res,
-        statusCode: returnCode,
+        statusCode: statusCode,
       }),
     );
   }

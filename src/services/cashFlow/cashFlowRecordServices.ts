@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { executeOperation, handleDbError } from "@/services/servicesTools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
@@ -40,45 +40,37 @@ export interface ICashFlowRecordData {
 }
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
-  try {
-    const query = `
-      SELECT cashflow_trade.*,
-        currency_list.currency_name,
-        cashflow_list.cashflow_name,
-        cashflow_list.present_amount,
-        trade_category.trade_name,
-        transaction_category.transaction_name
-      FROM cashflow_trade
-      LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
-      LEFT JOIN cashflow_list ON cashflow_trade.cashflow_id = cashflow_list.cashflow_id
-      LEFT JOIN trade_category ON cashflow_trade.trade_category = trade_category.trade_code
-      LEFT JOIN transaction_category ON cashflow_trade.transaction_type = transaction_category.transaction_code
-      WHERE cashflow_trade.user_id = $1
-        AND cashflow_trade.cashflow_id LIKE $2
-        AND cashflow_trade.currency LIKE $3
-        AND trade_datetime BETWEEN $4 AND $5
-      ORDER BY trade_datetime
-    `;
+  const query = `
+    SELECT cashflow_trade.*,
+      currency_list.currency_name,
+      cashflow_list.cashflow_name,
+      cashflow_list.present_amount,
+      trade_category.trade_name,
+      transaction_category.transaction_name
+    FROM cashflow_trade
+    LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
+    LEFT JOIN cashflow_list ON cashflow_trade.cashflow_id = cashflow_list.cashflow_id
+    LEFT JOIN trade_category ON cashflow_trade.trade_category = trade_category.trade_code
+    LEFT JOIN transaction_category ON cashflow_trade.transaction_type = transaction_category.transaction_code
+    WHERE cashflow_trade.user_id = $1
+      AND cashflow_trade.cashflow_id LIKE $2
+      AND cashflow_trade.currency LIKE $3
+      AND trade_datetime BETWEEN $4 AND $5
+    ORDER BY trade_datetime
+  `;
 
-    const params = [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, data.startingDate, data.endDate];
+  const params = [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, data.startingDate, data.endDate];
 
-    const result = await pool.query(query, params);
-    return { success: true, data: result.rows };
-  } catch (error) {
-    return handleDbError(error);
-  }
+  return executeSQLsyntax({ query: query, params: params, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function searchingCashFlowRecordById(data: { cashflowId: string; tradeId: string; userId: string }) {
-  try {
-    const query = `SELECT * FROM public.cashflow_trade
-    WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3`;
-    const result = await pool.query(query, [data.cashflowId, data.tradeId, data.userId]);
-
-    return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
-  } catch (error) {
-    return handleDbError(error);
-  }
+  return executeSQLsyntax({
+    query: `SELECT * FROM public.cashflow_trade WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3`,
+    params: [data.cashflowId, data.tradeId, data.userId],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗",
+  });
 }
 
 export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
@@ -155,16 +147,15 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.userId,
   ];
 
-  return executeOperation(query, params);
+  return executeSQLsyntax({ query: query, params: params, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-  try {
-    const query = `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`;
-    const result = await pool.query(query, [data.tradeId, data.cashflowId, data.userId]);
 
-    return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
-  } catch (error) {
-    return { success: false, message: "刪除失敗" };
-  }
+  return executeSQLsyntax({
+    query: "DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3",
+    params: [data.tradeId, data.cashflowId, data.userId],
+    successMessage: "刪除成功",
+    errorMessage: "刪除失敗",
+  });
 }

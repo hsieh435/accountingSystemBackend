@@ -21,7 +21,7 @@ export async function userLogin(req: Request, res: Response) {
   // console.log("Request:", req.body);
 
   try {
-    const { success: testingResult, userData: dataGot } = await userDataServices.loginTesting(req.body);
+    const { success: testingResult, data: dataGot } = await userDataServices.loginTesting(req.body);
     // console.log("result:", testingResult);
     // console.log("dataGot:", dataGot);
     if (testingResult) {

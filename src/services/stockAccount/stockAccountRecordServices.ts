@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { executeOperation, handleDbError } from "@/services/servicesTools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
@@ -49,39 +49,31 @@ export interface IStockAccountRecordData {
 }
 
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
-  try {
-    const result = await pool.query(
-      `SELECT stock_account_trade.*,
-        currency_list.currency_name,
-        currency_account_list.account_name,
-        trade_category.trade_name,
-        transaction_category.transaction_name
-        FROM stock_account_trade
-        LEFT JOIN currency_list ON stock_account_trade.currency = currency_list.currency_code
-        LEFT JOIN currency_account_list ON stock_account_trade.account_id = currency_account_list.account_id
-        LEFT JOIN trade_category ON stock_account_trade.trade_category = trade_category.trade_code
-        LEFT JOIN transaction_category ON stock_account_trade.transaction_type = transaction_category.transaction_code
-        WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
-        AND stock_account_trade.account_id LIKE '%${data.accountId}%'
-        AND stock_account_trade.user_id = '${data.userId}'
-        AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`,
-    );
-    return { success: true, data: keysToCamel(result.rows) };
-  } catch {
-    return { success: false, data: [] };
-  }
+  const query = `
+    SELECT stock_account_trade.*,
+    currency_list.currency_name,
+    currency_account_list.account_name,
+    trade_category.trade_name,
+    transaction_category.transaction_name
+    FROM stock_account_trade
+    LEFT JOIN currency_list ON stock_account_trade.currency = currency_list.currency_code
+    LEFT JOIN currency_account_list ON stock_account_trade.account_id = currency_account_list.account_id
+    LEFT JOIN trade_category ON stock_account_trade.trade_category = trade_category.trade_code
+    LEFT JOIN transaction_category ON stock_account_trade.transaction_type = transaction_category.transaction_code
+    WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
+    AND stock_account_trade.account_id LIKE '%${data.accountId}%'
+    AND stock_account_trade.user_id = '${data.userId}'
+    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
-  try {
-    const result = await pool.query(
-      `SELECT * FROM public.stock_account_trade
-      WHERE trade_id='${tradeId}' AND account_id='${accountId}' AND user_id='${userId}'`,
-    );
-    return { success: true, data: keysToCamel(result.rows[0]) };
-  } catch {
-    return { success: false, data: [] };
-  }
+  const query = `
+    SELECT * FROM public.stock_account_trade
+    WHERE trade_id='${tradeId}' AND account_id='${accountId}' AND user_id='${userId}'
+  `
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
@@ -120,9 +112,9 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
 }
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
-  const result = await pool.query(
-    `DELETE FROM public.stock_account_trade
-    WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
-  );
-  return result.rowCount === 1 ? { success: true, message: "刪除成功" } : { success: false, message: "刪除失敗" };
+  const query = `
+    DELETE FROM public.stock_account_trade
+    WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
+
+  return executeSQLsyntax({ query: query, successMessage: "刪除成功", errorMessage: "刪除失敗" });
 }

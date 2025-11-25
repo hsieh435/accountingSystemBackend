@@ -1,5 +1,6 @@
 import pool from "@/db";
-import { keysToCamel, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -20,94 +21,70 @@ export interface ICreditCardData {
   note: string;
 }
 
-// Helper function for consistent error handling
-const handleDbError = (error: any, defaultData: any = []) => {
-  return { success: false, data: defaultData };
-};
 
-// Helper function for update operations
-const executeUpdate = async (query: string, params: any[]): Promise<boolean> => {
-  try {
-    const result = await pool.query(query, params);
-    return result.rowCount === 1;
-  } catch (error) {
-    return false;
-  }
-};
 
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
-  try {
-    const query = `
-      SELECT creditcard_list.*, currency_list.currency_name
-      FROM creditcard_list
-      LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
-      WHERE currency LIKE $1 AND user_id = $2
-      ORDER BY created_date
-    `;
-    const result = await pool.query(query, [`%${data.currencyId}%`, data.userId]);
-    return { success: true, data: keysToCamel(result.rows) };
-  } catch (error) {
-    return handleDbError(error);
-  }
+  const query = `
+    SELECT creditcard_list.*, currency_list.currency_name
+    FROM creditcard_list
+    LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
+    WHERE currency LIKE $1 AND user_id = $2
+    ORDER BY created_date
+  `;
+
+  return executeSQLsyntax({
+    query: query,
+    params: [`%${data.currencyId}%`, data.userId],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗",
+  });
 }
 
 export async function getCreditCardById(creditcardId: string, userId: string) {
-  try {
-    const query = "SELECT * FROM creditcard_list WHERE creditcard_id = $1 AND user_id = $2";
-    const result = await pool.query(query, [creditcardId, userId]);
-
-    if (result.rows.length === 0) {
-      return { success: false, data: null };
-    }
-
-    return { success: true, data: keysToCamel(result.rows[0]) };
-  } catch (error) {
-    return handleDbError(error, null);
-  }
+  return executeSQLsyntax({
+    query: "SELECT * FROM creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
+    params: [creditcardId, userId],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗",
+  });
 }
 
 export async function insertCreditCardData(data: ICreditCardData) {
-  try {
-    const currentTimestamp = getCurrentTimestamp();
-    const timeStampWithZone = getTimeStampWithZone();
-    const creditcardId = `CC-${currentTimestamp}`;
+  const currentTimestamp = getCurrentTimestamp();
+  const timeStampWithZone = getTimeStampWithZone();
+  const creditcardId = `CC-${currentTimestamp}`;
 
-    const insertQuery = `
-      INSERT INTO public.creditcard_list(
-        creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
-        creditcard_bank_name, creditcard_schema, currency, credit_per_month,
-        expiration_date, alert_value, open_alert, enable, created_date, note
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-    `;
+  const insertQuery = `
+    INSERT INTO public.creditcard_list(
+      creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
+      creditcard_bank_name, creditcard_schema, currency, credit_per_month,
+      expiration_date, alert_value, open_alert, enable, created_date, note
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+  `;
+  const insertParams = [
+    creditcardId,
+    data.userId,
+    data.accountType,
+    data.creditcardName,
+    data.creditcardBankCode,
+    data.creditcardBankName,
+    data.creditcardSchema,
+    data.currency,
+    data.creditPerMonth,
+    data.expirationDate,
+    data.alertValue,
+    data.openAlert,
+    data.enable,
+    timeStampWithZone,
+    data.note,
+  ];
 
-    const insertParams = [
-      creditcardId,
-      data.userId,
-      data.accountType,
-      data.creditcardName,
-      data.creditcardBankCode,
-      data.creditcardBankName,
-      data.creditcardSchema,
-      data.currency,
-      data.creditPerMonth,
-      data.expirationDate,
-      data.alertValue,
-      data.openAlert,
-      data.enable,
-      timeStampWithZone,
-      data.note,
-    ];
-
-    const insertResult = await pool.query(insertQuery, insertParams);
-
-    if (insertResult.rowCount === 1) {
-      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-    } else {
-      return { success: false, userData: [] };
-    }
-  } catch (error) {
-    return { success: false, userData: [] };
-  }
+  return executeSQLsyntax({
+    query: insertQuery,
+    params: insertParams,
+    successMessage: "新增成功",
+    errorMessage: "新增失敗",
+  });
 }
 
 export async function updateCreditCardData(data: ICreditCardData) {
@@ -129,17 +106,30 @@ export async function updateCreditCardData(data: ICreditCardData) {
     data.userId,
   ];
 
-  return executeUpdate(query, params);
+  return executeSQLsyntax({
+    query: query,
+    params: params,
+    successMessage: "更新成功",
+    errorMessage: "更新失敗",
+  });
 }
 
 export async function enableCreditCardStatus(data: ICreditCardData) {
-  const query = "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3";
-  return executeUpdate(query, [true, data.creditcardId, data.userId]);
+  return executeSQLsyntax({
+    query: "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3",
+    params: [true, data.creditcardId, data.userId],
+    successMessage: "成功",
+    errorMessage: "失敗",
+  });
 }
 
 export async function disableCreditCardStatus(data: ICreditCardData) {
-  const query = "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3";
-  return executeUpdate(query, [false, data.creditcardId, data.userId]);
+  return executeSQLsyntax({
+    query: "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3",
+    params: [false, data.creditcardId, data.userId],
+    successMessage: "成功",
+    errorMessage: "失敗",
+  });
 }
 
 export async function removeCreditCardData(data: ICreditCardData) {
@@ -153,12 +143,13 @@ export async function removeCreditCardData(data: ICreditCardData) {
     }
 
     // Delete the credit card
-    const deleteQuery = "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2";
-    const deleteResult = await pool.query(deleteQuery, [data.creditcardId, data.userId]);
+    return executeSQLsyntax({
+      query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
+      params: [data.creditcardId, data.userId],
+      successMessage: "刪除成功",
+      errorMessage: "刪除失敗",
+    });
 
-    return deleteResult.rowCount === 1
-      ? { success: true, message: "刪除成功" }
-      : { success: false, message: "刪除失敗" };
   } catch (error) {
     return { success: false, message: "刪除失敗" };
   }

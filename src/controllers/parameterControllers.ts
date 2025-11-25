@@ -174,7 +174,6 @@ export async function deleteCurrency(req: Request, res: Response) {
 
     if (searchingCurrencyResult.rows[0].total > 0) {
       await handleControllersResponse(res, req, { success: false, message: "貨幣已被使用，無法刪除" }, 500);
-      // return res.status(500).json(error({ message: "貨幣已被使用，無法刪除", req, res }));
     } else if (searchingCurrencyResult.rows[0].total === 0) {
       const deleteResult = await pool.query(
         `DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,

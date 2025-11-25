@@ -1,26 +1,28 @@
 import pool from "@/db";
 import { keysToCamel } from "@/utils/tools";
 
-
-
-// Helper function for update/insert operations
-export async function executeOperation(query: string, params: any[], successData?: any) {
+// Helper function for update / insert operations
+export async function executeSQLsyntax({
+  query,
+  params = [],
+  successData,
+  successMessage,
+  errorMessage,
+}: {
+  query: string;
+  params?: any;
+  successData?: any;
+  successMessage?: string;
+  errorMessage?: string;
+}): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
   try {
     const result = await pool.query(query, params);
-    if (result.rowCount === 1) {
-      return {
-        success: true,
-        userData: successData ? keysToCamel(successData) : keysToCamel(result.rows[0]),
-      };
-    }
-    return { success: false, userData: [] };
+    return { success: true, data: successData ? keysToCamel(successData) : keysToCamel(result.rows), message: successMessage };
   } catch (error) {
-    return { success: false, userData: [] };
+    return handleDbError(errorMessage);
   }
-};
+}
 
-
-
-export function handleDbError(error: any, message: string = "Database error", defaultData: any = []) {
-  return { success: false, message: message, data: defaultData };
-};
+export function handleDbError(message: string = "Database error") {
+  return { success: false, message: message, data: [], statusCode: 404 };
+}

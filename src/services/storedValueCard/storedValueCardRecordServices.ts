@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { executeOperation, handleDbError } from "@/services/servicesTools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
@@ -41,25 +41,23 @@ export interface IStoredValueCardRecordData {
 }
 
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
-  try {
-    const result = await pool.query(`SELECT stored_value_card_trade.*,
-      currency_list.currency_name,
-      stored_value_card_list.stored_value_card_name,
-      trade_category.trade_name,
-      transaction_category.transaction_name
-      FROM stored_value_card_trade
-      LEFT JOIN currency_list ON stored_value_card_trade.currency = currency_list.currency_code
-      LEFT JOIN stored_value_card_list ON stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
-      LEFT JOIN trade_category ON stored_value_card_trade.trade_category = trade_category.trade_code
-      LEFT JOIN transaction_category ON stored_value_card_trade.transaction_type = transaction_category.transaction_code
-      WHERE stored_value_card_trade.user_id = '${data.userId}'
-      AND stored_value_card_trade.stored_value_card_id LIKE '%${data.accountId}%'
-      AND stored_value_card_trade.currency LIKE '%${data.currencyId}%'
-      AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`);
-    return { success: true, data: keysToCamel(result.rows) };
-  } catch {
-    return { success: false, data: [] };
-  }
+  const query = `
+    SELECT stored_value_card_trade.*,
+    currency_list.currency_name,
+    stored_value_card_list.stored_value_card_name,
+    trade_category.trade_name,
+    transaction_category.transaction_name
+    FROM stored_value_card_trade
+    LEFT JOIN currency_list ON stored_value_card_trade.currency = currency_list.currency_code
+    LEFT JOIN stored_value_card_list ON stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
+    LEFT JOIN trade_category ON stored_value_card_trade.trade_category = trade_category.trade_code
+    LEFT JOIN transaction_category ON stored_value_card_trade.transaction_type = transaction_category.transaction_code
+    WHERE stored_value_card_trade.user_id = '${data.userId}'
+    AND stored_value_card_trade.stored_value_card_id LIKE '%${data.accountId}%'
+    AND stored_value_card_trade.currency LIKE '%${data.currencyId}%'
+    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function searchingStoredValueCardRecordById(data: {
@@ -67,15 +65,11 @@ export async function searchingStoredValueCardRecordById(data: {
   tradeId: string;
   userId: string;
 }) {
-  try {
-    const result = await pool.query(
-      `SELECT * FROM public.stored_value_card_trade
-      WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`,
-    );
-    return result.rows.length === 1 ? { success: true, data: result.rows[0] } : { success: false, data: [] };
-  } catch {
-    return { success: false, data: [] };
-  }
+  const query = `
+    SELECT * FROM public.stored_value_card_trade
+    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`;
+
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
@@ -106,11 +100,9 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 }
 
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
-  const result = await pool.query(
-    `UPDATE public.stored_value_card_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', transaction_type='${data.updateData.transactionType}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
-    WHERE trade_id='${data.updateData.tradeId}' AND stored_value_card_id='${data.updateData.storedValueCardId}' AND user_id='${data.userId}'`,
-  );
-  return result.rowCount === 1
-    ? { success: true, userData: keysToCamel(result.rows[0]) }
-    : { success: false, userData: [] };
+  const query = `
+    UPDATE public.stored_value_card_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', transaction_type='${data.updateData.transactionType}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
+    WHERE trade_id='${data.updateData.tradeId}' AND stored_value_card_id='${data.updateData.storedValueCardId}' AND user_id='${data.userId}'`;
+
+  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
 }

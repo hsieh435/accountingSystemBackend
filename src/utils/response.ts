@@ -58,5 +58,4 @@ export const error = ({ data = [], message = "網路錯誤", req, res, statusCod
   // res.json(response);
 
   return response;
-  // return { data, message, returnCode };
 };

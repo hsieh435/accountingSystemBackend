@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { executeOperation, handleDbError } from "@/services/servicesTools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
 import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
 
@@ -41,37 +41,27 @@ export interface ICreditCardTradeData {
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
-  try {
-    const searchingResult = await pool.query(`SELECT creditcard_trade.*,
-      currency_list.currency_name,
-      creditcard_list.creditcard_name,
-      trade_category.trade_name
-      FROM creditcard_trade LEFT JOIN currency_list ON creditcard_trade.currency = currency_list.currency_code
-      LEFT JOIN creditcard_list ON creditcard_trade.credit_card_id = creditcard_list.creditcard_id
-      LEFT JOIN trade_category ON creditcard_trade.trade_category = trade_category.trade_code
-      WHERE creditcard_trade.credit_card_id LIKE '%${data.accountId}%'
-      AND creditcard_trade.currency LIKE '%${data.currencyId}%' AND creditcard_trade.user_id = '${data.userId}'
-      AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`);
-    // console.log("searchingResult:", searchingResult);
-    return { success: true, data: keysToCamel(searchingResult.rows) };
-  } catch (err) {
-    return { success: false, data: [] };
-  }
+  const query = `
+    SELECT creditcard_trade.*,
+    currency_list.currency_name,
+    creditcard_list.creditcard_name,
+    trade_category.trade_name
+    FROM creditcard_trade LEFT JOIN currency_list ON creditcard_trade.currency = currency_list.currency_code
+    LEFT JOIN creditcard_list ON creditcard_trade.credit_card_id = creditcard_list.creditcard_id
+    LEFT JOIN trade_category ON creditcard_trade.trade_category = trade_category.trade_code
+    WHERE creditcard_trade.credit_card_id LIKE '%${data.accountId}%'
+    AND creditcard_trade.currency LIKE '%${data.currencyId}%' AND creditcard_trade.user_id = '${data.userId}'
+    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-  try {
-    const result = await pool.query(
-      `SELECT * FROM creditcard_trade
-      WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`,
-    );
-    if (result.rowCount === 1) {
-      return { success: true, data: keysToCamel(result.rows[0]) };
-    }
-    return { success: false, data: null };
-  } catch {
-    return { success: false, data: null };
-  }
+  const query =
+    `SELECT * FROM creditcard_trade
+    WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`;
+
+  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {

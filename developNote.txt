@@ -34,9 +34,9 @@ git ls-files | xargs cat | wc -l
 
 npm uninstall package-name
 
-router 用於設定路由
-controller 用於初步處理
-services 用於執行SQL語法
+routes 資料夾用於設定路由
+controller 資料夾用於初步處理
+services 資料夾用於執行 SQL 語法
 middleware 為中介處理
 
 
