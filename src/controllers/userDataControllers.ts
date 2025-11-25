@@ -21,21 +21,20 @@ export async function userLogin(req: Request, res: Response) {
   // console.log("Request:", req.body);
 
   try {
-    const { success: testingResult, data: dataGot } = await userDataServices.loginTesting(req.body);
-    // console.log("result:", testingResult);
-    // console.log("dataGot:", dataGot);
-    if (testingResult) {
+    const result = await userDataServices.loginTesting(req.body);
+    // console.log("result:", result);
+    if (result.success) {
       const token = jwt.sign(
         {
-          userId: dataGot.userId,
-          userName: dataGot.userName,
+          userId: result.data[0].userId,
+          userName: result.data[0].userName,
         },
         JWT_SECRET,
         { expiresIn: "10h" },
       );
       await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "登入成功" });
     } else {
-      await handleControllersResponse(res, req, { message: "帳號或密碼錯誤"}, 500);
+      await handleControllersResponse(res, req, { success: false, message: "帳號或密碼錯誤" }, 500);
     }
   } catch (err) {
     await handleControllersResponse(res, req, err);

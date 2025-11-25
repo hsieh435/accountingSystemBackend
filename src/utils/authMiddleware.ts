@@ -30,12 +30,12 @@ export async function authenticateToken(req: Request, res: Response, next: Funct
   if (!token) return res.sendStatus(401); // 沒帶 token
 
   jwt.verify(token, JWT_SECRET, (err: any, user: string) => {
-    // console.log("err:", err);
 
     if (err) return res.sendStatus(403); // token 無效或過期
 
     req.user = user; // 通過驗證，將解開的 user 設到 req
     req.body.userId = req.user.userId;
+    // console.log("req.user:", req.user);
   });
 
   next();

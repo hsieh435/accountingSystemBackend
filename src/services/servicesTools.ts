@@ -17,7 +17,14 @@ export async function executeSQLsyntax({
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
   try {
     const result = await pool.query(query, params);
-    return { success: true, data: successData ? keysToCamel(successData) : keysToCamel(result.rows), message: successMessage };
+    // console.log("Query executed:", query);
+    // console.log("Parameters:", params);
+    // console.log("SQL Result:", result);
+    return {
+      success: true,
+      data: successData ? keysToCamel(successData) : keysToCamel(result.rows),
+      message: successMessage,
+    };
   } catch (error) {
     return handleDbError(errorMessage);
   }
