@@ -151,10 +151,10 @@ export async function updateFlowDataRemainingAmount(
   flowColumn: string,
   flowId: string,
 ) {
-  console.log("flowListTable:", flowListTable);
-  console.log("recordTable:", recordTable);
-  console.log("flowColumn:", flowColumn);
-  console.log("flowId:", flowId);
+  // console.log("flowListTable:", flowListTable);
+  // console.log("recordTable:", recordTable);
+  // console.log("flowColumn:", flowColumn);
+  // console.log("flowId:", flowId);
 
   try {
     const result = await pool.query(`
@@ -170,13 +170,3 @@ export async function updateFlowDataRemainingAmount(
     return { success: false };
   }
 }
-
-
-
-// SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
-// WHERE trade_datetime = '2025-11-14 19:30:00+08'
-// UNION ALL
-// SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
-// WHERE trade_datetime > '2025-11-14 19:30:00+08' AND NOT EXISTS (
-//   SELECT 1 FROM cashflow_trade WHERE trade_datetime = '2025-11-14 19:30:00+08'
-// )

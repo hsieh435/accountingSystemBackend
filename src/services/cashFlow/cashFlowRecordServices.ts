@@ -40,6 +40,7 @@ export interface ICashFlowRecordData {
 }
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
+
   const query = `
     SELECT cashflow_trade.*,
       currency_list.currency_name,
