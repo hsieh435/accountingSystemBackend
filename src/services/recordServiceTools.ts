@@ -1,4 +1,5 @@
 import pool from "@/db";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { setTimezone } from "@/utils/tools";
 
 export interface IOriData {
@@ -119,7 +120,7 @@ export async function updateRelatedData(
   } finally {
     client.release();
   }
-  console.log("更新餘額成功");
+  // console.log("更新餘額成功");
 }
 
 export async function updateFlowRecordRemainingAmount(
@@ -169,3 +170,13 @@ export async function updateFlowDataRemainingAmount(
     return { success: false };
   }
 }
+
+
+
+// SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
+// WHERE trade_datetime = '2025-11-14 19:30:00+08'
+// UNION ALL
+// SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
+// WHERE trade_datetime > '2025-11-14 19:30:00+08' AND NOT EXISTS (
+//   SELECT 1 FROM cashflow_trade WHERE trade_datetime = '2025-11-14 19:30:00+08'
+// )
