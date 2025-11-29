@@ -2,7 +2,7 @@ import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -72,7 +72,7 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
   const query = `
     SELECT * FROM public.stock_account_trade
     WHERE trade_id='${tradeId}' AND account_id='${accountId}' AND user_id='${userId}'
-  `
+  `;
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
@@ -85,7 +85,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   accountTarget.data.presentAmount = data.updateData.remainingAmount;
   const updateResult = await updateStockAccountData(accountTarget.data);
 
-  const dateDetectResult = await latestTradeDateTimeDetect(
+  const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_trade",
     "account_id",
     data.updateData.accountId,

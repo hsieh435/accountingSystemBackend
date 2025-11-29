@@ -16,7 +16,7 @@ function sanitizeIdentifier(name: string): string {
   return name;
 }
 
-export async function latestTradeDateTimeDetect(
+export async function tradeDateTimeDetect(
   tableName: string,
   flowColumn: string,
   flowId: string,
@@ -26,36 +26,53 @@ export async function latestTradeDateTimeDetect(
   const column = sanitizeIdentifier(flowColumn);
 
   try {
-    const result = await pool.query(
-      `SELECT MAX(trade_datetime) AS latestTradeDatetime FROM ${table} WHERE ${column} = '${flowId}'`,
-    );
-    const latestTradeDatetime = setTimezone(result.rows[0].latesttradedatetime || null);
+    const result = await pool.query(`
+      SELECT EXISTS (
+      SELECT 1 FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
+      (SELECT trade_id FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+      ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
+      (SELECT trade_datetime FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+      ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeDatetime,
+      (SELECT trade_id FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+      ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeId,
+      (SELECT trade_datetime FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+      ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeDatetime
+    `);
+
+    const hasExistsData = result.rows[0].hasexistsdata;
+    const prevTradeId = result.rows[0].prevtradeid || null;
+    const prevTradeDatetime = setTimezone(result.rows[0].prevtradedatetime) || null;
+    const nextTradeId = result.rows[0].nexttradeid || null;
+    const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
     const dataTradeDatetime = setTimezone(recordTradeDatetime);
-    // console.log("latestTradeDatetime:", latestTradeDatetime);
-    // console.log("dataTradeDatetime:", dataTradeDatetime);
+    console.log("result:", result.rows);
+    console.log("prevTradeId:", prevTradeId);
+    console.log("prevTradeDatetime:", prevTradeDatetime);
+    console.log("nextTradeId:", nextTradeId);
+    console.log("nextTradeDatetime:", nextTradeDatetime);
 
-    if (latestTradeDatetime > dataTradeDatetime) {
-      // console.log("table:", table);
-      // console.log("recordTradeDatetime:", recordTradeDatetime);
-      // console.log("column:", column);
-      // console.log("flowId:", flowId);
-
-      try {
-        const result = await pool.query(
-          `SELECT * FROM ${table} WHERE trade_datetime = '${recordTradeDatetime}' AND ${column} = '${flowId}'`,
-        );
-        if (result.rows.length === 1) {
-          return { success: false, message: "收支時間點重複" };
-        } else if ((result.rows = [])) {
-          return { success: true, message: "" };
-        }
-      } catch (error) {
-        return { success: false, error };
-      }
-    } else if (latestTradeDatetime === dataTradeDatetime) {
+    if (hasExistsData === true) {
       return { success: false, message: "收支時間點重複" };
-    } else if (!latestTradeDatetime || latestTradeDatetime < dataTradeDatetime) {
-      return { success: true, message: "" };
+    } else {
+
+      if (nextTradeId === null || (prevTradeId === null && nextTradeId === null)) {
+        // 新增到第一筆或最後一筆
+        return { success: true, message: "" };
+      }
+      if (nextTradeId !== null && prevTradeId === null) {
+        // 新增到第一筆
+        return { success: false, message: "" };
+      }
+      if (nextTradeId !== null && prevTradeId !== null) {
+        // 新增到中間
+        return { success: false, message: "" };
+      }
+
+      // if (prevTradeDatetime !== null && dataTradeDatetime < prevTradeDatetime) {
+      //   return { success: false, message: "收支時間點異常，請檢查後重新輸入" };
+      // }
+
+      return { success: false, message: "查詢失敗"};
     }
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };
@@ -103,8 +120,13 @@ export async function updateRelatedData(
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-    const recordUpdateResult =
-      await updateFlowRecordRemainingAmount(recordTable, column, amountDifference, tradeDatetime, flowId);
+    const recordUpdateResult = await updateFlowRecordRemainingAmount(
+      recordTable,
+      column,
+      amountDifference,
+      tradeDatetime,
+      flowId,
+    );
     // pass client
     const flowUpdateResult = await updateFlowDataRemainingAmount(flowListTable, recordTable, flowColumn, flowId);
     // pass client

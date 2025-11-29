@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -40,7 +40,6 @@ export interface ICashFlowRecordData {
 }
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
-
   const query = `
     SELECT cashflow_trade.*,
       currency_list.currency_name,
@@ -78,7 +77,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-  const dateDetectResult = await latestTradeDateTimeDetect(
+  const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
@@ -152,7 +151,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-
   return executeSQLsyntax({
     query: "DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3",
     params: [data.tradeId, data.cashflowId, data.userId],

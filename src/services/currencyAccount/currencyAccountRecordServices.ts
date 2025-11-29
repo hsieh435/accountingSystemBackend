@@ -2,7 +2,7 @@ import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
 import { getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -65,17 +65,16 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
     query: query,
     params: [`%${data.currencyId}%`, `%${data.accountId}%`, data.userId, data.startingDate, data.endDate],
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
-
   return executeSQLsyntax({
     query: "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3",
     params: [data.tradeId, data.accountId, data.userId],
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -108,7 +107,7 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     accountTarget.data.presentAmount = data.updateData.remainingAmount;
     await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
 
-    const dateDetectResult = await latestTradeDateTimeDetect(
+    const dateDetectResult = await tradeDateTimeDetect(
       "currency_account_trade",
       "account_id",
       data.updateData.accountId,
@@ -157,11 +156,10 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
 }
 
 export async function removeCurrencyAccountRecord(data: ICreditCardRecordData) {
-
   return executeSQLsyntax({
     query: "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3",
-    params:  [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId],
+    params: [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId],
     successMessage: "刪除成功",
-    errorMessage: "刪除失敗"
+    errorMessage: "刪除失敗",
   });
 }

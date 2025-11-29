@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -57,8 +57,7 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-  const query =
-    `SELECT * FROM creditcard_trade
+  const query = `SELECT * FROM creditcard_trade
     WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
@@ -69,7 +68,7 @@ export async function insertCreditCardData(data: ICreditCardTradeData) {
     `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
   );
 
-  const dateDetectResult = await latestTradeDateTimeDetect(
+  const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_trade",
     "credit_card_id",
     data.updateData.creditCardId,

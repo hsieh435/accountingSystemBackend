@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
-import { latestTradeDateTimeDetect } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -78,7 +78,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
       `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
     );
 
-    const dateDetectResult = await latestTradeDateTimeDetect(
+    const dateDetectResult = await tradeDateTimeDetect(
       "stored_value_card_trade",
       "stored_value_card_id",
       data.updateData.storedValueCardId,
