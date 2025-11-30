@@ -55,17 +55,18 @@ export async function tradeDateTimeDetect(
       return { success: false, message: "收支時間點重複" };
     } else {
 
-      if (nextTradeId === null || (prevTradeId === null && nextTradeId === null)) {
-        // 新增到第一筆或最後一筆
+      if (nextTradeId === null && prevTradeId !== null) {
+        // 新增到最後一筆紀錄
         return { success: true, message: "" };
-      }
-      if (nextTradeId !== null && prevTradeId === null) {
-        // 新增到第一筆
-        return { success: false, message: "" };
-      }
-      if (nextTradeId !== null && prevTradeId !== null) {
-        // 新增到中間
-        return { success: false, message: "" };
+      } else if (prevTradeId === null && nextTradeId === null) {
+        // 新增到最初紀錄
+        return { success: true, message: "" };
+      } else if (nextTradeId !== null && prevTradeId === null) {
+        // 新增到第一筆紀錄
+        return { success: true, message: "" };
+      } else if (nextTradeId !== null && prevTradeId !== null) {
+        // 新增到中間紀錄
+        return { success: true, message: "" };
       }
 
       // if (prevTradeDatetime !== null && dataTradeDatetime < prevTradeDatetime) {
