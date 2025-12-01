@@ -66,26 +66,32 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 }
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {
-  const insertResult = await pool.query(
-    `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
-  );
 
   const dateDetectResult = await tradeDateTimeDetect(
+    "creditcard_list",
     "creditcard_trade",
     "credit_card_id",
     data.updateData.creditCardId,
     data.updateData.tradeDatetime,
   );
   // console.log("dateDetectResult:", dateDetectResult);
-  if (!dateDetectResult.success) {
-    return { success: false, message: dateDetectResult.message };
-  }
+  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
 
-  // console.log("insertResult:", insertResult);
-  if (insertResult.rowCount === 1) {
-    return { success: true, userData: keysToCamel(insertResult.rows[0]) };
-  } else {
-    return { success: false, userData: [] };
+  try {
+
+    const insertResult = await pool.query(`
+      INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+      VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
+    `);
+    // console.log("insertResult:", insertResult);
+
+    if (insertResult.rowCount === 1) {
+      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+    } else {
+      return { success: false, userData: [] };
+    }
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : String(err) };
   }
 }
 

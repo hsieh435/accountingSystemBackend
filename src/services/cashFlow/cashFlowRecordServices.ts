@@ -78,6 +78,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
+    "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
@@ -85,42 +86,41 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
-  if (!dateDetectResult.success) {
-    return { success: false, message: dateDetectResult.message };
-  }
+  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
 
   try {
-    const query = `
-    INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
+    // const query = `
+    // INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    // VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
-    const params = [
-      data.updateData.tradeId,
-      data.updateData.cashflowId,
-      data.userId,
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
-      data.updateData.currency,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-    ];
-    await pool.query(query, params);
+    // const params = [
+    //   data.updateData.tradeId,
+    //   data.updateData.cashflowId,
+    //   data.userId,
+    //   data.updateData.tradeDatetime,
+    //   data.updateData.tradeCategory,
+    //   data.updateData.transactionType,
+    //   data.updateData.tradeAmount,
+    //   data.updateData.remainingAmount,
+    //   data.updateData.currency,
+    //   data.updateData.tradeDescription,
+    //   data.updateData.tradeNote,
+    // ];
+    // await pool.query(query, params);
 
-    await updateRelatedData(
-      "cashflow_list",
-      "cashflow_trade",
-      "cashflow_id",
-      data.updateData.cashflowId,
-      data.updateData.tradeDatetime,
-      data.updateData.transactionType,
-      data.oriData.oriTransactionType,
-      data.updateData.tradeAmount,
-      data.oriData.oriTradeAmount,
-    );
-    return { success: true, message: "新增成功" };
+    // await updateRelatedData(
+    //   "cashflow_list",
+    //   "cashflow_trade",
+    //   "cashflow_id",
+    //   data.updateData.cashflowId,
+    //   data.updateData.tradeDatetime,
+    //   data.updateData.transactionType,
+    //   data.oriData.oriTransactionType,
+    //   data.updateData.tradeAmount,
+    //   data.oriData.oriTradeAmount,
+    // );
+    // return { success: true, message: "新增成功" };
+    return { success: false, message: "新增失敗" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }

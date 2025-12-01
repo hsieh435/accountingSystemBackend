@@ -73,29 +73,27 @@ export async function searchingStoredValueCardRecordById(data: {
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
+
+  const dateDetectResult = await tradeDateTimeDetect(
+    "stored_value_card_list",
+    "stored_value_card_trade",
+    "stored_value_card_id",
+    data.updateData.storedValueCardId,
+    data.updateData.tradeDatetime,
+  );
+  // console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+
   try {
     const insertResult = await pool.query(
       `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
     );
 
-    const dateDetectResult = await tradeDateTimeDetect(
-      "stored_value_card_trade",
-      "stored_value_card_id",
-      data.updateData.storedValueCardId,
-      data.updateData.tradeDatetime,
-    );
-    // console.log("dateDetectResult:", dateDetectResult);
-    if (!dateDetectResult.success) {
-      return { success: false, message: dateDetectResult.message };
-    }
-
-    //
-
     return insertResult.rowCount === 1
       ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
       : { success: false, userData: [] };
-  } catch {
-    return { success: false, userData: [] };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : String(err) };
   }
 }
 

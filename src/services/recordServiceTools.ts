@@ -17,61 +17,70 @@ function sanitizeIdentifier(name: string): string {
 }
 
 export async function tradeDateTimeDetect(
-  tableName: string,
+  flowListTableName: string,
+  tradeTableName: string,
   flowColumn: string,
   flowId: string,
   recordTradeDatetime: string,
 ): Promise<any> {
-  const table = sanitizeIdentifier(tableName);
+  const flowListTable = sanitizeIdentifier(flowListTableName);
+  const tradeTable = sanitizeIdentifier(tradeTableName);
   const column = sanitizeIdentifier(flowColumn);
 
   try {
     const result = await pool.query(`
       SELECT EXISTS (
-      SELECT 1 FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
-      (SELECT trade_id FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+      SELECT 1 FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
+      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
       ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
-      (SELECT trade_datetime FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+      (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+      ORDER BY trade_datetime DESC LIMIT 1) AS prevRemainingAmount,
+      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
       ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeDatetime,
-      (SELECT trade_id FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
       ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeId,
-      (SELECT trade_datetime FROM ${table} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+      (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+      ORDER BY trade_datetime ASC LIMIT 1) AS nextRemainingAmount,
+      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
       ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeDatetime
     `);
 
     const hasExistsData = result.rows[0].hasexistsdata;
     const prevTradeId = result.rows[0].prevtradeid || null;
+    const prevRemainingAmount = result.rows[0].prevremainingamount || null;
     const prevTradeDatetime = setTimezone(result.rows[0].prevtradedatetime) || null;
     const nextTradeId = result.rows[0].nexttradeid || null;
+    const nextRemainingAmount = result.rows[0].nextremainingamount || null;
     const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
     const dataTradeDatetime = setTimezone(recordTradeDatetime);
-    console.log("result:", result.rows);
-    console.log("prevTradeId:", prevTradeId);
-    console.log("prevTradeDatetime:", prevTradeDatetime);
-    console.log("nextTradeId:", nextTradeId);
-    console.log("nextTradeDatetime:", nextTradeDatetime);
+    // console.log("result:", result.rows);
+    // console.log("prevTradeId:", prevTradeId);
+    // console.log("prevTradeDatetime:", prevTradeDatetime);
+    // console.log("nextTradeId:", nextTradeId);
+    // console.log("nextTradeDatetime:", nextTradeDatetime);
+
+    const flowOriginal =
+      await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
+    // console.log("flowOriginal:", flowOriginal.rows);
+    const startingAmount = flowOriginal.rows[0].starting_amount;
 
     if (hasExistsData === true) {
       return { success: false, message: "收支時間點重複" };
     } else {
 
       if (nextTradeId === null && prevTradeId !== null) {
-        // 新增到最後一筆紀錄
-        return { success: true, message: "" };
+        // 新增到最後一筆紀錄，，回傳上一筆交易剩餘金額
+        return { success: true, message: "", returnAmount: prevRemainingAmount };
       } else if (prevTradeId === null && nextTradeId === null) {
-        // 新增到最初紀錄
-        return { success: true, message: "" };
+        // 新增到最初紀錄，回傳金流初始金額
+        return { success: true, message: "", returnAmount: startingAmount };
       } else if (nextTradeId !== null && prevTradeId === null) {
-        // 新增到第一筆紀錄
-        return { success: true, message: "" };
+        // 新增金流第一筆紀錄，回傳金流初始金額
+        return { success: true, message: "", returnAmount: startingAmount };
       } else if (nextTradeId !== null && prevTradeId !== null) {
-        // 新增到中間紀錄
-        return { success: true, message: "" };
+        // 新增到中間紀錄，回傳上一筆交易剩餘金額
+        return { success: true, message: "", returnAmount: prevRemainingAmount };
       }
-
-      // if (prevTradeDatetime !== null && dataTradeDatetime < prevTradeDatetime) {
-      //   return { success: false, message: "收支時間點異常，請檢查後重新輸入" };
-      // }
 
       return { success: false, message: "查詢失敗"};
     }

@@ -79,51 +79,56 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 }
 
 export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
-  const insertQuery = `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-  `;
-
-  const insertParams = [
-    `CA-${data.updateData.currency}-${getCurrentTimestamp()}`,
+  const dateDetectResult = await tradeDateTimeDetect(
+    "currency_account_list",
+    "currency_account_trade",
+    "account_id",
     data.updateData.accountId,
     data.updateData.tradeDatetime,
-    data.userId,
-    data.updateData.tradeCategory,
-    data.updateData.transactionType,
-    data.updateData.tradeAmount,
-    data.updateData.remainingAmount,
-    data.updateData.currency,
-    data.updateData.tradeDescription,
-    data.updateData.tradeNote,
-  ];
-  const insertResult = await pool.query(insertQuery, insertParams);
+  );
+  // console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
 
-  // return executeSQLsyntax(insertQuery, insertParams);
+  try {
+    const insertQuery =
+      `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      `;
 
-  if (insertResult.rowCount === 1) {
-    const accountTarget = await currencyAccountListServices.getCurrencyAccountById(
-      data.updateData.accountId,
-      data.updateData.userId,
-    );
-    accountTarget.data.presentAmount = data.updateData.remainingAmount;
-    await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
-
-    const dateDetectResult = await tradeDateTimeDetect(
-      "currency_account_trade",
-      "account_id",
+    const insertParams = [
+      `CA-${data.updateData.currency}-${getCurrentTimestamp()}`,
       data.updateData.accountId,
       data.updateData.tradeDatetime,
-    );
-    // console.log("dateDetectResult:", dateDetectResult);
-    if (!dateDetectResult.success) {
-      return { success: false, message: dateDetectResult.message };
-    }
+      data.userId,
+      data.updateData.tradeCategory,
+      data.updateData.transactionType,
+      data.updateData.tradeAmount,
+      data.updateData.remainingAmount,
+      data.updateData.currency,
+      data.updateData.tradeDescription,
+      data.updateData.tradeNote,
+    ];
+    const insertResult = await pool.query(insertQuery, insertParams);
 
-    return {
-      success: insertResult,
-      userData: insertResult ? insertResult.rows[0] : [],
-    };
+    // return executeSQLsyntax(insertQuery, insertParams);
+
+    if (insertResult.rowCount === 1) {
+      const accountTarget = await currencyAccountListServices.getCurrencyAccountById(
+        data.updateData.accountId,
+        data.updateData.userId,
+      );
+      accountTarget.data.presentAmount = data.updateData.remainingAmount;
+      await currencyAccountListServices.updateCurrencyAccountData(accountTarget.data);
+
+      return {
+        success: insertResult,
+        userData: insertResult ? insertResult.rows[0] : [],
+      };
+    }
+    return { success: false, userData: [] };
+  } catch (err) {
+    return { success: false, message: err instanceof Error ? err.message : String(err) };
   }
-  return { success: false, userData: [] };
 }
 
 export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
