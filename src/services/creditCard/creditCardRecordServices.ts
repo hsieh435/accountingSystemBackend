@@ -57,8 +57,10 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-  const query = `SELECT * FROM creditcard_trade
-    WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`;
+  const query = `
+    SELECT * FROM creditcard_trade
+    WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'
+  `;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

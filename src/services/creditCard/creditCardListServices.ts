@@ -90,9 +90,8 @@ export async function insertCreditCardData(data: ICreditCardData) {
 export async function updateCreditCardData(data: ICreditCardData) {
   const query = `
     UPDATE public.creditcard_list
-    SET creditcard_name=$1, creditcard_bank_code=$2, creditcard_bank_name=$3,
-        credit_per_month=$4, alert_value=$5, open_alert=$6, note=$7
-    WHERE creditcard_id=$8 AND user_id=$9
+    SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, credit_per_month = $4, alert_value = $5, open_alert = $6, note = $7
+    WHERE creditcard_id = $8 AND user_id = $9
   `;
   const params = [
     data.creditcardName,
@@ -116,7 +115,7 @@ export async function updateCreditCardData(data: ICreditCardData) {
 
 export async function enableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
-    query: "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3",
+    query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
     params: [true, data.creditcardId, data.userId],
     successMessage: "成功",
     errorMessage: "失敗",
@@ -125,7 +124,7 @@ export async function enableCreditCardStatus(data: ICreditCardData) {
 
 export async function disableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
-    query: "UPDATE public.creditcard_list SET enable=$1 WHERE creditcard_id=$2 AND user_id=$3",
+    query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
     params: [false, data.creditcardId, data.userId],
     successMessage: "成功",
     errorMessage: "失敗",

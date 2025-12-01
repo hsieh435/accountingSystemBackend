@@ -1,6 +1,5 @@
 import pool from "@/db";
 import { keysToCamel } from "@/utils/tools";
-import { asyncWrapProviders } from "async_hooks";
 
 // Helper function for update / insert operations
 export async function executeSQLsyntax({
@@ -38,7 +37,8 @@ export function handleDbError(message: string = "Database error") {
 
 export async function testSQLsyntax() {
 
-  const result = await pool.query(`SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
+  const result = await pool.query(`
+    SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime = '2025-12-14 19:30:00+08'
     UNION ALL
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade

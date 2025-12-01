@@ -17,9 +17,8 @@ export async function getSchemasList(req: Request, res: Response) {
 
 export async function getSchemaById(req: Request, res: Response) {
   try {
-    const result = await pool.query(
-      `SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`,
-    );
+    const result =
+      await pool.query(`SELECT * FROM creditcard_schema_list WHERE schema_code = '${req.params.schemasCode}'`);
     // console.log("result:", result);
     await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
   } catch (err) {
@@ -84,7 +83,7 @@ export interface ICurrencyList {
 
 export async function getCurrencyList(req: Request, res: Response) {
   try {
-    const result = await pool.query(`SELECT * FROM currency_list ORDER BY sort`);
+    const result = await pool.query("SELECT * FROM currency_list ORDER BY sort");
     if (result.rows.length > 0) {
       await handleControllersResponse(res, req, {
         success: true,
@@ -175,9 +174,8 @@ export async function deleteCurrency(req: Request, res: Response) {
     if (searchingCurrencyResult.rows[0].total > 0) {
       await handleControllersResponse(res, req, { success: false, message: "貨幣已被使用，無法刪除" }, 500);
     } else if (searchingCurrencyResult.rows[0].total === 0) {
-      const deleteResult = await pool.query(
-        `DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}';`,
-      );
+      const deleteResult =
+        await pool.query(`DELETE FROM currency_list WHERE currency_code = '${req.params.currencyCode}'`);
 
       if (deleteResult.rowCount === 1) {
         await handleControllersResponse(res, req, { success: true, message: "刪除成功" });

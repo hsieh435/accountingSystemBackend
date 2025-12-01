@@ -130,8 +130,8 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
   try {
     const query = `
       UPDATE public.currency_account_trade
-      SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, currency=$5, trade_description=$6, trade_note=$7
-      WHERE trade_id=$8 AND account_id=$9 AND user_id=$10
+      SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7
+      WHERE trade_id = $8 AND account_id = $9 AND user_id = $10
     `;
 
     const params = [

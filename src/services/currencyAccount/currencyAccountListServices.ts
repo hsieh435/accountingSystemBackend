@@ -92,10 +92,9 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
 export async function updateCurrencyAccountData(data: ICurrencyAccountData) {
   const query = `
     UPDATE public.currency_account_list
-    SET account_name=$1, account_bank_code=$2, account_bank_name=$3,
-        minimum_value_allowed=$4, alert_value=$5, open_alert=$6,
-        is_salary_account=$7, note=$8
-    WHERE account_id=$9 AND user_id=$10
+    SET account_name = $1, account_bank_code = $2, account_bank_name = $3, minimum_value_allowed = $4,
+    alert_value = $5, open_alert = $6, is_salary_account = $7, note = $8
+    WHERE account_id = $9 AND user_id = $10
   `;
   const params = [
     data.accountName,
@@ -121,7 +120,7 @@ export async function updateCurrencyAccountData(data: ICurrencyAccountData) {
 export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
 
   return executeSQLsyntax({
-    query: "UPDATE public.currency_account_list SET enable=$1 WHERE account_id=$2 AND user_id=$3",
+    query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
     params: [true, data.accountId, data.userId],
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -131,7 +130,7 @@ export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
 export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
 
   return executeSQLsyntax({
-    query: "UPDATE public.currency_account_list SET enable=$1 WHERE account_id=$2 AND user_id=$3",
+    query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
     params: [false, data.accountId, data.userId],
     successMessage: "更新成功",
     errorMessage: "更新失敗",
