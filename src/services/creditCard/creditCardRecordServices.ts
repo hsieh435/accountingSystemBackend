@@ -67,15 +67,23 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 
 export async function insertCreditCardData(data: ICreditCardTradeData) {
 
-  const dateDetectResult = await tradeDateTimeDetect(
-    "creditcard_list",
-    "creditcard_trade",
-    "credit_card_id",
-    data.updateData.creditCardId,
-    data.updateData.tradeDatetime,
-  );
+  // const dateDetectResult = await tradeDateTimeDetect(
+  //   "creditcard_list",
+  //   "creditcard_trade",
+  //   "credit_card_id",
+  //   data.updateData.creditCardId,
+  //   data.updateData.tradeDatetime,
+  // );
+
+
   // console.log("dateDetectResult:", dateDetectResult);
-  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+  // if (!dateDetectResult.success) {
+  //   return { success: false, message: dateDetectResult.message };
+  // }
+  // else if (dateDetectResult.success) {
+  //
+  // }
+
 
   try {
 

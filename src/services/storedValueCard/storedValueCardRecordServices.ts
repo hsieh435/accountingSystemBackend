@@ -81,8 +81,20 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     data.updateData.storedValueCardId,
     data.updateData.tradeDatetime,
   );
+
+
   // console.log("dateDetectResult:", dateDetectResult);
-  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+  // if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  } else if (dateDetectResult.success) {
+    if (data.updateData.transactionType === "income") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
+    } else if (data.updateData.transactionType === "expense") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
+    }
+  }
+
 
   try {
     const insertResult = await pool.query(

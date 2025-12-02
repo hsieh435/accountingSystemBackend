@@ -84,10 +84,20 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.accountId,
     data.updateData.tradeDatetime,
   );
-  // console.log("dateDetectResult:", dateDetectResult);
-  if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
 
-  //
+
+  // console.log("dateDetectResult:", dateDetectResult);
+  // if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  } else if (dateDetectResult.success) {
+    if (data.updateData.transactionType === "income") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;
+    } else if (data.updateData.transactionType === "expense") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeTotalPrice;
+    }
+  }
+
 
   try {
     const insertResult = await pool.query(
