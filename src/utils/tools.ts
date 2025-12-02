@@ -1,4 +1,3 @@
-
 // 把 snake_case 轉 camelCase
 export function toCamelCase(str: string): string {
   return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
@@ -13,8 +12,8 @@ export function keysToCamel<T extends object>(obj: T): any {
       Object.entries(obj).map(([key, value]) => [
         // toCamelCase(key),
         key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()),
-        keysToCamel(value)
-      ])
+        keysToCamel(value),
+      ]),
     );
   }
   return obj;
@@ -24,13 +23,13 @@ export function keysToCamel<T extends object>(obj: T): any {
 
 export function decodeJWT(token: string) {
   console.log("token:", token);
-  const parts = token.split('.');
-  if (parts.length !== 3) throw new Error('Invalid JWT');
+  const parts = token.split(".");
+  if (parts.length !== 3) throw new Error("Invalid JWT");
   const payload = parts[1];
   //
-  const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = base64 + '='.repeat((4 - base64.length % 4) % 4);
-  const decoded = Buffer.from(padded, 'base64').toString('utf8');
+  const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
+  const decoded = Buffer.from(padded, "base64").toString("utf8");
   console.log("JWT payload:", JSON.parse(decoded));
   return JSON.parse(decoded);
 }
@@ -97,5 +96,5 @@ export function setTimezone(dateString: string | null = null): string {
 
 // 取得當前時間戳，並轉換為 UTC 字串
 export function getTimeStampWithZone() {
-  return setTimezone(yearMonthDayTimeFormat((getCurrentTimestamp())));
+  return setTimezone(yearMonthDayTimeFormat(getCurrentTimestamp()));
 }

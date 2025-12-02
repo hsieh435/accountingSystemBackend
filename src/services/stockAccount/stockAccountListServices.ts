@@ -32,7 +32,7 @@ export async function searchingStockAccountList(data: { currencyId: string; user
 export async function getStockAccountById(data: { accountId: string; userId: string }) {
   const query = `
     SELECT * FROM public.stock_account_list
-    WHERE account_id = '${data.accountId}' AND user_id='${data.userId}'`;
+    WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
@@ -48,7 +48,7 @@ export async function insertStockAccountData(data: IStockAccountList) {
 
 export async function updateStockAccountData(data: IStockAccountList) {
   const query = `
-    UPDATE public.stock_account_list SET account_name='${data.accountName}', account_bank_code='${data.accountBankCode}', account_bank_name='${data.accountBankName}', currency='${data.currency}', starting_amount=${data.startingAmount}, present_amount=${data.presentAmount}, minimum_value_allowed=${data.minimumValueAllowed}, alert_value=${data.alertValue}, open_alert=${data.openAlert}, enable=${data.enable}, created_date='${data.createdDate}', note='${data.note}'
+    UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', starting_amount = ${data.startingAmount}, present_amount = ${data.presentAmount}, minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, enable = ${data.enable}, created_date = '${data.createdDate}', note = '${data.note}'
     WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });

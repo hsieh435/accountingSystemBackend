@@ -47,6 +47,7 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
     SELECT currency_account_trade.*,
       currency_list.currency_name,
       currency_account_list.account_name,
+      currency_account_list.enable,
       trade_category.trade_name,
       transaction_category.transaction_name
     FROM currency_account_trade
@@ -174,7 +175,7 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
 
 export async function removeCurrencyAccountRecord(data: ICreditCardRecordData) {
   return executeSQLsyntax({
-    query: "DELETE FROM public.currency_account_trade WHERE trade_id=$1 AND account_id=$2 AND user_id=$3",
+    query: "DELETE FROM public.currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3",
     params: [data.updateData.tradeId, data.updateData.accountId, data.updateData.userId],
     successMessage: "刪除成功",
     errorMessage: "刪除失敗",

@@ -87,8 +87,8 @@ export async function insertCashflowData(data: ICashFlowData) {
 export async function updateCashflowData(data: ICashFlowData) {
   const query = `
     UPDATE public.cashflow_list
-    SET cashflow_name=$1, minimum_value_allowed=$2, alert_value=$3, open_alert=$4, note=$5
-    WHERE cashflow_id=$6 AND user_id=$7
+    SET cashflow_name = $1, minimum_value_allowed = $2, alert_value = $3, open_alert = $4, note = $5
+    WHERE cashflow_id = $6 AND user_id = $7
   `;
   const params = [
     data.cashflowName,
@@ -109,7 +109,7 @@ export async function updateCashflowData(data: ICashFlowData) {
 }
 
 export async function enableCashFlowStatus(data: ICashFlowData) {
-  const query = "UPDATE public.cashflow_list SET enable=$1 WHERE cashflow_id=$2 AND user_id=$3";
+  const query = "UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3";
   return executeSQLsyntax({
     query: query,
     params: [true, data.cashflowId, data.userId],
@@ -120,7 +120,7 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
 
 export async function disableCashFlowStatus(data: ICashFlowData) {
   return executeSQLsyntax({
-    query: "UPDATE public.cashflow_list SET enable=$1 WHERE cashflow_id=$2 AND user_id=$3",
+    query: "UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3",
     params: [false, data.cashflowId, data.userId],
     successMessage: "停用成功",
     errorMessage: "停用失敗",
@@ -137,7 +137,7 @@ export async function removeCashflowData(data: ICashFlowData) {
     // console.log("data:", recordData.data);
 
     return executeSQLsyntax({
-      query: "DELETE FROM public.cashflow_list WHERE cashflow_id=$1 AND user_id=$2",
+      query: "DELETE FROM public.cashflow_list WHERE cashflow_id = $1 AND user_id = $2",
       params: [data.cashflowId, data.userId],
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",

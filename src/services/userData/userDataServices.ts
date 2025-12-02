@@ -28,7 +28,7 @@ export async function createUser(data: { userAccount: string; userName: string; 
 export async function accountDataChange(data: { userId: string; userName: string; userOldPassword: string; userNewPassword: string }) {
 
   return executeSQLsyntax({
-    query: `UPDATE user_data SET user_name='${data.userName}', user_password='${data.userNewPassword}' WHERE user_id='${data.userId}'`,
+    query: `UPDATE user_data SET user_name = '${data.userName}', user_password = '${data.userNewPassword}' WHERE user_id = '${data.userId}'`,
     successMessage: "更新成功",
     errorMessage: "更新失敗"
   });

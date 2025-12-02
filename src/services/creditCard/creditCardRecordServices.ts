@@ -43,9 +43,10 @@ export interface ICreditCardTradeData {
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT creditcard_trade.*,
-    currency_list.currency_name,
-    creditcard_list.creditcard_name,
-    trade_category.trade_name
+      currency_list.currency_name,
+      creditcard_list.creditcard_name,
+      creditcard_list.enable,
+      trade_category.trade_name
     FROM creditcard_trade LEFT JOIN currency_list ON creditcard_trade.currency = currency_list.currency_code
     LEFT JOIN creditcard_list ON creditcard_trade.credit_card_id = creditcard_list.creditcard_id
     LEFT JOIN trade_category ON creditcard_trade.trade_category = trade_category.trade_code
@@ -105,9 +106,10 @@ export async function insertCreditCardData(data: ICreditCardTradeData) {
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
-  const updateResult =
-    await pool.query(`UPDATE public.creditcard_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', bill_month='${data.updateData.billMonth}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
-    WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`);
+  const updateResult = await pool.query(`
+    UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+    WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'
+  `);
   // console.log("updateResult:", updateResult);
   if (updateResult.rowCount === 1) {
     return true;

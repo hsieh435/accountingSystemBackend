@@ -117,19 +117,11 @@ export async function updateRelatedData(
     }
   })();
 
-  // 更新後續紀錄的 remaining_amount
-  // const recordUpdateResult = await updateFlowRecordRemainingAmount(recordTable, column, amountDifference, tradeDatetime, flowId);
-
-  // // 加上 await 確保同步執行
-  // const flowUpdateResult = await updateFlowDataRemainingAmount(flowListTable, recordTable, flowColumn, flowId);
-
-  // if (!flowUpdateResult.success || !recordUpdateResult.success) {
-  //   return { success: false, error: "更新餘額失敗" };
-  // }
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    // 更新後續紀錄的 remaining_amount
     const recordUpdateResult = await updateFlowRecordRemainingAmount(
       recordTable,
       column,
@@ -138,6 +130,7 @@ export async function updateRelatedData(
       flowId,
     );
     // pass client
+    // 加上 await 確保同步執行
     const flowUpdateResult = await updateFlowDataRemainingAmount(flowListTable, recordTable, flowColumn, flowId);
     // pass client
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
@@ -170,7 +163,7 @@ export async function updateFlowRecordRemainingAmount(
       WHERE trade_datetime > $2 AND ${column} = $3`,
       [amountDifference, tradeDatetime, flowId],
     );
-    // console.log("updateFlowRecordRemainingAmount:", result);
+    console.log("updateFlowRecordRemainingAmount:", result.rows);
     return { success: true };
   } catch (error) {
     return { success: false };
@@ -196,7 +189,7 @@ export async function updateFlowDataRemainingAmount(
         AND frt.${flowColumn} = '${flowId}')
       WHERE ${flowColumn} = '${flowId}'
     `);
-    console.log("updateFlowDataRemainingAmount:", result);
+    console.log("updateFlowDataRemainingAmount:", result.rows);
     return { success: true };
   } catch (error) {
     return { success: false };

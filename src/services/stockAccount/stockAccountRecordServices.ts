@@ -51,13 +51,14 @@ export interface IStockAccountRecordData {
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT stock_account_trade.*,
-    currency_list.currency_name,
-    currency_account_list.account_name,
-    trade_category.trade_name,
-    transaction_category.transaction_name
+      currency_list.currency_name,
+      stock_account_list.account_name,
+      stock_account_list.enable,
+      trade_category.trade_name,
+      transaction_category.transaction_name
     FROM stock_account_trade
     LEFT JOIN currency_list ON stock_account_trade.currency = currency_list.currency_code
-    LEFT JOIN currency_account_list ON stock_account_trade.account_id = currency_account_list.account_id
+    LEFT JOIN stock_account_list ON stock_account_trade.account_id = stock_account_list.account_id
     LEFT JOIN trade_category ON stock_account_trade.trade_category = trade_category.trade_code
     LEFT JOIN transaction_category ON stock_account_trade.transaction_type = transaction_category.transaction_code
     WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
@@ -71,7 +72,7 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
   const query = `
     SELECT * FROM public.stock_account_trade
-    WHERE trade_id='${tradeId}' AND account_id='${accountId}' AND user_id='${userId}'
+    WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'
   `;
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
@@ -119,7 +120,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
 
 export async function updateStockAccountRecord(data: IStockAccountRecordData) {
   const result = await pool.query(
-    `UPDATE public.stock_account_trade SET trade_datetime='${data.updateData.tradeDatetime}', stock_no='${data.updateData.stockNo}', stock_name='${data.updateData.stockName}', price_per_share=${data.updateData.pricePerShare}, quantity=${data.updateData.quantity}, stock_total_price=${data.updateData.stockTotalPrice}, handling_fee=${data.updateData.handlingFee}, transaction_tax=${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
+    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
     WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
   );
   return result.rowCount === 1;

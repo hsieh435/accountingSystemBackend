@@ -31,7 +31,7 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
 export async function getStoredValueCardData(storedValueCardId: string, userId: string) {
   const query = `
     SELECT * FROM stored_value_card_list
-    WHERE stored_value_card_id = '${storedValueCardId}' AND user_id='${userId}'`;
+    WHERE stored_value_card_id = '${storedValueCardId}' AND user_id = '${userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

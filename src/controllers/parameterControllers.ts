@@ -136,9 +136,10 @@ export async function updateCurrency(req: Request, res: Response) {
   const { currencyCode, currencyName, sort } = req.body;
   const data: ICurrencyList = req.body;
   try {
-    const result = await pool.query(
-      `UPDATE public.currency_list SET currency_name='${data.currencyName}', currency_symbol='${data.currencySymbol}', minimum_denomination=${data.minimumDenomination}, sort=${data.sort} WHERE currency_code = '${data.currencyCode}';`,
-    );
+    const result = await pool.query(`
+      UPDATE public.currency_list SET currency_name = '${data.currencyName}', currency_symbol = '${data.currencySymbol}', minimum_denomination = ${data.minimumDenomination}, sort = ${data.sort}
+      WHERE currency_code = '${data.currencyCode}';
+    `);
     if (result.rowCount === 1) {
       await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "更新成功" });
     } else {

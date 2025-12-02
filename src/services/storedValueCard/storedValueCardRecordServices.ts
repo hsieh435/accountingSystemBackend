@@ -43,10 +43,11 @@ export interface IStoredValueCardRecordData {
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT stored_value_card_trade.*,
-    currency_list.currency_name,
-    stored_value_card_list.stored_value_card_name,
-    trade_category.trade_name,
-    transaction_category.transaction_name
+      currency_list.currency_name,
+      stored_value_card_list.stored_value_card_name,
+      stored_value_card_list.enable,
+      trade_category.trade_name,
+      transaction_category.transaction_name
     FROM stored_value_card_trade
     LEFT JOIN currency_list ON stored_value_card_trade.currency = currency_list.currency_code
     LEFT JOIN stored_value_card_list ON stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
@@ -67,7 +68,7 @@ export async function searchingStoredValueCardRecordById(data: {
 }) {
   const query = `
     SELECT * FROM public.stored_value_card_trade
-    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id='${data.userId}'`;
+    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
@@ -97,9 +98,10 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
 
   try {
-    const insertResult = await pool.query(
-      `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note) VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
-    );
+    const insertResult = await pool.query(`
+      INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+      VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
+    `);
 
     return insertResult.rowCount === 1
       ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
@@ -111,8 +113,8 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
   const query = `
-    UPDATE public.stored_value_card_trade SET trade_datetime='${data.updateData.tradeDatetime}', trade_category='${data.updateData.tradeCategory}', transaction_type='${data.updateData.transactionType}', trade_amount=${data.updateData.tradeAmount}, currency='${data.updateData.currency}', trade_description='${data.updateData.tradeDescription}', trade_note='${data.updateData.tradeNote}'
-    WHERE trade_id='${data.updateData.tradeId}' AND stored_value_card_id='${data.updateData.storedValueCardId}' AND user_id='${data.userId}'`;
+    UPDATE public.stored_value_card_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', transaction_type = '${data.updateData.transactionType}', trade_amount  ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+    WHERE trade_id = '${data.updateData.tradeId}' AND stored_value_card_id = '${data.updateData.storedValueCardId}' AND user_id = '${data.userId}'`;
 
   return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
