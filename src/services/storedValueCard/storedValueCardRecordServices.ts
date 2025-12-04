@@ -70,7 +70,7 @@ export async function searchingStoredValueCardRecordById(data: {
     SELECT * FROM public.stored_value_card_trade
     WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
@@ -116,5 +116,18 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     UPDATE public.stored_value_card_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', transaction_type = '${data.updateData.transactionType}', trade_amount  ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
     WHERE trade_id = '${data.updateData.tradeId}' AND stored_value_card_id = '${data.updateData.storedValueCardId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "更新成功", errorMessage: "更新失敗" });
+}
+
+
+export async function removeStoredValueCardRecordById(data: {
+  storedValueCardId: string;
+  tradeId: string;
+  userId: string;
+}) {
+  const query = `
+    DELETE FROM public.stored_value_card_trade
+    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
+
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "刪除成功", errorMessage: "刪除失敗" });
 }

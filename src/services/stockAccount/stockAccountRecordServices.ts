@@ -74,7 +74,7 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
     SELECT * FROM public.stock_account_trade
     WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'
   `;
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {

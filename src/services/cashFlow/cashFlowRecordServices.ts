@@ -68,6 +68,7 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
   return executeSQLsyntax({
     query: `SELECT * FROM public.cashflow_trade WHERE cashflow_id = $1 AND trade_id = $2 AND user_id = $3`,
     params: [data.cashflowId, data.tradeId, data.userId],
+    isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -158,7 +159,13 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.userId,
   ];
 
-  return executeSQLsyntax({ query: query, params: params, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({
+    query: query,
+    params: params,
+    isReturnArray: false,
+    successMessage: "更新成功",
+    errorMessage: "更新失敗"
+  });
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {

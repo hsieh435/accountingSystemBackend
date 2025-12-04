@@ -74,6 +74,7 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
   return executeSQLsyntax({
     query: "SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3",
     params: [data.tradeId, data.accountId, data.userId],
+    isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -123,7 +124,13 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     ];
     const insertResult = await pool.query(insertQuery, insertParams);
 
-    // return executeSQLsyntax(insertQuery, insertParams);
+    // return executeSQLsyntax({
+    //   query: insertQuery,
+    //   params: insertParams,
+    //   isReturnArray: false,
+    //   successMessage: "查詢成功",
+    //   errorMessage: "查詢失敗",
+    // });
 
     if (insertResult.rowCount === 1) {
       const accountTarget = await currencyAccountListServices.getCurrencyAccountById(
@@ -168,7 +175,6 @@ export async function updateCurrencyAccountRecord(data: ICreditCardRecordData) {
     const result = await pool.query(query, params);
     return result.rowCount === 1;
   } catch (error) {
-    console.error("Update error:", error);
     return false;
   }
 }

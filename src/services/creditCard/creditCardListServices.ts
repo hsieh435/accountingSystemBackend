@@ -44,6 +44,7 @@ export async function getCreditCardById(creditcardId: string, userId: string) {
   return executeSQLsyntax({
     query: "SELECT * FROM creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
     params: [creditcardId, userId],
+    isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -82,6 +83,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
   return executeSQLsyntax({
     query: insertQuery,
     params: insertParams,
+    isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
@@ -108,6 +110,7 @@ export async function updateCreditCardData(data: ICreditCardData) {
   return executeSQLsyntax({
     query: query,
     params: params,
+    isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
@@ -117,6 +120,7 @@ export async function enableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
     query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
     params: [true, data.creditcardId, data.userId],
+    isReturnArray: false,
     successMessage: "成功",
     errorMessage: "失敗",
   });
@@ -126,6 +130,7 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
     query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
     params: [false, data.creditcardId, data.userId],
+    isReturnArray: false,
     successMessage: "成功",
     errorMessage: "失敗",
   });
@@ -133,7 +138,6 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 
 export async function removeCreditCardData(data: ICreditCardData) {
   try {
-    // Check if there are existing records
     const checkQuery = "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2";
     const searchingResult = await pool.query(checkQuery, [data.creditcardId, data.userId]);
 

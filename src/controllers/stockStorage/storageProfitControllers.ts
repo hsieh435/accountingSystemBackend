@@ -12,7 +12,6 @@ export async function storageProfitDataList(req: Request, res: Response) {
 }
 
 export async function storageProfitList(req: Request, res: Response) {
-  // console.log("params:", req.params.stockAccountId, req.body.userId);
   try {
     const result = await storageProfitServices.searchingStorageProfitList(req.params.stockAccountId, req.body.userId);
     await handleControllersResponse(res, req, result);

@@ -23,7 +23,6 @@ export async function searchingCashFlowById(req: Request, res: Response) {
 export async function cashFlowCreate(req: Request, res: Response) {
   try {
     const result = await cashFlowServices.insertCashflowData(req.body);
-    // console.log("result:", result);
     await handleControllersResponse(res, req, result);
   } catch (err) {
     await handleControllersResponse(res, req, err);

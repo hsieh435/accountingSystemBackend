@@ -19,5 +19,6 @@ router.post("/api/storedValueCardRecord/list", authenticateToken, storedValueCar
 router.post("/api/storedValueCardRecordById", authenticateToken, storedValueCardRecordControllers.searchingStoredValueCardRecordById);
 router.post("/api/storedValueCardRecord/create", authenticateToken, storedValueCardRecordControllers.storedValueCardRecordCreate);
 router.post("/api/storedValueCardRecord/update", authenticateToken, storedValueCardRecordControllers.storedValueCardRecordUpdate);
+router.post("/api/storedValueCardRecord/delete", authenticateToken, storedValueCardRecordControllers.deleteStoredValueCardRecord);
 
 export default router;

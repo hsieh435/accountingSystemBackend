@@ -32,8 +32,7 @@ export async function searchingCreditCardRecordById(req: Request, res: Response)
 
 export async function creditCardRecordCreate(req: Request, res: Response) {
   try {
-    const result = await creditCardRecordServices.insertCreditCardData(req.body);
-    // console.log("createResult:", createResult);
+    const result = await creditCardRecordServices.insertCreditCardRecordData(req.body);
     await handleControllersResponse(res, req, result);
   } catch (err) {
     await handleControllersResponse(res, req, err);

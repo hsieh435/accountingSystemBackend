@@ -45,6 +45,7 @@ export async function getCurrencyAccountById(accountId: string, userId: string) 
   return executeSQLsyntax({
     query: "SELECT * FROM currency_account_list WHERE account_id = $1 AND user_id = $2",
     params: [accountId, userId],
+    isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -84,6 +85,7 @@ export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
   return executeSQLsyntax({
     query: insertQuery,
     params: insertParams,
+    isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
@@ -112,6 +114,7 @@ export async function updateCurrencyAccountData(data: ICurrencyAccountData) {
   return executeSQLsyntax({
     query: query,
     params: params,
+    isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
@@ -122,6 +125,7 @@ export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
   return executeSQLsyntax({
     query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
     params: [true, data.accountId, data.userId],
+    isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
@@ -132,6 +136,7 @@ export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
   return executeSQLsyntax({
     query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
     params: [false, data.accountId, data.userId],
+    isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });

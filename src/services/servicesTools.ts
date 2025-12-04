@@ -5,13 +5,13 @@ import { keysToCamel } from "@/utils/tools";
 export async function executeSQLsyntax({
   query,
   params = [],
-  successData,
+  isReturnArray = true,
   successMessage,
   errorMessage,
 }: {
   query: string;
   params?: any;
-  successData?: any;
+  isReturnArray?: boolean;
   successMessage?: string;
   errorMessage?: string;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
@@ -22,7 +22,7 @@ export async function executeSQLsyntax({
     // console.log("SQL Result:", result);
     return {
       success: true,
-      data: successData ? keysToCamel(successData) : keysToCamel(result.rows),
+      data: isReturnArray ? keysToCamel(result.rows) : keysToCamel(result.rows[0]),
       message: successMessage,
     };
   } catch (error) {

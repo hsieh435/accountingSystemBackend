@@ -45,6 +45,7 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
   return executeSQLsyntax({
     query: "SELECT * FROM cashflow_list WHERE cashflow_id = $1 AND user_id = $2",
     params: [cashflowId, userId],
+    isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -79,6 +80,7 @@ export async function insertCashflowData(data: ICashFlowData) {
   return executeSQLsyntax({
     query: insertQuery,
     params: insertParams,
+    isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
@@ -103,6 +105,7 @@ export async function updateCashflowData(data: ICashFlowData) {
   return executeSQLsyntax({
     query: query,
     params: params,
+    isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
@@ -113,6 +116,7 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
   return executeSQLsyntax({
     query: query,
     params: [true, data.cashflowId, data.userId],
+    isReturnArray: false,
     successMessage: "啟用成功",
     errorMessage: "啟用失敗",
   });
@@ -122,6 +126,7 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
   return executeSQLsyntax({
     query: "UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3",
     params: [false, data.cashflowId, data.userId],
+    isReturnArray: false,
     successMessage: "停用成功",
     errorMessage: "停用失敗",
   });

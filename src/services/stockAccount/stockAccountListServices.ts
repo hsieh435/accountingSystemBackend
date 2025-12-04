@@ -34,7 +34,7 @@ export async function getStockAccountById(data: { accountId: string; userId: str
     SELECT * FROM public.stock_account_list
     WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStockAccountData(data: IStockAccountList) {
@@ -43,7 +43,7 @@ export async function insertStockAccountData(data: IStockAccountList) {
     INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)
     VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`;
 
-  return executeSQLsyntax({ query: query, successMessage: "新增成功", errorMessage: "新增失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "新增成功", errorMessage: "新增失敗" });
 }
 
 export async function updateStockAccountData(data: IStockAccountList) {
@@ -51,7 +51,7 @@ export async function updateStockAccountData(data: IStockAccountList) {
     UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', starting_amount = ${data.startingAmount}, present_amount = ${data.presentAmount}, minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, enable = ${data.enable}, created_date = '${data.createdDate}', note = '${data.note}'
     WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
 
 export async function enableStockAccountStatus(data: IStockAccountList) {
@@ -59,7 +59,7 @@ export async function enableStockAccountStatus(data: IStockAccountList) {
     UPDATE public.stock_account_list SET enable = ${true}
     WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
 
 export async function disableStockAccountStatus(data: IStockAccountList) {
@@ -67,7 +67,7 @@ export async function disableStockAccountStatus(data: IStockAccountList) {
     UPDATE public.stock_account_list SET enable = ${false}
     WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
 
 export async function removeStockAccountData(data: IStockAccountList) {

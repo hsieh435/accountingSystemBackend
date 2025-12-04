@@ -21,10 +21,8 @@ export async function searchingCashFlowRecordById(req: Request, res: Response) {
 }
 
 export async function cashFlowRecordCreate(req: Request, res: Response) {
-  // console.log("body:", req.body);
   try {
     const result = await cashFlowRecordServices.insertCashFlowRecordData(req.body);
-    // console.log("result:", result);
     await handleControllersResponse(res, req, result);
   } catch (err) {
     await handleControllersResponse(res, req, err);
@@ -40,13 +38,11 @@ export async function cashFlowRecordUpdate(req: Request, res: Response) {
   }
 }
 
-export async function cashFlowDelete(req: Request, res: Response) {
-  req.body.cashflowId = req.params.cashflowId;
-
-  // try {
-  //   const result = await cashFlowRecordServices.removeCashflowData(req.body);
-  //   await handleControllersResponse(res, req, result);
-  // } catch (err) {
-  //   await handleControllersResponse(res, req, err);
-  // }
+export async function cashFlowRecordDelete(req: Request, res: Response) {
+  try {
+    const result = await cashFlowRecordServices.deleteCashFlowRecordData(req.body);
+    await handleControllersResponse(res, req, result);
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
+  }
 }

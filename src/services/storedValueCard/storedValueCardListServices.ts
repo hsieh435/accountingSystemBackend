@@ -33,7 +33,7 @@ export async function getStoredValueCardData(storedValueCardId: string, userId: 
     SELECT * FROM stored_value_card_list
     WHERE stored_value_card_id = '${storedValueCardId}' AND user_id = '${userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function insertStoredValueCardData(data: IStoredValueCardData) {
@@ -43,7 +43,7 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
     INSERT INTO public.stored_value_card_list(stored_value_card_id, user_id, account_type, stored_value_card_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, enable, created_date, note)
     VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`;
 
-  return executeSQLsyntax({ query: query, successMessage: "新增成功", errorMessage: "新增失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "新增成功", errorMessage: "新增失敗" });
 }
 
 export async function updateStoredValueCardData(data: IStoredValueCardData) {
@@ -51,21 +51,21 @@ export async function updateStoredValueCardData(data: IStoredValueCardData) {
     UPDATE public.stored_value_card_list SET stored_value_card_name = '${data.storedValueCardName}', minimum_value_allowed = ${data.minimumValueAllowed}, maximum_value_allowed = ${data.maximumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}'
     WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "更新成功", errorMessage: "更新失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "更新成功", errorMessage: "更新失敗" });
 }
 
 export async function enableStoredValueCardStatus(data: IStoredValueCardData) {
   const query = `
     UPDATE public.stored_value_card_list SET enable = ${true} WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "啟用成功", errorMessage: "啟用失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "啟用成功", errorMessage: "啟用失敗" });
 }
 
 export async function disableStoredValueCardStatus(data: IStoredValueCardData) {
   const query = `
     UPDATE public.stored_value_card_list SET enable = ${false} WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`;
 
-  return executeSQLsyntax({ query: query, successMessage: "停用成功", errorMessage: "停用失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "停用成功", errorMessage: "停用失敗" });
 }
 
 export async function removeStoredValueCardData(data: IStoredValueCardData) {

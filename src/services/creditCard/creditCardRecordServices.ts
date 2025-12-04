@@ -63,10 +63,10 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
     WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'
   `;
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
-export async function insertCreditCardData(data: ICreditCardTradeData) {
+export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
 
   // const dateDetectResult = await tradeDateTimeDetect(
   //   "creditcard_list",

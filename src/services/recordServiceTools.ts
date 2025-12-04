@@ -1,5 +1,4 @@
 import pool from "@/db";
-import { executeSQLsyntax } from "@/services/servicesTools";
 import { setTimezone } from "@/utils/tools";
 
 export interface IOriData {
