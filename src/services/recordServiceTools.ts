@@ -156,9 +156,8 @@ export async function updateFlowRecordRemainingAmount(
 ) {
   //
   try {
-    const result = await pool.query(
-      `UPDATE ${recordTable}
-      SET remaining_amount = remaining_amount + $1
+    const result = await pool.query(`
+      UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
       WHERE trade_datetime > $2 AND ${column} = $3`,
       [amountDifference, tradeDatetime, flowId],
     );

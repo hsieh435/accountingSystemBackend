@@ -22,12 +22,12 @@ export async function userLogin(req: Request, res: Response) {
 
   try {
     const result = await userDataServices.loginTesting(req.body);
-    // console.log("result:", result);
+    console.log("result:", result);
     if (result.success) {
       const token = jwt.sign(
         {
-          userId: result.data[0].userId,
-          userName: result.data[0].userName,
+          userId: result.data.userId,
+          userName: result.data.userName,
         },
         JWT_SECRET,
         { expiresIn: "10h" },
