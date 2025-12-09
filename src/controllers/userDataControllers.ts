@@ -22,7 +22,7 @@ export async function userLogin(req: Request, res: Response) {
 
   try {
     const result = await userDataServices.loginTesting(req.body);
-    console.log("result:", result);
+    // console.log("result:", result);
     if (result.success) {
       const token = jwt.sign(
         {

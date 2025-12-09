@@ -27,11 +27,11 @@ export async function getSchemaById(req: Request, res: Response) {
 }
 
 export async function createSchema(req: Request, res: Response) {
-  const { schemaCode, schemaName, sort } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort) VALUES ('${schemaCode}', '${schemaName}', ${sort});`,
+      `INSERT INTO creditcard_schema_list (schema_code, schema_name, sort)
+      VALUES ('${req.body.schemaCode}', '${req.body.schemaName}', ${req.body.sort});`,
     );
     if (result.rows.length === 1) {
       await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
@@ -44,10 +44,11 @@ export async function createSchema(req: Request, res: Response) {
 }
 
 export async function updateSchema(req: Request, res: Response) {
-  const { schemaCode, schemaName, sort } = req.body;
+
   try {
     const result = await pool.query(
-      `UPDATE creditcard_schema_list SET schema_name = '${schemaName}', sort = ${sort} WHERE schema_code = '${schemaCode}';`,
+      `UPDATE creditcard_schema_list SET schema_name = '${req.body.schemaName}', sort = ${req.body.sort}
+      WHERE schema_code = '${req.body.schemaCode}';`,
     );
     if (result.rowCount === 1) {
       await handleControllersResponse(res, req, { success: true, data: result.rows[0] });
@@ -133,12 +134,11 @@ export async function createCurrency(req: Request, res: Response) {
 }
 
 export async function updateCurrency(req: Request, res: Response) {
-  const { currencyCode, currencyName, sort } = req.body;
-  const data: ICurrencyList = req.body;
+
   try {
     const result = await pool.query(`
-      UPDATE public.currency_list SET currency_name = '${data.currencyName}', currency_symbol = '${data.currencySymbol}', minimum_denomination = ${data.minimumDenomination}, sort = ${data.sort}
-      WHERE currency_code = '${data.currencyCode}';
+      UPDATE public.currency_list SET currency_name = '${req.body.currencyName}', currency_symbol = '${req.body.currencySymbol}', minimum_denomination = ${req.body.minimumDenomination}, sort = ${req.body.sort}
+      WHERE currency_code = '${req.body.currencyCode}';
     `);
     if (result.rowCount === 1) {
       await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "更新成功" });

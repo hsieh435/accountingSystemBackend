@@ -26,7 +26,6 @@ export const success = ({ data = [], message = "成功", req, res }: { data?: an
     status: 200,
     statusText: "OK",
   };
-  // res.json(response);
 
   return response;
 };
