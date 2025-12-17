@@ -73,7 +73,6 @@ export async function deleteSchema(req: Request, res: Response) {
   }
 }
 
-// currency
 export interface ICurrencyList {
   currencyCode: string;
   currencyName: string;
@@ -191,7 +190,7 @@ export async function deleteCurrency(req: Request, res: Response) {
 }
 
 // tradeCategory
-export const getAll = async (req: Request, res: Response) => {
+export async function getAll(req: Request, res: Response) {
   try {
     const result = await tradeService.getAllTradeCategory();
     // console.log("result:", result);
@@ -201,7 +200,7 @@ export const getAll = async (req: Request, res: Response) => {
   }
 };
 
-export const getOne = async (req: Request, res: Response) => {
+export async function getOne(req: Request, res: Response) {
   try {
     const result = await tradeService.getTradeCategoryByCode(req.params.code);
     await handleControllersResponse(res, req, result);
@@ -210,8 +209,7 @@ export const getOne = async (req: Request, res: Response) => {
   }
 };
 
-export const create = async (req: Request, res: Response) => {
-  //
+export async function create(req: Request, res: Response) {
   try {
     const result = await tradeService.createTradeCategory(req.body);
     await handleControllersResponse(res, req, result);
@@ -221,7 +219,6 @@ export const create = async (req: Request, res: Response) => {
 };
 
 export async function update(req: Request, res: Response) {
-  //
   try {
     const result = await tradeService.updateTradeCategory(req.body);
     await handleControllersResponse(res, req, result);

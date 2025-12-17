@@ -4,7 +4,7 @@ import * as userDataServices from "@/services/userData/userDataServices";
 import { handleControllersResponse } from "@/controllers/controllersTools";
 
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+// require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function userDataList(req: Request, res: Response) {
@@ -69,7 +69,7 @@ export async function userDataUpdate(req: Request, res: Response) {
       );
       await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "修改成功" });
     } else {
-      await handleControllersResponse(res, req, { message: "修改失敗"}, 500);
+      await handleControllersResponse(res, req, { message: "修改失敗" }, 500);
     }
   } catch (err) {
     await handleControllersResponse(res, req, err);
