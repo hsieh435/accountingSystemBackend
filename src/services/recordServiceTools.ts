@@ -58,8 +58,7 @@ export async function tradeDateTimeDetect(
     // console.log("nextTradeId:", nextTradeId);
     // console.log("nextTradeDatetime:", nextTradeDatetime);
 
-    const flowOriginal =
-      await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
+    const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
     // console.log("flowOriginal:", flowOriginal.rows);
     const startingAmount = flowOriginal.rows[0].starting_amount;
 
