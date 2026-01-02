@@ -2,7 +2,7 @@ import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
 import { getCurrentTimestamp } from "@/utils/tools";
-import { tradeDateTimeDetect } from "@/services/recordServiceTools";
+import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
