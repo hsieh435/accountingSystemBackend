@@ -100,11 +100,11 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
 
 
   try {
-    const query = `
+    const insertQuery = `
     INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`;
 
-    const params = [
+    const insertParams = [
       data.updateData.tradeId,
       data.updateData.cashflowId,
       data.userId,
@@ -117,7 +117,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
     ];
-    await pool.query(query, params);
+    await pool.query(insertQuery, insertParams);
 
     await updateRelatedData(
       "cashflow_list",
@@ -159,12 +159,12 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   }
 
   try {
-    const query = `
+    const updateQuery = `
     UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
     WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10
   `;
 
-    const params = [
+    const updateParams = [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
       data.updateData.transactionType,
@@ -176,7 +176,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.cashflowId,
       data.userId,
     ];
-    await pool.query(query, params);
+    await pool.query(updateQuery, updateParams);
 
     await updateRelatedData(
       "cashflow_list",
