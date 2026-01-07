@@ -13,7 +13,7 @@ export async function getAllStockList(req: Request, res: Response) {
       },
     });
     const jsonData = await response.json();
-    // console.log("jsonData:", jsonData.data.length);
+    // console.log("jsonData:", jsonData);
     const data: { stock_id: string; stock_name: string }[] = [];
     jsonData.data.forEach(function (item: { stock_id: string; stock_name: string }) {
       if (!data.some((i) => i.stock_id === item.stock_id)) {
@@ -27,7 +27,7 @@ export async function getAllStockList(req: Request, res: Response) {
         item.stock_name.toLowerCase().includes(req.params.keyword.toLowerCase()),
     );
 
-    await handleControllersResponse(res, req, dataFiltered);
+    await handleControllersResponse(res, req, { success: true, data: dataFiltered });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }
@@ -49,9 +49,8 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
         },
       },
     );
-    // const jsonData = await response.json();
-    // console.log("response:", response);
-    await handleControllersResponse(res, req, response);
+    const jsonData = await response.json();
+    await handleControllersResponse(res, req, { success: true, data: jsonData });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }
@@ -84,9 +83,9 @@ export async function getStockDividendResult(req: Request, res: Response) {
         },
       },
     );
-    // const jsonData = await response.json();
-    // console.log("response:", response);
-    await handleControllersResponse(res, req, dividendResultResponse);
+    const jsonData = await dividendResultResponse.json();
+    // console.log("jsonData:", jsonData);
+    await handleControllersResponse(res, req, { success: true, data: jsonData });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }
@@ -112,9 +111,9 @@ export async function getStockPerPbrInfo(req: Request, res: Response) {
         },
       },
     );
-    // const jsonData = await response.json();
-    // console.log("response:", response);
-    await handleControllersResponse(res, req, response);
+    const jsonData = await response.json();
+    // console.log("jsonData:", jsonData);
+    await handleControllersResponse(res, req, { success: true, data: jsonData });
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }
