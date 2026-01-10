@@ -1,6 +1,7 @@
 import pool from "@/db";
+import * as creditCardServices from "@/services/creditCard/creditCardRecordServices";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, getTimeStampWithZone, getCurrentYear, getCurrentMonth, getCurrentYMD } from "@/utils/tools";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -20,8 +21,6 @@ export interface ICreditCardData {
   createdDate: string;
   note: string;
 }
-
-
 
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
   const query = `
@@ -136,24 +135,43 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
   });
 }
 
+export async function getCreditCardExpenditure(data: ICreditCardData) {
+  //
+  console.log("data:", data);
+  const searchParams = {
+    accountId: "",
+    currencyId: "",
+    tradeCategory: "",
+    startingDate: getCurrentYear() + getCurrentMonth() + "-01 00:00:00.001",
+    endDate: getCurrentYMD() + " 23:59:59.999",
+  }
+  if (!data.creditcardId) {
+    const creditCardList = await searchingCreditCardList({ currencyId: "", userId: data.userId });
+    console.log("creditCardList:", creditCardList);
+  } else {
+    const creditCardList = [data.creditcardId];
+    console.log("creditCardList:", creditCardList);
+  }
+
+  return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
+}
+
 export async function removeCreditCardData(data: ICreditCardData) {
   try {
     const checkQuery = "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2";
     const searchingResult = await pool.query(checkQuery, [data.creditcardId, data.userId]);
 
     if (searchingResult.rows.length > 0) {
-      return { success: false, message: "已有收支紀錄，無法刪除" };
+      return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
+    } else {
+      return executeSQLsyntax({
+        query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
+        params: [data.creditcardId, data.userId],
+        successMessage: "刪除成功",
+        errorMessage: "刪除失敗",
+      });
     }
-
-    // Delete the credit card
-    return executeSQLsyntax({
-      query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
-      params: [data.creditcardId, data.userId],
-      successMessage: "刪除成功",
-      errorMessage: "刪除失敗",
-    });
-
   } catch (error) {
-    return { success: false, message: "刪除失敗" };
+    return { success: false, message: "刪除失敗", data: [], statusCode: 404 };
   }
 }

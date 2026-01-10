@@ -58,12 +58,23 @@ export async function disableCreditCard(req: Request, res: Response) {
   await handleStatusChange(req, res, creditCardServices.disableCreditCardStatus, "已停用");
 }
 
+export async function creditCardExpenditure(req: Request, res: Response) {
+  try {
+    const result = await creditCardServices.getCreditCardExpenditure(req.body);
+    await handleControllersResponse(res, req, result);
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
+  }
+}
+
 export async function creditCardDelete(req: Request, res: Response) {
   req.body.creditcardId = req.params.creditCardId;
   try {
     const result = await creditCardServices.removeCreditCardData(req.body);
+    console.log("result:", result);
     await handleControllersResponse(res, req, result);
   } catch (err) {
+    console.log("err:", err);
     await handleControllersResponse(res, req, err);
   }
 }

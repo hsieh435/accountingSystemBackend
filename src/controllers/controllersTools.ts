@@ -7,6 +7,7 @@ export async function handleControllersResponse(res: Response, req: Request, res
   if (result.success) {
     return res.status(200).json(
       success({
+        returnCode: result.returnCode || 0,
         data: keysToCamel(result.data) || keysToCamel(result),
         message: result.message || "操作成功",
         req,
@@ -16,6 +17,7 @@ export async function handleControllersResponse(res: Response, req: Request, res
   } else {
     return res.status(statusCode).json(
       error({
+        returnCode: result.returnCode || -1,
         data: [],
         message: result.message || "操作失敗",
         req,

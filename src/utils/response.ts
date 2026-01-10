@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 
 
-export const success = ({ data = [], message = "成功", req, res }: { data?: any; message?: string; req: Request; res: Response }) => {
+export const success = ({ returnCode = 0, data = [], message = "成功", req, res }: { returnCode?: number; data?: any; message?: string; req: Request; res: Response }) => {
   // console.log("req:", req);
   // console.log("res:", res);
 
@@ -12,7 +12,7 @@ export const success = ({ data = [], message = "成功", req, res }: { data?: an
       method: req.method
     },
     data: {
-      returnCode: 0,
+      returnCode: returnCode,
       data: data,
       message: message
     },
@@ -32,7 +32,7 @@ export const success = ({ data = [], message = "成功", req, res }: { data?: an
 
 
 
-export const error = ({ data = [], message = "網路錯誤", req, res, statusCode = 400 }: { data?: any; message?: string; req: Request; res: Response; statusCode?: number }) => {
+export const error = ({ returnCode = -1, data = [], message = "網路錯誤", req, res, statusCode = 400 }: { returnCode?: number; data?: any; message?: string; req: Request; res: Response; statusCode?: number }) => {
 
   const response = {
     config: {
@@ -40,7 +40,7 @@ export const error = ({ data = [], message = "網路錯誤", req, res, statusCod
       method: req.method
     },
     data: {
-      returnCode: -1,
+      returnCode: returnCode,
       data: data,
       message: message
     },

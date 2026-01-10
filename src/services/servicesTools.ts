@@ -26,13 +26,10 @@ export async function executeSQLsyntax({
       message: successMessage,
     };
   } catch (error) {
-    return handleDbError(errorMessage);
+    return { success: false, message: errorMessage, data: [], statusCode: 404 };
   }
 }
 
-export function handleDbError(message: string = "Database error") {
-  return { success: false, message: message, data: [], statusCode: 404 };
-}
 
 
 export async function testSQLsyntax() {
