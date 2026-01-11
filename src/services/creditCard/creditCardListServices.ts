@@ -145,13 +145,21 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
     startingDate: getCurrentYear() + getCurrentMonth() + "-01 00:00:00.001",
     endDate: getCurrentYMD() + " 23:59:59.999",
   }
+
+  const creditCardList: string[] = [];
   if (!data.creditcardId) {
-    const creditCardList = await searchingCreditCardList({ currencyId: "", userId: data.userId });
-    console.log("creditCardList:", creditCardList);
+    // const creditCardList = await searchingCreditCardList({ currencyId: "", userId: data.userId });
+    const creditCardResult = await searchingCreditCardList({ currencyId: "", userId: data.userId });
+
+    if (creditCardResult.success && creditCardResult.data.length > 0) {
+      for (const card of creditCardResult.data) {
+        creditCardList.push(card.creditcardId);
+      }
+    }
   } else {
-    const creditCardList = [data.creditcardId];
-    console.log("creditCardList:", creditCardList);
+    creditCardList.push(data.creditcardId);
   }
+  console.log("creditCardList:", creditCardList);
 
   return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
 }
