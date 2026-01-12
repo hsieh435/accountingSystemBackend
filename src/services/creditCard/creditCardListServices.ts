@@ -1,7 +1,13 @@
 import pool from "@/db";
 import * as creditCardServices from "@/services/creditCard/creditCardRecordServices";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp, getTimeStampWithZone, getCurrentYear, getCurrentMonth, getCurrentYMD } from "@/utils/tools";
+import {
+  getCurrentTimestamp,
+  getTimeStampWithZone,
+  getCurrentYear,
+  getCurrentMonth,
+  getDaysInMonth,
+} from "@/utils/tools";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -142,9 +148,9 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
     accountId: "",
     currencyId: "",
     tradeCategory: "",
-    startingDate: getCurrentYear() + getCurrentMonth() + "-01 00:00:00.001",
-    endDate: getCurrentYMD() + " 23:59:59.999",
-  }
+    startingDate: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00.001`,
+    endDate: `${getCurrentYear()}-${getCurrentMonth()}-${getDaysInMonth(getCurrentYear(), getCurrentMonth())} 23:59:59.999`,
+  };
 
   const creditCardList: string[] = [];
   if (!data.creditcardId) {
@@ -160,6 +166,29 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
     creditCardList.push(data.creditcardId);
   }
   console.log("creditCardList:", creditCardList);
+
+  for (let i = 0; i < creditCardList.length; i++) {
+
+    // const recordResult = await executeSQLsyntax({
+    //   query: `SELECT * FROM public.creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4 `,
+    //   params: [creditCardList[i], data.userId, searchParams.startingDate, searchParams.endDate],
+    //   isReturnArray: false,
+    //   successMessage: "",
+    //   errorMessage: "結算失敗",
+    // });
+    // console.log("recordResult:", recordResult);
+
+
+
+    // await executeSQLsyntax({
+    //   query:
+    //     `UPDATE public.creditcard_list SET expenditure_current_month = $1 WHERE creditcard_id = $2 AND user_id = $3`,
+    //   params: [0, creditCardList[i], data.userId],
+    //   isReturnArray: false,
+    //   successMessage: "",
+    //   errorMessage: "更新失敗",
+    // });
+  }
 
   return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
 }
