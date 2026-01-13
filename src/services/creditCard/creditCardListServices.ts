@@ -1,5 +1,4 @@
 import pool from "@/db";
-import * as creditCardServices from "@/services/creditCard/creditCardRecordServices";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import {
   getCurrentTimestamp,
@@ -153,8 +152,8 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
   };
 
   const creditCardList: string[] = [];
+  let totalSpend = 0;
   if (!data.creditcardId) {
-    // const creditCardList = await searchingCreditCardList({ currencyId: "", userId: data.userId });
     const creditCardResult = await searchingCreditCardList({ currencyId: "", userId: data.userId });
 
     if (creditCardResult.success && creditCardResult.data.length > 0) {
@@ -165,32 +164,34 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
   } else {
     creditCardList.push(data.creditcardId);
   }
-  console.log("creditCardList:", creditCardList);
+  // console.log("creditCardList:", creditCardList);
 
   for (let i = 0; i < creditCardList.length; i++) {
 
-    // const recordResult = await executeSQLsyntax({
-    //   query: `SELECT * FROM public.creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4 `,
-    //   params: [creditCardList[i], data.userId, searchParams.startingDate, searchParams.endDate],
-    //   isReturnArray: false,
-    //   successMessage: "",
-    //   errorMessage: "結算失敗",
-    // });
-    // console.log("recordResult:", recordResult);
+    const recordResult = await executeSQLsyntax({
+      query: `SELECT * FROM creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4 `,
+      params: [creditCardList[i], data.userId, searchParams.startingDate, searchParams.endDate],
+      isReturnArray: true,
+      successMessage: "",
+      errorMessage: "結算失敗",
+    });
+    for (let j = 0; j < recordResult.data.length; j++) {
+      totalSpend = totalSpend + Number(recordResult.data[j].tradeAmount);
+    }
+    // console.log("totalSpend:", totalSpend);
+    // console.log("i:", creditCardList[i]);
+    // console.log("userId:", data.userId);
 
-
-
-    // await executeSQLsyntax({
-    //   query:
-    //     `UPDATE public.creditcard_list SET expenditure_current_month = $1 WHERE creditcard_id = $2 AND user_id = $3`,
-    //   params: [0, creditCardList[i], data.userId],
-    //   isReturnArray: false,
-    //   successMessage: "",
-    //   errorMessage: "更新失敗",
-    // });
+    await executeSQLsyntax({
+      query: `UPDATE public.creditcard_list SET expenditure_current_month = $1 WHERE creditcard_id = $2 AND user_id = $3`,
+      params: [totalSpend, creditCardList[i], data.userId],
+      isReturnArray: true,
+      successMessage: "",
+      errorMessage: "更新失敗",
+    });
   }
 
-  return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
+  return { success: true, data: [], message: "結算成功", returnCode: 0 };
 }
 
 export async function removeCreditCardData(data: ICreditCardData) {
