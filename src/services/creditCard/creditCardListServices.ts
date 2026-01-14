@@ -141,8 +141,7 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 }
 
 export async function getCreditCardExpenditure(data: ICreditCardData) {
-  //
-  console.log("data:", data);
+
   const searchParams = {
     accountId: "",
     currencyId: "",
@@ -178,9 +177,6 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
     for (let j = 0; j < recordResult.data.length; j++) {
       totalSpend = totalSpend + Number(recordResult.data[j].tradeAmount);
     }
-    // console.log("totalSpend:", totalSpend);
-    // console.log("i:", creditCardList[i]);
-    // console.log("userId:", data.userId);
 
     await executeSQLsyntax({
       query: `UPDATE public.creditcard_list SET expenditure_current_month = $1 WHERE creditcard_id = $2 AND user_id = $3`,
