@@ -21,6 +21,7 @@ export interface ICreditCardData {
   creditPerMonth: number;
   expirationDate: string;
   alertValue: number;
+  expenditureCurrentMonth: number;
   openAlert: boolean;
   enable: boolean;
   createdDate: string;
@@ -118,6 +119,16 @@ export async function updateCreditCardData(data: ICreditCardData) {
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
+}
+
+export async function calculateCreditCardExpenditure(data: ICreditCardData) {
+  // return executeSQLsyntax({
+  //   query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
+  //   params: [true, data.creditcardId, data.userId],
+  //   isReturnArray: false,
+  //   successMessage: "成功",
+  //   errorMessage: "失敗",
+  // });
 }
 
 export async function enableCreditCardStatus(data: ICreditCardData) {

@@ -50,6 +50,15 @@ export async function creditCardUpdate(req: Request, res: Response) {
   }
 }
 
+export async function creditCardExpenditureCalculate(req: Request, res: Response) {
+  try {
+    const result = await creditCardServices.calculateCreditCardExpenditure(req.body);
+    await handleControllersResponse(res, req, result);
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
+  }
+}
+
 export async function enableCreditCard(req: Request, res: Response) {
   await handleStatusChange(req, res, creditCardServices.enableCreditCardStatus, "啟用成功");
 }
