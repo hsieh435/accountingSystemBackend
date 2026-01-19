@@ -121,14 +121,24 @@ export async function updateCreditCardData(data: ICreditCardData) {
   });
 }
 
-export async function calculateCreditCardExpenditure(data: ICreditCardData) {
-  // return executeSQLsyntax({
-  //   query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
-  //   params: [true, data.creditcardId, data.userId],
-  //   isReturnArray: false,
-  //   successMessage: "成功",
-  //   errorMessage: "失敗",
-  // });
+export async function calculateCreditCardExpenditure(params: {
+  creditcardId: string;
+  userId: string;
+  tradeDatetime: string;
+}) {
+  const startingDate = `${getCurrentYear(params.tradeDatetime)}-${getCurrentMonth(params.tradeDatetime)}-01T00:00:00.001Z`;
+  const endDate = `${getCurrentYear(params.tradeDatetime)}-${getCurrentMonth(params.tradeDatetime)}-${getDaysInMonth(getCurrentYear(params.tradeDatetime), getCurrentMonth(params.tradeDatetime))}T23:59:59.999Z`;
+  console.log("startingDate:", startingDate);
+  console.log("endDate:", endDate);
+
+  return executeSQLsyntax({
+    query: `SELECT COALESCE(SUM(trade_amount), 0) AS trade_total FROM creditcard_trade
+    WHERE credit_card_id = $1 AND user_id = $2 AND trade_datetime BETWEEN $3 AND $4`,
+    params: [params.creditcardId, params.userId, startingDate, endDate],
+    isReturnArray: false,
+    successMessage: "",
+    errorMessage: "失敗",
+  });
 }
 
 export async function enableCreditCardStatus(data: ICreditCardData) {
@@ -153,13 +163,9 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 
 export async function getCreditCardExpenditure(data: ICreditCardData) {
 
-  const searchParams = {
-    accountId: "",
-    currencyId: "",
-    tradeCategory: "",
-    startingDate: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00.001`,
-    endDate: `${getCurrentYear()}-${getCurrentMonth()}-${getDaysInMonth(getCurrentYear(), getCurrentMonth())} 23:59:59.999`,
-  };
+  const startingDate = `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00.001`;
+  const endDate =
+    `${getCurrentYear()}-${getCurrentMonth()}-${getDaysInMonth(getCurrentYear(), getCurrentMonth())} 23:59:59.999`;
 
   const creditCardList: string[] = [];
   let totalSpend = 0;
@@ -177,10 +183,9 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
   // console.log("creditCardList:", creditCardList);
 
   for (let i = 0; i < creditCardList.length; i++) {
-
     const recordResult = await executeSQLsyntax({
-      query: `SELECT * FROM creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4 `,
-      params: [creditCardList[i], data.userId, searchParams.startingDate, searchParams.endDate],
+      query: `SELECT * FROM creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4`,
+      params: [creditCardList[i], data.userId, startingDate, endDate],
       isReturnArray: true,
       successMessage: "",
       errorMessage: "結算失敗",

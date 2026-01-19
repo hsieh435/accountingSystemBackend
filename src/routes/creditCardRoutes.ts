@@ -9,10 +9,10 @@ router.post("/api/creditCard/list", authenticateToken, creditCardControllers.cre
 router.get("/api/creditCardData/:creditCardId", authenticateToken, creditCardControllers.searchingCreditCardById);
 router.post("/api/creditCard/create", authenticateToken, creditCardControllers.creditCardCreate);
 router.put("/api/creditCard/update", authenticateToken, creditCardControllers.creditCardUpdate);
-router.put("/api/creditCard/expenditureCalculate", authenticateToken, creditCardControllers.creditCardExpenditureCalculate);
+router.post("/api/creditCard/expenditure", authenticateToken, creditCardControllers.creditCardExpenditure);
+router.put("/api/creditCard/monthly/expenditure", authenticateToken, creditCardControllers.creditCardExpenditureCalculate);
 router.get("/api/creditCard/enable/:creditCardId", authenticateToken, creditCardControllers.enableCreditCard);
 router.get("/api/creditCard/disable/:creditCardId", authenticateToken, creditCardControllers.disableCreditCard);
-router.post("/api/creditCard/expenditure", authenticateToken, creditCardControllers.creditCardExpenditure);
 router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCardControllers.creditCardDelete);
 
 

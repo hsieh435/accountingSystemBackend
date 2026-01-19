@@ -41,6 +41,14 @@ export async function creditCardCreate(req: Request, res: Response) {
   }
 }
 
+export async function enableCreditCard(req: Request, res: Response) {
+  await handleStatusChange(req, res, creditCardServices.enableCreditCardStatus, "啟用成功");
+}
+
+export async function disableCreditCard(req: Request, res: Response) {
+  await handleStatusChange(req, res, creditCardServices.disableCreditCardStatus, "已停用");
+}
+
 export async function creditCardUpdate(req: Request, res: Response) {
   try {
     const result = await creditCardServices.updateCreditCardData(req.body);
@@ -57,14 +65,6 @@ export async function creditCardExpenditureCalculate(req: Request, res: Response
   } catch (err) {
     await handleControllersResponse(res, req, err);
   }
-}
-
-export async function enableCreditCard(req: Request, res: Response) {
-  await handleStatusChange(req, res, creditCardServices.enableCreditCardStatus, "啟用成功");
-}
-
-export async function disableCreditCard(req: Request, res: Response) {
-  await handleStatusChange(req, res, creditCardServices.disableCreditCardStatus, "已停用");
 }
 
 export async function creditCardExpenditure(req: Request, res: Response) {

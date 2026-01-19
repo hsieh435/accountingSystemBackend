@@ -63,7 +63,10 @@ export function getCurrentDate(dateString: string = "") {
 
 // 取得特定月份的天数
 export function getDaysInMonth(year: number, month: number) {
-  return new Date(year, month + 1, 0).getDate();
+  // console.log("year-month:", year, month);
+  // console.log("day:", new Date(year, month, 0));
+  // console.log("day:", new Date(year, month, 0).getDate());
+  return new Date(year, month, 0).getDate();
 }
 
 // 取得當下時間戳，type 為 number
