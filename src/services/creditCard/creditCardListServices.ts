@@ -128,8 +128,8 @@ export async function calculateCreditCardExpenditure(params: {
 }) {
   const startingDate = `${getCurrentYear(params.tradeDatetime)}-${getCurrentMonth(params.tradeDatetime)}-01T00:00:00.001Z`;
   const endDate = `${getCurrentYear(params.tradeDatetime)}-${getCurrentMonth(params.tradeDatetime)}-${getDaysInMonth(getCurrentYear(params.tradeDatetime), getCurrentMonth(params.tradeDatetime))}T23:59:59.999Z`;
-  console.log("startingDate:", startingDate);
-  console.log("endDate:", endDate);
+  // console.log("startingDate:", startingDate);
+  // console.log("endDate:", endDate);
 
   return executeSQLsyntax({
     query: `SELECT COALESCE(SUM(trade_amount), 0) AS trade_total FROM creditcard_trade

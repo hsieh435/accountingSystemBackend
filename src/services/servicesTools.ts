@@ -16,10 +16,10 @@ export async function executeSQLsyntax({
   errorMessage?: string;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
   // console.log("Query executed:", query);
-  console.log("Parameters:", params);
+  // console.log("Parameters:", params);
   try {
     const result = await pool.query(query, params);
-    console.log("SQL Result:", result.rows);
+    // console.log("SQL Result:", result.rows);
     return {
       success: true,
       data: isReturnArray ? keysToCamel(result.rows) : keysToCamel(result.rows[0]),
