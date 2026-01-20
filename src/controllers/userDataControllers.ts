@@ -30,7 +30,7 @@ export async function userLogin(req: Request, res: Response) {
           userName: result.data.userName,
         },
         JWT_SECRET,
-        { expiresIn: "10h" },
+        { expiresIn: "12h" },
       );
       await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "登入成功" });
     } else {
@@ -65,7 +65,7 @@ export async function userDataUpdate(req: Request, res: Response) {
           userName: req.body.userName,
         },
         JWT_SECRET,
-        { expiresIn: "10h" },
+        { expiresIn: "12h" },
       );
       await handleControllersResponse(res, req, { success: true, data: { jwt: token }, message: "修改成功" });
     } else {

@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 // import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -95,7 +95,7 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
     // console.log("insertResult:", insertResult);
 
     if (insertResult.rowCount === 1) {
-      return { success: true, userData: keysToCamel(insertResult.rows[0]) };
+      return { success: true, userData: insertResult.rows[0] };
     } else {
       return { success: false, userData: [] };
     }
@@ -111,11 +111,9 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
     WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'
   `);
   // console.log("updateResult:", updateResult);
-  if (updateResult.rowCount === 1) {
-    return true;
-  } else {
-    return false;
-  }
+
+  return updateResult.rowCount === 1;
+
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {

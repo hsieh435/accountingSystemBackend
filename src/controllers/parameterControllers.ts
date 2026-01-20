@@ -2,7 +2,7 @@ import pool from "@/db";
 import { Request, Response } from "express";
 import * as tradeService from "@/services/tradeCategory/tradeCategoryServices";
 import { handleControllersResponse } from "@/controllers/controllersTools";
-import { keysToCamel } from "@/utils/tools";
+// import { keysToCamel } from "@/utils/tools";
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {
@@ -87,7 +87,8 @@ export async function getCurrencyList(req: Request, res: Response) {
     if (result.rows.length > 0) {
       await handleControllersResponse(res, req, {
         success: true,
-        data: result.rows.map(keysToCamel),
+        // data: result.rows.map(keysToCamel),
+        data: result.rows,
         message: "查詢成功",
       });
     } else if (result.rows.length === 0) {
@@ -104,7 +105,8 @@ export async function getEachCurrency(req: Request, res: Response) {
     if (result.rows.length === 1) {
       await handleControllersResponse(res, req, {
         success: true,
-        data: result.rows.map(keysToCamel),
+        // data: result.rows.map(keysToCamel),
+        data: result.rows,
         message: "查詢成功",
       });
     } else {

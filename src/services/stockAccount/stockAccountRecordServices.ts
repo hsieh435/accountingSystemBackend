@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -111,7 +111,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     const updateResult = await updateStockAccountData(accountTarget.data);
 
     return insertResult.rowCount === 1 && updateResult
-      ? { success: true, userData: keysToCamel(insertResult.rows[0]) }
+      ? { success: true, userData: insertResult.rows[0] }
       : { success: false, userData: [] };
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };

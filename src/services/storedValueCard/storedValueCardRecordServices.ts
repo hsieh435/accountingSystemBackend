@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { keysToCamel, getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
