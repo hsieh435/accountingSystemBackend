@@ -21,6 +21,7 @@ export async function tradeDateTimeDetect(
   flowColumn: string,
   flowId: string,
   recordTradeDatetime: string,
+  type: string
 ): Promise<any> {
   const flowListTable = sanitizeIdentifier(flowListTableName);
   const tradeTable = sanitizeIdentifier(tradeTableName);
@@ -52,19 +53,20 @@ export async function tradeDateTimeDetect(
     const nextRemainingAmount = result.rows[0].nextremainingamount || null;
     const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
     const dataTradeDatetime = setTimezone(recordTradeDatetime);
-    // console.log("result:", result.rows);
-    // console.log("prevTradeId:", prevTradeId);
-    // console.log("prevTradeDatetime:", prevTradeDatetime);
-    // console.log("nextTradeId:", nextTradeId);
-    // console.log("nextTradeDatetime:", nextTradeDatetime);
+    console.log("result:", result.rows);
+    console.log("prevTradeId:", prevTradeId);
+    console.log("prevTradeDatetime:", prevTradeDatetime);
+    console.log("nextTradeId:", nextTradeId);
+    console.log("nextTradeDatetime:", nextTradeDatetime);
 
     const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
-    // console.log("flowOriginal:", flowOriginal.rows);
+    console.log("flowOriginal:", flowOriginal.rows);
     const startingAmount = flowOriginal.rows[0].starting_amount;
 
-    if (hasExistsData === true) {
+    if (hasExistsData === true && type === "insert") {
       return { success: false, message: "收支時間點重複" };
     } else {
+      console.log("收支時間點沒有重複");
 
       if (nextTradeId === null && prevTradeId !== null) {
         // 新增到最後一筆紀錄，，回傳上一筆交易剩餘金額
@@ -160,7 +162,7 @@ export async function updateFlowRecordRemainingAmount(
       WHERE trade_datetime > $2 AND ${column} = $3`,
       [amountDifference, tradeDatetime, flowId],
     );
-    console.log("updateFlowRecordRemainingAmount:", result.rows);
+    console.log("updateFlowRecordRemainingAmount:", result);
     return { success: true };
   } catch (error) {
     return { success: false };
@@ -186,7 +188,7 @@ export async function updateFlowDataRemainingAmount(
         AND frt.${flowColumn} = '${flowId}')
       WHERE ${flowColumn} = '${flowId}'
     `);
-    console.log("updateFlowDataRemainingAmount:", result.rows);
+    console.log("updateFlowDataRemainingAmount:", result);
     return { success: true };
   } catch (error) {
     return { success: false };

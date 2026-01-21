@@ -75,7 +75,7 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 }
 
 export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
-  // console.log("data:", data);
+  console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
@@ -84,6 +84,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_id",
     data.updateData.cashflowId,
     data.updateData.tradeDatetime,
+    "insert",
   );
 
 
@@ -130,21 +131,21 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.tradeAmount,
       data.oriData.oriTradeAmount,
     );
-    // return { success: true, message: "新增成功" };
-    return { success: false, message: "新增失敗" };
+    return { success: true, message: "新增成功" };
   } catch (error) {
     return { success: false, message: "新增失敗" };
   }
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
-  // console.log("data:", data);
+  console.log("data:", data);
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
     data.updateData.tradeDatetime,
+    "update",
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
@@ -190,8 +191,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
       data.oriData.oriTradeAmount,
     );
 
-    // return { success: true, message: "新增成功" };
-    return { success: false, message: "新增失敗" };
+    return { success: true, message: "更新成功" };
   } catch (error) {
     return { success: false, message: "更新失敗" };
   }

@@ -87,6 +87,7 @@ export async function insertCurrencyAccountRecord(data: ICreditCardRecordData) {
     "account_id",
     data.updateData.accountId,
     data.updateData.tradeDatetime,
+    "insert",
   );
 
 

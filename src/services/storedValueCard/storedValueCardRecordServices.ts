@@ -81,6 +81,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     "stored_value_card_id",
     data.updateData.storedValueCardId,
     data.updateData.tradeDatetime,
+    "insert",
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
@@ -141,6 +142,7 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     "stored_value_card_id",
     data.updateData.storedValueCardId,
     data.updateData.tradeDatetime,
+    "update",
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
