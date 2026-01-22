@@ -1,5 +1,6 @@
 import pool from "@/db";
 import { setTimezone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools"
 
 export interface IOriData {
   oriTradeDatetime: string;
@@ -21,7 +22,7 @@ export async function tradeDateTimeDetect(
   flowColumn: string,
   flowId: string,
   recordTradeDatetime: string,
-  type: string
+  type: string,
 ): Promise<any> {
   const flowListTable = sanitizeIdentifier(flowListTableName);
   const tradeTable = sanitizeIdentifier(tradeTableName);
@@ -50,9 +51,9 @@ export async function tradeDateTimeDetect(
     const prevRemainingAmount = result.rows[0].prevremainingamount || null;
     const prevTradeDatetime = setTimezone(result.rows[0].prevtradedatetime) || null;
     const nextTradeId = result.rows[0].nexttradeid || null;
-    const nextRemainingAmount = result.rows[0].nextremainingamount || null;
+    // const nextRemainingAmount = result.rows[0].nextremainingamount || null;
     const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
-    const dataTradeDatetime = setTimezone(recordTradeDatetime);
+    // const dataTradeDatetime = setTimezone(recordTradeDatetime);
     console.log("result:", result.rows);
     console.log("prevTradeId:", prevTradeId);
     console.log("prevTradeDatetime:", prevTradeDatetime);
@@ -60,7 +61,7 @@ export async function tradeDateTimeDetect(
     console.log("nextTradeDatetime:", nextTradeDatetime);
 
     const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
-    console.log("flowOriginal:", flowOriginal.rows);
+    // console.log("flowOriginal:", flowOriginal.rows);
     const startingAmount = flowOriginal.rows[0].starting_amount;
 
     if (hasExistsData === true && type === "insert") {
@@ -82,7 +83,7 @@ export async function tradeDateTimeDetect(
         return { success: true, message: "", returnAmount: prevRemainingAmount };
       }
 
-      return { success: false, message: "查詢失敗"};
+      return { success: false, message: "查詢失敗" };
     }
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };
@@ -135,13 +136,14 @@ export async function updateRelatedData(
     // pass client
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
-      return { success: false, error: "更新餘額失敗" };
+      return { success: true, message: "更新餘額失敗", returnCode: -1 };
     }
     await client.query("COMMIT");
     // console.log("更新餘額成功");
+    return { success: true, message: "更新餘額成功" };
   } catch (err) {
     await client.query("ROLLBACK");
-    return { success: false, error: err };
+    return { success: false, message: err };
   } finally {
     client.release();
   }
@@ -155,18 +157,15 @@ export async function updateFlowRecordRemainingAmount(
   tradeDatetime: string,
   flowId: string,
 ) {
-  //
-  try {
-    const result = await pool.query(`
-      UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
-      WHERE trade_datetime > $2 AND ${column} = $3`,
-      [amountDifference, tradeDatetime, flowId],
-    );
-    console.log("updateFlowRecordRemainingAmount:", result);
-    return { success: true };
-  } catch (error) {
-    return { success: false };
-  }
+
+  return executeSQLsyntax({
+    query:
+      `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
+    params: [amountDifference, tradeDatetime, flowId],
+    isReturnArray: false,
+    successMessage: "更新成功",
+    errorMessage: "更新失敗",
+  });
 }
 
 export async function updateFlowDataRemainingAmount(
@@ -180,17 +179,13 @@ export async function updateFlowDataRemainingAmount(
   // console.log("flowColumn:", flowColumn);
   // console.log("flowId:", flowId);
 
-  try {
-    const result = await pool.query(`
-      UPDATE ${flowListTable} SET present_amount = (
-        SELECT frt.remaining_amount FROM ${recordTable} AS frt
-        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable})
-        AND frt.${flowColumn} = '${flowId}')
-      WHERE ${flowColumn} = '${flowId}'
-    `);
-    console.log("updateFlowDataRemainingAmount:", result);
-    return { success: true };
-  } catch (error) {
-    return { success: false };
-  }
+  return executeSQLsyntax({
+    query: `
+      UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
+      WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
+      WHERE ${flowColumn} = '${flowId}'`,
+    isReturnArray: false,
+    successMessage: "更新成功",
+    errorMessage: "更新失敗",
+  });
 }

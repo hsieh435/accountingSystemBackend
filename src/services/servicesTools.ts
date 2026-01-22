@@ -41,8 +41,7 @@ export async function testSQLsyntax() {
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime > '2025-12-14 19:30:00+08' AND NOT EXISTS (
     SELECT 1 FROM cashflow_trade WHERE trade_datetime = '2025-12-14 19:30:00+08'
-    )`
-  );
+    )`);
 
   // console.log("Test SQL Result:", result.rows);
 }

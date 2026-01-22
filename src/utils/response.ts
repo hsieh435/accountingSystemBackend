@@ -2,26 +2,38 @@ import { Request, Response } from "express";
 
 
 
-export const success = ({ returnCode = 0, data = [], message = "成功", req, res }: { returnCode?: number; data?: any; message?: string; req: Request; res: Response }) => {
+export const success = ({
+  returnCode = 0,
+  data = [],
+  message = "成功",
+  req,
+  res,
+}: {
+  returnCode?: number;
+  data?: any;
+  message?: string;
+  req: Request;
+  res: Response;
+}) => {
   // console.log("req:", req);
   // console.log("res:", res);
 
   const response = {
     config: {
       url: req.originalUrl,
-      method: req.method
+      method: req.method,
     },
     data: {
       returnCode: returnCode,
       data: data,
-      message: message
+      message: message,
     },
     headers: {
-      "content-type": res.getHeader("Content-Type") || "application/json"
+      "content-type": res.getHeader("Content-Type") || "application/json",
     },
     request: {
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get("User-Agent"),
     },
     status: 200,
     statusText: "OK",
@@ -32,24 +44,37 @@ export const success = ({ returnCode = 0, data = [], message = "成功", req, re
 
 
 
-export const error = ({ returnCode = -1, data = [], message = "網路錯誤", req, res, statusCode = 400 }: { returnCode?: number; data?: any; message?: string; req: Request; res: Response; statusCode?: number }) => {
-
+export const error = ({
+  returnCode = -1,
+  data = [],
+  message = "網路錯誤",
+  req,
+  res,
+  statusCode = 400,
+}: {
+  returnCode?: number;
+  data?: any;
+  message?: string;
+  req: Request;
+  res: Response;
+  statusCode?: number;
+}) => {
   const response = {
     config: {
       url: req.originalUrl,
-      method: req.method
+      method: req.method,
     },
     data: {
       returnCode: returnCode,
       data: data,
-      message: message
+      message: message,
     },
     headers: {
-      "content-type": res.getHeader("Content-Type") || "application/json"
+      "content-type": res.getHeader("Content-Type") || "application/json",
     },
     request: {
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get("User-Agent"),
     },
     status: statusCode,
     statusText: "OK",

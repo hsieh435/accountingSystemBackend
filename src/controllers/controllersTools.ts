@@ -4,6 +4,7 @@ import { keysToCamel } from "@/utils/tools";
 
 // Helper function for consistent response handling
 export async function handleControllersResponse(res: Response, req: Request, result: any, statusCode: number = 404) {
+  console.log("Controller result:", result);
   if (result.success) {
     return res.status(200).json(
       success({

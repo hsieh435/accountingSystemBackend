@@ -137,7 +137,7 @@ export async function removeCashflowData(data: ICashFlowData) {
   const recordData = await searchingCashFlowRecordList(cashFlowData.data);
   if (recordData.success && recordData.data.length > 0) {
     // console.log("data:", recordData.data);
-    return { success: false, message: "已有收支紀錄" };
+    return { success: true, message: "已有收支紀錄", returnCode: -1 };
   } else if (recordData.success && recordData.data.length === 0) {
     // console.log("data:", recordData.data);
 

@@ -6,7 +6,7 @@ export function toCamelCase(str: string): string {
 // 物件的 key 轉成 camelCase
 export function keysToCamel<T extends object>(obj: T): any {
   if (Array.isArray(obj)) {
-    return obj.map(v => keysToCamel(v));
+    return obj.map((v) => keysToCamel(v));
   } else if (obj !== null && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj).map(([key, value]) => [
