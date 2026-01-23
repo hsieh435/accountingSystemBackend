@@ -21,6 +21,7 @@ export async function tradeDateTimeDetect(
   tradeTableName: string,
   flowColumn: string,
   flowId: string,
+  recordId: string,
   recordTradeDatetime: string,
   type: string,
 ): Promise<any> {
@@ -32,6 +33,10 @@ export async function tradeDateTimeDetect(
     const result = await pool.query(`
       SELECT EXISTS (
       SELECT 1 FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
+      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+      ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeId,
+      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+      ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeDatetime,
       (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
       ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
       (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
@@ -47,6 +52,7 @@ export async function tradeDateTimeDetect(
     `);
 
     const hasExistsData = result.rows[0].hasexistsdata;
+    const currentTradeId = result.rows[0].currenttradeid || null;
     const prevTradeId = result.rows[0].prevtradeid || null;
     const prevRemainingAmount = result.rows[0].prevremainingamount || null;
     const prevTradeDatetime = setTimezone(result.rows[0].prevtradedatetime) || null;
@@ -55,6 +61,7 @@ export async function tradeDateTimeDetect(
     const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
     // const dataTradeDatetime = setTimezone(recordTradeDatetime);
     console.log("result:", result.rows);
+    console.log("currentTradeId:", currentTradeId);
     console.log("prevTradeId:", prevTradeId);
     console.log("prevTradeDatetime:", prevTradeDatetime);
     console.log("nextTradeId:", nextTradeId);
@@ -66,7 +73,7 @@ export async function tradeDateTimeDetect(
 
     if (hasExistsData === true && type === "insert") {
       return { success: false, message: "收支時間點重複" };
-    } else {
+    } else if ((hasExistsData === false && type === "insert") || (hasExistsData === true && recordId === currentTradeId && type === "update")) {
       console.log("收支時間點沒有重複");
 
       if (nextTradeId === null && prevTradeId !== null) {
@@ -108,7 +115,7 @@ export async function updateRelatedData(
   const amountDifference = (() => {
     switch (true) {
       case dataTransactionType === oriTransactionType:
-        return dataTradeAmount - oriTradeAmount;
+        return oriTradeAmount - dataTradeAmount;
       case dataTransactionType === "income" && oriTransactionType === "expense":
         return dataTradeAmount + oriTradeAmount;
       case dataTransactionType === "expense" && oriTransactionType === "income":

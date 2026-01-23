@@ -83,6 +83,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     "stock_account_trade",
     "account_id",
     data.updateData.accountId,
+    data.updateData.tradeId,
     data.updateData.tradeDatetime,
     "insert",
   );

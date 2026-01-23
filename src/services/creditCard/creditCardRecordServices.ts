@@ -73,7 +73,9 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   //   "creditcard_trade",
   //   "credit_card_id",
   //   data.updateData.creditCardId,
+  //   data.updateData.tradeId,
   //   data.updateData.tradeDatetime,
+  //   "insert",
   // );
 
 

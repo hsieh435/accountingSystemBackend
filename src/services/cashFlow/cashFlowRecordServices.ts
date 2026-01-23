@@ -83,6 +83,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
+    data.updateData.tradeId,
     data.updateData.tradeDatetime,
     "insert",
   );
@@ -151,6 +152,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
+    data.updateData.tradeId,
     data.updateData.tradeDatetime,
     "update",
   );
