@@ -213,11 +213,39 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-  return executeSQLsyntax({
-    query: "DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3",
+  // console.log("data:", data);
+
+  const record = await searchingCashFlowRecordById({ cashflowId: data.cashflowId, tradeId: data.tradeId, userId: data.userId});
+  // console.log("record:", record);
+
+  const deleteResult = await executeSQLsyntax({
+    query: `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
     params: [data.tradeId, data.cashflowId, data.userId],
     isReturnArray: false,
     successMessage: "刪除成功",
     errorMessage: "刪除失敗",
   });
+
+  // console.log("deleteResult:", deleteResult);
+  if (deleteResult.success === false) {
+    return { success: true, message: deleteResult.message, returnCode: -1 };
+  }
+
+  // const updateRelatedDataResult = await updateRelatedData(
+  //   "cashflow_list",
+  //   "cashflow_trade",
+  //   "cashflow_id",
+  //   data.cashflowId,
+  //   data.tradeDatetime,
+  //   "",
+  //   data.transactionType,
+  //   0,
+  //   data.tradeAmount,
+  // );
+
+  // if (updateRelatedDataResult.success === true) {
+  //   return { success: true, message: "刪除成功" };
+  // } else if (updateRelatedDataResult.success === false) {
+  //   return { success: true, message: "刪除失敗", returnCode: -1 };
+  // }
 }

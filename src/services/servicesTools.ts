@@ -19,12 +19,25 @@ export async function executeSQLsyntax({
   // console.log("Parameters:", params);
   try {
     const result = await pool.query(query, params);
+    // console.log("SQL Result:", result);
     // console.log("SQL Result:", result.rows);
-    return {
-      success: true,
-      data: isReturnArray ? keysToCamel(result.rows) : keysToCamel(result.rows[0]),
-      message: successMessage,
-    };
+    // console.log("SQL command:", result.command);
+    // console.log("SQL rowCount:", result.rowCount);
+
+    if (result.command === "DELETE") {
+      return {
+        success: (result.rowCount ?? 0) > 0,
+        data: [],
+        message: (result.rowCount ?? 0) > 0 ? successMessage : errorMessage,
+      };
+    } else {
+      return {
+        success: true,
+        data: isReturnArray ? keysToCamel(result.rows) : keysToCamel(result.rows[0]),
+        message: successMessage,
+      };
+    }
+
   } catch (error) {
     return { success: false, message: errorMessage, data: [], statusCode: 404 };
   }

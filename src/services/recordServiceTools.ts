@@ -60,12 +60,12 @@ export async function tradeDateTimeDetect(
     // const nextRemainingAmount = result.rows[0].nextremainingamount || null;
     const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
     // const dataTradeDatetime = setTimezone(recordTradeDatetime);
-    console.log("result:", result.rows);
-    console.log("currentTradeId:", currentTradeId);
-    console.log("prevTradeId:", prevTradeId);
-    console.log("prevTradeDatetime:", prevTradeDatetime);
-    console.log("nextTradeId:", nextTradeId);
-    console.log("nextTradeDatetime:", nextTradeDatetime);
+    // console.log("result:", result.rows);
+    // console.log("currentTradeId:", currentTradeId);
+    // console.log("prevTradeId:", prevTradeId);
+    // console.log("prevTradeDatetime:", prevTradeDatetime);
+    // console.log("nextTradeId:", nextTradeId);
+    // console.log("nextTradeDatetime:", nextTradeDatetime);
 
     const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
     // console.log("flowOriginal:", flowOriginal.rows);
@@ -74,7 +74,7 @@ export async function tradeDateTimeDetect(
     if (hasExistsData === true && type === "insert") {
       return { success: false, message: "收支時間點重複" };
     } else if ((hasExistsData === false && type === "insert") || (hasExistsData === true && recordId === currentTradeId && type === "update")) {
-      console.log("收支時間點沒有重複");
+      // console.log("收支時間點沒有重複");
 
       if (nextTradeId === null && prevTradeId !== null) {
         // 新增到最後一筆紀錄，，回傳上一筆交易剩餘金額

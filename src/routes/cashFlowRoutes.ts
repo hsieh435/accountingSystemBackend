@@ -19,6 +19,6 @@ router.post("/api/cashFlowRecord/list", authenticateToken, cashFlowRecordControl
 router.post("/api/cashFlowRecord", authenticateToken, cashFlowRecordControllers.searchingCashFlowRecordById);
 router.post("/api/cashFlowRecord/create", authenticateToken, cashFlowRecordControllers.cashFlowRecordCreate);
 router.post("/api/cashFlowRecord/update", authenticateToken, cashFlowRecordControllers.cashFlowRecordUpdate);
-router.post("/api/cashFlowRecord/delete/:cashflowId", authenticateToken, cashFlowRecordControllers.cashFlowRecordDelete);
+router.post("/api/cashFlowRecord/delete", authenticateToken, cashFlowRecordControllers.cashFlowRecordDelete);
 
 export default router;
