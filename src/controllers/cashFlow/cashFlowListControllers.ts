@@ -39,11 +39,11 @@ export async function cashFlowUpdate(req: Request, res: Response) {
 }
 
 export async function enableCashFlow(req: Request, res: Response) {
-  await toggleCashFlowStatus(req, res, "enable", "啟用成功");
+  await toggleCashFlowStatus(req, res, "enable");
 }
 
 export async function disableCashFlow(req: Request, res: Response) {
-  await toggleCashFlowStatus(req, res, "disable", "停用成功");
+  await toggleCashFlowStatus(req, res, "disable");
 }
 
 export async function cashFlowDelete(req: Request, res: Response) {
@@ -60,7 +60,7 @@ export async function cashFlowDelete(req: Request, res: Response) {
 }
 
 // Helper function for enable/disable operations
-async function toggleCashFlowStatus(req: Request, res: Response, action: "enable" | "disable", successMessage: string) {
+async function toggleCashFlowStatus(req: Request, res: Response, action: "enable" | "disable") {
   try {
     const serviceMethod =
       action === "enable" ? cashFlowServices.enableCashFlowStatus : cashFlowServices.disableCashFlowStatus;

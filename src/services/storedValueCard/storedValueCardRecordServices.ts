@@ -74,6 +74,7 @@ export async function searchingStoredValueCardRecordById(data: {
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
+  data.updateData.tradeId = `SVC-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
@@ -87,7 +88,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
-    return { success: false, message: dateDetectResult.message };
+    return { success: true, message: dateDetectResult.message, returnCode: -1 };
   } else if (dateDetectResult.success) {
     if (data.updateData.transactionType === "income") {
       data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
@@ -97,41 +98,43 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
   }
 
 
-  try {
-    const insertQuery = `
-      INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-      VALUES ('SVC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
-    `;
-    const insertParams = [
-      data.updateData.tradeId,
-      data.updateData.storedValueCardId,
-      data.userId,
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
-      data.updateData.currency,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-    ];
-    await pool.query(insertQuery, insertParams);
 
-    await updateRelatedData(
-      "stored_value_card_list",
-      "stored_value_card_trade",
-      "stored_value_card_id",
-      data.updateData.storedValueCardId,
-      data.updateData.tradeDatetime,
-      data.updateData.transactionType,
-      data.oriData.oriTransactionType,
-      data.updateData.tradeAmount,
-      data.oriData.oriTradeAmount,
-    );
-    // return { success: true, message: "新增成功" };
-    return { success: false, message: "新增失敗" };
-  } catch (error) {
-    return { success: false, message: "新增失敗" };
+  // const insertResult = await executeSQLsyntax({
+  //   query: `
+  //     INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+  //     VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
+  //   `,
+  //   isReturnArray: false,
+  //   successMessage: "新增成功",
+  //   errorMessage: "新增失敗",
+  // });
+  // if (insertResult.success === false) {
+  //   return { success: true, message: insertResult.message, returnCode: -1 };
+  // }
+
+
+
+  const updateRelatedDataResult = await updateRelatedData(
+    `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+    [],
+    false,
+    "新增成功",
+    "新增失敗",
+    "stored_value_card_list",
+    "stored_value_card_trade",
+    "stored_value_card_id",
+    data.updateData.storedValueCardId,
+    data.updateData.tradeDatetime,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeAmount,
+    data.oriData.oriTradeAmount,
+  );
+  if (updateRelatedDataResult.success === true) {
+    return { success: true, message: "新增成功" };
+  } else if (updateRelatedDataResult.success === false) {
+    return { success: true, message: "新增失敗", returnCode: -1 };
   }
 }
 
@@ -158,14 +161,10 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     }
   }
 
-
-  try {
-    const updateQuery = `
-    UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
-    WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10
-  `;
-
-    const updateParams = [
+  const updateRelatedDataResult = await updateRelatedData(
+    `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
+    WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10`,
+    [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
       data.updateData.transactionType,
@@ -176,37 +175,64 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
       data.updateData.tradeId,
       data.updateData.storedValueCardId,
       data.userId,
-    ];
-    await pool.query(updateQuery, updateParams);
+    ],
+    false,
+    "更新成功",
+    "更新失敗",
+    "stored_value_card_list",
+    "stored_value_card_trade",
+    "stored_value_card_id",
+    data.updateData.storedValueCardId,
+    data.updateData.tradeDatetime,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeAmount,
+    data.oriData.oriTradeAmount,
+  );
 
-    await updateRelatedData(
-      "stored_value_card_list",
-      "stored_value_card_trade",
-      "stored_value_card_id",
-      data.updateData.storedValueCardId,
-      data.updateData.tradeDatetime,
-      data.updateData.transactionType,
-      data.oriData.oriTransactionType,
-      data.updateData.tradeAmount,
-      data.oriData.oriTradeAmount,
-    );
-
-    // return { success: true, message: "新增成功" };
-    return { success: false, message: "新增失敗" };
-  } catch (error) {
-    return { success: false, message: "更新失敗" };
+  if (updateRelatedDataResult.success === true) {
+    return { success: true, message: "新增成功" };
+  } else if (updateRelatedDataResult.success === false) {
+    return { success: true, message: "新增失敗", returnCode: -1 };
   }
 }
 
+export async function removeStoredValueCardRecordById(data: IStoredValueCardRecordList) {
+  // const query = `
+  //   DELETE FROM public.stored_value_card_trade
+  //   WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
 
-export async function removeStoredValueCardRecordById(data: {
-  storedValueCardId: string;
-  tradeId: string;
-  userId: string;
-}) {
-  const query = `
-    DELETE FROM public.stored_value_card_trade
-    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
+  // return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "刪除成功", errorMessage: "刪除失敗" });
 
-  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "刪除成功", errorMessage: "刪除失敗" });
+  const record = await searchingStoredValueCardRecordList({
+    accountId: data.storedValueCardId,
+    currencyId: data.currency,
+    tradeCategory: "",
+    startingDate: "1970-01-01 00:00:00",
+    endDate: "2100-12-31 23:59:59",
+    userId: data.userId,
+  });
+
+  const updateRelatedDataResult = await updateRelatedData(
+    `DELETE FROM public.stored_value_card_trade WHERE stored_value_card_id = $1 AND trade_id = $2 AND user_id = $3`,
+    [data.storedValueCardId, data.tradeId, data.userId],
+    false,
+    "刪除成功",
+    "刪除失敗",
+    "stored_value_card_list",
+    "stored_value_card_trade",
+    "stored_value_card_id",
+    record.data.storedValueCardId,
+    record.data.tradeDatetime,
+    record.data.transactionType,
+    record.data.oriTransactionType,
+    0,
+    record.data.tradeAmount,
+  );
+
+  if (updateRelatedDataResult.success === true) {
+    return { success: true, message: "新增成功" };
+  } else if (updateRelatedDataResult.success === false) {
+    return { success: true, message: "新增失敗", returnCode: -1 };
+  }
 }

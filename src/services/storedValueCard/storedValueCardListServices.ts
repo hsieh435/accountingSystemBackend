@@ -1,5 +1,5 @@
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingStoredValueCardRecordById } from "@/services/storedValueCard/storedValueCardRecordServices";
+import { searchingStoredValueCardRecordList } from "@/services/storedValueCard/storedValueCardRecordServices";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 
 export interface IStoredValueCardData {
@@ -69,8 +69,15 @@ export async function disableStoredValueCardStatus(data: IStoredValueCardData) {
 }
 
 export async function removeStoredValueCardData(data: IStoredValueCardData) {
-  const StoredValueCardData = await getStoredValueCardData(data.storedValueCardId, data.userId);
-  const recordData = await searchingStoredValueCardRecordById(StoredValueCardData.data);
+  const storedValueCardData = await getStoredValueCardData(data.storedValueCardId, data.userId);
+  const recordData = await searchingStoredValueCardRecordList({
+    userId: storedValueCardData.data.userId,
+    currencyId: storedValueCardData.data.currency,
+    accountId: storedValueCardData.data.storedValueCardId,
+    tradeCategory: "",
+    startingDate: "1900-01-01 00:00:00",
+    endDate: "9999-12-31 23:59:59",
+  });
 
   if (recordData.success && recordData.data.length > 0) {
     // console.log("data:", recordData.data);

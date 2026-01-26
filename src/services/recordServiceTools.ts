@@ -98,6 +98,11 @@ export async function tradeDateTimeDetect(
 }
 
 export async function updateRelatedData(
+  mainExecuteQuery: string,
+  mainExecuteParams: any = [],
+  isReturnArray: boolean,
+  successMessage: string,
+  errorMessage: string,
   flowListTableName: string,
   recordTableName: string,
   flowColumn: string,
@@ -129,18 +134,43 @@ export async function updateRelatedData(
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+
+
+    // 執行主要的新增或更新操作
+    const mainExecuteResult = await executeSQLsyntax({
+      query: mainExecuteQuery, params: mainExecuteParams, isReturnArray, successMessage, errorMessage,
+    });
+    if (mainExecuteResult.success === false) {
+      await client.query("ROLLBACK");
+      return { success: true, message: errorMessage, returnCode: -1 };
+    }
+
+
+
     // 更新後續紀錄的 remaining_amount
-    const recordUpdateResult = await updateFlowRecordRemainingAmount(
-      recordTable,
-      column,
-      amountDifference,
-      tradeDatetime,
-      flowId,
-    );
-    // pass client
-    // 加上 await 確保同步執行
-    const flowUpdateResult = await updateFlowDataRemainingAmount(flowListTable, recordTable, flowColumn, flowId);
-    // pass client
+    const recordUpdateResult = await executeSQLsyntax({
+      query:
+        `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
+      params: [amountDifference, tradeDatetime, flowId],
+      isReturnArray: false,
+      successMessage: "更新成功",
+      errorMessage: "更新失敗",
+    });
+
+
+
+    // 更新 present_amount，pass client，加上 await 確保同步執行
+    const flowUpdateResult = await executeSQLsyntax({
+      query: `
+        UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
+        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
+        WHERE ${flowColumn} = '${flowId}'`,
+      isReturnArray: false,
+      successMessage: "更新成功",
+      errorMessage: "更新失敗",
+    });
+
+    // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
       return { success: true, message: "更新餘額失敗", returnCode: -1 };
@@ -157,42 +187,42 @@ export async function updateRelatedData(
   // console.log("更新餘額成功");
 }
 
-export async function updateFlowRecordRemainingAmount(
-  recordTable: string,
-  column: string,
-  amountDifference: number,
-  tradeDatetime: string,
-  flowId: string,
-) {
+// export async function updateFlowRecordRemainingAmount(
+//   recordTable: string,
+//   column: string,
+//   amountDifference: number,
+//   tradeDatetime: string,
+//   flowId: string,
+// ) {
 
-  return executeSQLsyntax({
-    query:
-      `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
-    params: [amountDifference, tradeDatetime, flowId],
-    isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
-  });
-}
+//   return executeSQLsyntax({
+//     query:
+//       `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
+//     params: [amountDifference, tradeDatetime, flowId],
+//     isReturnArray: false,
+//     successMessage: "更新成功",
+//     errorMessage: "更新失敗",
+//   });
+// }
 
-export async function updateFlowDataRemainingAmount(
-  flowListTable: string,
-  recordTable: string,
-  flowColumn: string,
-  flowId: string,
-) {
-  // console.log("flowListTable:", flowListTable);
-  // console.log("recordTable:", recordTable);
-  // console.log("flowColumn:", flowColumn);
-  // console.log("flowId:", flowId);
+// export async function updateFlowDataRemainingAmount(
+//   flowListTable: string,
+//   recordTable: string,
+//   flowColumn: string,
+//   flowId: string,
+// ) {
+//   // console.log("flowListTable:", flowListTable);
+//   // console.log("recordTable:", recordTable);
+//   // console.log("flowColumn:", flowColumn);
+//   // console.log("flowId:", flowId);
 
-  return executeSQLsyntax({
-    query: `
-      UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
-      WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
-      WHERE ${flowColumn} = '${flowId}'`,
-    isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
-  });
-}
+//   return executeSQLsyntax({
+//     query: `
+//       UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
+//       WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
+//       WHERE ${flowColumn} = '${flowId}'`,
+//     isReturnArray: false,
+//     successMessage: "更新成功",
+//     errorMessage: "更新失敗",
+//   });
+// }

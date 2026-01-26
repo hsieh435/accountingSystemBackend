@@ -8,38 +8,52 @@ export async function executeSQLsyntax({
   isReturnArray = true,
   successMessage,
   errorMessage,
+  isTesting = false,
 }: {
   query: string;
   params?: any;
   isReturnArray?: boolean;
   successMessage?: string;
   errorMessage?: string;
+  isTesting?: boolean;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
   // console.log("Query executed:", query);
   // console.log("Parameters:", params);
-  try {
-    const result = await pool.query(query, params);
-    // console.log("SQL Result:", result);
-    // console.log("SQL Result:", result.rows);
-    // console.log("SQL command:", result.command);
-    // console.log("SQL rowCount:", result.rowCount);
 
-    if (result.command === "DELETE") {
+  if (isTesting === true) {
+    return { success: true, data: [], message: "測試成功" };
+  }
+
+  try {
+    const sqlExecuteResult = await pool.query(query, params);
+    // console.log("SQL Result:", sqlExecuteResult);
+    // console.log("SQL Result:", sqlExecuteResult.rows);
+    // console.log("SQL command:", sqlExecuteResult.command);
+    // console.log("SQL rowCount:", sqlExecuteResult.rowCount);
+
+
+    if (sqlExecuteResult.command === "DELETE") {
       return {
-        success: (result.rowCount ?? 0) > 0,
+        success: (sqlExecuteResult.rowCount ?? 0) > 0,
         data: [],
-        message: (result.rowCount ?? 0) > 0 ? successMessage : errorMessage,
+        message: (sqlExecuteResult.rowCount ?? 0) > 0 ? successMessage : errorMessage,
+      };
+    } else if (sqlExecuteResult.command === "") {
+      return {
+        success: (sqlExecuteResult.rowCount ?? 0) > 0,
+        data: [],
+        message: (sqlExecuteResult.rowCount ?? 0) > 0 ? successMessage : errorMessage,
       };
     } else {
       return {
         success: true,
-        data: isReturnArray ? keysToCamel(result.rows) : keysToCamel(result.rows[0]),
+        data: isReturnArray ? keysToCamel(sqlExecuteResult.rows) : keysToCamel(sqlExecuteResult.rows[0]),
         message: successMessage,
       };
     }
 
   } catch (error) {
-    return { success: false, message: errorMessage, data: [], statusCode: 404 };
+    return { success: false, message: isTesting ? "測試失敗" : errorMessage, data: [], statusCode: 404 };
   }
 }
 
@@ -47,7 +61,7 @@ export async function executeSQLsyntax({
 
 export async function testSQLsyntax() {
 
-  const result = await pool.query(`
+  const sqlExecuteResult = await pool.query(`
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime = '2025-12-14 19:30:00+08'
     UNION ALL
@@ -56,5 +70,5 @@ export async function testSQLsyntax() {
     SELECT 1 FROM cashflow_trade WHERE trade_datetime = '2025-12-14 19:30:00+08'
     )`);
 
-  // console.log("Test SQL Result:", result.rows);
+  // console.log("Test SQL:", sqlExecuteResult.rows);
 }
