@@ -114,7 +114,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
 
 
-  const updateRelatedDataResult = await updateRelatedData(
+  const insertResult = await updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
     VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
     [],
@@ -131,9 +131,9 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     data.updateData.tradeAmount,
     data.oriData.oriTradeAmount,
   );
-  if (updateRelatedDataResult.success === true) {
+  if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
-  } else if (updateRelatedDataResult.success === false) {
+  } else if (insertResult.success === false) {
     return { success: true, message: "新增失敗", returnCode: -1 };
   }
 }
@@ -161,7 +161,7 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     }
   }
 
-  const updateRelatedDataResult = await updateRelatedData(
+  const updateResult = await updateRelatedData(
     `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
     WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10`,
     [
@@ -189,11 +189,10 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     data.updateData.tradeAmount,
     data.oriData.oriTradeAmount,
   );
-
-  if (updateRelatedDataResult.success === true) {
-    return { success: true, message: "新增成功" };
-  } else if (updateRelatedDataResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
+  if (updateResult.success === true) {
+    return { success: true, message: "更新成功" };
+  } else if (updateResult.success === false) {
+    return { success: true, message: "更新失敗", returnCode: -1 };
   }
 }
 
@@ -213,7 +212,7 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
     userId: data.userId,
   });
 
-  const updateRelatedDataResult = await updateRelatedData(
+  const deleteResult = await updateRelatedData(
     `DELETE FROM public.stored_value_card_trade WHERE stored_value_card_id = $1 AND trade_id = $2 AND user_id = $3`,
     [data.storedValueCardId, data.tradeId, data.userId],
     false,
@@ -230,9 +229,9 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
     record.data.tradeAmount,
   );
 
-  if (updateRelatedDataResult.success === true) {
-    return { success: true, message: "新增成功" };
-  } else if (updateRelatedDataResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
+  if (deleteResult.success === true) {
+    return { success: true, message: "刪除成功" };
+  } else if (deleteResult.success === false) {
+    return { success: true, message: "刪除失敗", returnCode: -1 };
   }
 }

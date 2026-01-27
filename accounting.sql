@@ -5,7 +5,7 @@
 -- Dumped from database version 17.5
 -- Dumped by pg_dump version 17.5
 
--- Started on 2026-01-24 10:20:42
+-- Started on 2026-01-27 20:20:34
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -488,9 +488,9 @@ CF-TWD-1763304899130	CF-1763304352080	mike	2026-01-01 08:30:00+08	food	expense	7
 CF-TWD-1763305408658	CF-1763304352080	mike	2026-01-01 12:30:00+08	food	expense	100.000	4825.000	TWD	午餐	
 CF-TWD-1763305644763	CF-1763304352080	mike	2026-01-01 18:00:00+08	food	expense	125.000	4700.000	TWD	晚餐	
 CF-TWD-1763306018118	CF-1763304352080	mike	2026-01-01 19:30:00+08	fuelBills	expense	600.000	4100.000	TWD	卡費	
-CF-TWD-1763306225708	CF-1763304352080	mike	2026-01-02 10:00:00+08	books	expense	350.000	3750.000	TWD	買書	
-CF-TWD-1763388609054	CF-1763304352080	mike	2026-01-02 14:00:00+08	addValue	expense	1200.000	2550.000	TWD	悠遊卡儲值	
-CF-TWD-1763389078414	CF-1763304352080	mike	2026-01-02 16:00:00+08	miscellaneous	expense	100.000	2450.000	TWD	停車費	
+CF-TWD-1763306225708	CF-1763304352080	mike	2026-01-02 10:00:00+08	books	expense	300.000	3800.000	TWD	買書	
+CF-TWD-1763388609054	CF-1763304352080	mike	2026-01-02 14:00:00+08	addValue	expense	1200.000	2600.000	TWD	悠遊卡儲值	
+CF-TWD-1763389078414	CF-1763304352080	mike	2026-01-02 16:00:00+08	miscellaneous	expense	150.000	2450.000	TWD	停車費	
 CF-TWD-1768996427314	CF-1763304352080	mike	2026-01-03 13:00:00+08	haircut	expense	700.000	1750.000	TWD	700	
 \.
 
@@ -601,7 +601,6 @@ personalSetting	creditCardSetting	信用卡資料設定	creditCardSetting	credit
 personalSetting	userSetting	使用者資料	userSetting	fingerprint	1
 personalSetting	currencyAccountsSetting	存款帳戶資料設定	currencyAccountsSetting	landmark	5
 personalSetting	stockAccountSetting	證券帳戶資料設定	stockAccountSetting	activity	6
-parameterSetting	currencySetting	貨幣設定	currencySetting	circle-dollar-sign	2
 financeRecord	cashFlowRecord	現金收支	cashFlowRecord	banknote-arrow-up	1
 personalSetting	cashFlowSetting	現金資料設定	cashFlowSetting	banknote-x	2
 parameterSetting	tradeCategorySetting	收支類型設定	tradeCategorySetting	list	1
@@ -616,6 +615,8 @@ financeStatement	consumptionAnalysis	收支分析	consumptionAnalysis	clipboard-
 outerInformation	stockInfo	股市查詢	stockInfo	search	3
 financeStatement	stockProfitRecord	獲利紀錄	stockProfitRecord	dollar-sign	3
 financeStatement	storageProfit	庫存損益	storageProfit	dollar-sign	2
+parameterSetting	creditLimitSetting	信用卡額度設定	creditLimitSetting	circle-dollar-sign	3
+parameterSetting	currencySetting	貨幣設定	currencySetting	circle-dollar-sign	2
 \.
 
 
@@ -962,7 +963,7 @@ ALTER TABLE ONLY public.user_data
     ADD CONSTRAINT user_data_pkey PRIMARY KEY (user_id);
 
 
--- Completed on 2026-01-24 10:20:43
+-- Completed on 2026-01-27 20:20:34
 
 --
 -- PostgreSQL database dump complete

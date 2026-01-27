@@ -1,7 +1,8 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp } from "@/utils/tools";
-// import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import { getCurrentTimestamp, getCurrentYear, getCurrentMonth } from "@/utils/tools";
+import { tradeDateTimeDetect } from "@/services/recordServiceTools";
+import { getCreditCardExpenditure } from "@/services/creditCard/creditCardListServices";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -67,66 +68,170 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 }
 
 export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
+  data.updateData.tradeId = `CC-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-  // const dateDetectResult = await tradeDateTimeDetect(
-  //   "creditcard_list",
-  //   "creditcard_trade",
-  //   "credit_card_id",
-  //   data.updateData.creditCardId,
-  //   data.updateData.tradeId,
-  //   data.updateData.tradeDatetime,
-  //   "insert",
-  // );
-
-
-  // console.log("dateDetectResult:", dateDetectResult);
-  // if (!dateDetectResult.success) {
-  //   return { success: false, message: dateDetectResult.message };
-  // }
-  // else if (dateDetectResult.success) {
-  //
-  // }
+  const dateDetectResult = await tradeDateTimeDetect(
+    "creditcard_list",
+    "creditcard_trade",
+    "credit_card_id",
+    data.updateData.creditCardId,
+    data.updateData.tradeId,
+    data.updateData.tradeDatetime,
+    "insert",
+  );
+  console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) {
+    return { success: true, message: dateDetectResult.message, returnCode: -1 };
+  }
 
 
-  try {
+  const client = await pool.connect();
+  await client.query("BEGIN");
 
-    const insertResult = await pool.query(`
-      INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-      VALUES ('CC-${data.updateData.currency}-${getCurrentTimestamp()}', '${data.updateData.creditCardId}', '${data.updateData.tradeDatetime}', '${data.updateData.userId}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
-    `);
+  const insertResult = await executeSQLsyntax({
+    query:
+      `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+      VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+    successMessage: "",
+    errorMessage: "新增失敗"
+  });
+  if (!insertResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: insertResult.message, returnCode: -1 };
+  }
+
+
+
+  const expendictResult = await getCreditCardExpenditure({
+    userId: data.updateData.userId,
+    creditcardId: data.updateData.creditCardId,
+    yearMonth: getCurrentYear(data.updateData.tradeDatetime) + "-" + getCurrentMonth(data.updateData.tradeDatetime),
+  })
+  if (!expendictResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: expendictResult.message, returnCode: -1 };
+  }
+
+  await client.query("COMMIT");
+  return { success: true, message: "新增成功", returnCode: 0 };
+
+  // try {
+
+    // const insertResult = await pool.query(`
+    //   INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
+    //   VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
+    // `);
     // console.log("insertResult:", insertResult);
 
-    if (insertResult.rowCount === 1) {
-      return { success: true, userData: insertResult.rows[0] };
-    } else {
-      return { success: false, userData: [] };
-    }
-  } catch (err) {
-    return { success: false, message: err instanceof Error ? err.message : String(err) };
-  }
+    // if (insertResult.rowCount === 1) {
+    //   return { success: true, userData: insertResult.rows[0] };
+    // } else {
+    //   return { success: false, userData: [] };
+    // }
+  // } catch (err) {
+  //   return { success: false, message: err instanceof Error ? err.message : String(err) };
+  // }
+
+  // await client.query("ROLLBACK");
+  // await client.query("COMMIT");
 }
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
-  const updateResult = await pool.query(`
-    UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
-    WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'
-  `);
-  // console.log("updateResult:", updateResult);
 
-  return updateResult.rowCount === 1;
+  const dateDetectResult = await tradeDateTimeDetect(
+    "creditcard_list",
+    "creditcard_trade",
+    "credit_card_id",
+    data.updateData.creditCardId,
+    data.updateData.tradeId,
+    data.updateData.tradeDatetime,
+    "insert",
+  );
+  console.log("dateDetectResult:", dateDetectResult);
+  if (!dateDetectResult.success) {
+    return { success: true, message: dateDetectResult.message, returnCode: -1 };
+  }
 
+
+
+  const client = await pool.connect();
+  await client.query("BEGIN");
+
+  const updateResult = await executeSQLsyntax({
+    query:
+      `UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+      WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`,
+    successMessage: "",
+    errorMessage: "更新失敗"
+  });
+  if (!updateResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: updateResult.message, returnCode: -1 };
+  }
+
+
+
+  const expendictResult = await getCreditCardExpenditure({
+    userId: data.updateData.userId,
+    creditcardId: data.updateData.creditCardId,
+    yearMonth: getCurrentYear(data.updateData.tradeDatetime) + "-" + getCurrentMonth(data.updateData.tradeDatetime),
+  })
+  if (!expendictResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: expendictResult.message, returnCode: -1 };
+  }
+
+  await client.query("COMMIT");
+  return { success: true, message: "更新成功", returnCode: 0 };
+
+
+
+  // const updateResult = await pool.query(`
+  //   UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+  //   WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'
+  // `);
+  // return updateResult.rowCount === 1;
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
-  const deleteResult = await pool.query(
-    `DELETE FROM public.creditcard_trade
-    WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
-  );
-  // console.log("deleteResult:", deleteResult);
-  if (deleteResult.rowCount === 1) {
-    return { success: true, message: "刪除成功" };
-  } else {
-    return { success: false, message: "刪除失敗" };
+  const record = await getCreditCardRecordById(data.tradeId, data.creditCardId, data.userId);
+
+
+  const client = await pool.connect();
+  await client.query("BEGIN");
+
+  const deleteResult = await executeSQLsyntax({
+    query:
+      `DELETE FROM public.creditcard_trade
+      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+    successMessage: "",
+    errorMessage: "刪除失敗"
+  });
+
+  const expendictResult = await getCreditCardExpenditure({
+    userId: data.userId,
+    creditcardId: data.creditCardId,
+    yearMonth: getCurrentYear(record.data.tradeDatetime,) + "-" + getCurrentMonth(record.data.tradeDatetime),
+  })
+  if (!deleteResult.success || !expendictResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: "刪除失敗", returnCode: -1 };
   }
+
+  await client.query("COMMIT");
+  return { success: true, message: "刪除成功", returnCode: 0 };
+
+
+
+  // const deleteResult = await pool.query(
+  //   `DELETE FROM public.creditcard_trade
+  //   WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+  // );
+  // // console.log("deleteResult:", deleteResult);
+  // if (deleteResult.rowCount === 1) {
+  //   return { success: true, message: "刪除成功" };
+  // } else {
+  //   return { success: false, message: "刪除失敗" };
+  // }
 }

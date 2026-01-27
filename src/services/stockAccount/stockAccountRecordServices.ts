@@ -78,6 +78,8 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
+  // console.log("data:", data);
+  data.updateData.tradeId = `ST-${data.updateData.currency}-${getCurrentTimestamp()}`;
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
     "stock_account_trade",
@@ -87,10 +89,51 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.tradeDatetime,
     "insert",
   );
-
-
   // console.log("dateDetectResult:", dateDetectResult);
-  // if (!dateDetectResult.success) return { success: false, message: dateDetectResult.message };
+  if (!dateDetectResult.success) {
+    return { success: false, message: dateDetectResult.message };
+  } else if (dateDetectResult.success) {
+    if (data.updateData.transactionType === "income") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;
+    } else if (data.updateData.transactionType === "expense") {
+      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeTotalPrice;
+    }
+  }
+
+  const insertResult = await updateRelatedData(
+    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note)
+    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+    [],
+    false,
+    "新增成功",
+    "新增失敗",
+    "stock_account_list",
+    "stock_account_trade",
+    "account_id",
+    data.updateData.accountId,
+    data.updateData.tradeDatetime,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeTotalPrice,
+    data.oriData.oriTradeAmount,
+  );
+  if (insertResult.success === true) {
+    return { success: true, message: "新增成功" };
+  } else if (insertResult.success === false) {
+    return { success: true, message: "新增失敗", returnCode: -1 };
+  }
+}
+
+export async function updateStockAccountRecord(data: IStockAccountRecordData) {
+  const dateDetectResult = await tradeDateTimeDetect(
+    "stock_account_list",
+    "stock_account_trade",
+    "account_id",
+    data.updateData.accountId,
+    data.updateData.tradeId,
+    data.updateData.tradeDatetime,
+    "update",
+  );
   if (!dateDetectResult.success) {
     return { success: false, message: dateDetectResult.message };
   } else if (dateDetectResult.success) {
@@ -102,36 +145,54 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   }
 
 
-  try {
-    const insertResult = await pool.query(
-      `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note)
-      VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
-    );
 
-    const accountTarget = await getStockAccountById({ accountId: data.updateData.accountId, userId: data.userId });
-    accountTarget.data.presentAmount = data.updateData.remainingAmount;
-    const updateResult = await updateStockAccountData(accountTarget.data);
-
-    return insertResult.rowCount === 1 && updateResult
-      ? { success: true, userData: insertResult.rows[0] }
-      : { success: false, userData: [] };
-  } catch (err) {
-    return { success: false, message: err instanceof Error ? err.message : String(err) };
+  const updateResult = await updateRelatedData(
+     `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+     WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
+    [],
+    false,
+    "更新成功",
+    "更新失敗",
+    "stock_account_list",
+    "stock_account_trade",
+    "account_id",
+    data.updateData.accountId,
+    data.updateData.tradeDatetime,
+    data.updateData.transactionType,
+    data.oriData.oriTransactionType,
+    data.updateData.tradeTotalPrice,
+    data.oriData.oriTradeAmount,
+  );
+  if (updateResult.success === true) {
+    return { success: true, message: "更新成功" };
+  } else if (updateResult.success === false) {
+    return { success: true, message: "更新失敗", returnCode: -1 };
   }
 }
 
-export async function updateStockAccountRecord(data: IStockAccountRecordData) {
-  const result = await pool.query(
-    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
-    WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
-  );
-  return result.rowCount === 1;
-}
-
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
-  const query = `
-    DELETE FROM public.stock_account_trade
-    WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
+  const record = await getStockAccountRecordById(data.tradeId, data.accountId, data.userId);
 
-  return executeSQLsyntax({ query: query, successMessage: "刪除成功", errorMessage: "刪除失敗" });
+  const deleteResult = await updateRelatedData(
+    `DELETE FROM public.stock_account_trade WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    [],
+    false,
+    "刪除成功",
+    "刪除失敗",
+    "stock_account_list",
+    "stock_account_trade",
+    "account_id",
+    record.data.accountId,
+    record.data.tradeDatetime,
+    record.data.transactionType,
+    record.data.transactionType,
+    0,
+    record.data.tradeTotalPrice,
+  );
+
+  if (deleteResult.success === true) {
+    return { success: true, message: "刪除成功" };
+  } else if (deleteResult.success === false) {
+    return { success: true, message: "刪除失敗", returnCode: -1 };
+  }
 }

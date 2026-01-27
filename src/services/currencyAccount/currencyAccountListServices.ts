@@ -1,6 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getTimeStampWithZone } from "@/utils/tools";
+import { searchingCurrencyAccountRecordList } from "@/services/currencyAccount/currencyAccountRecordServices";
 
 export interface ICurrencyAccountData {
   accountId: string;
@@ -142,17 +143,23 @@ export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
   });
 }
 
+
 export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
-  try {
-    // Check if there are existing records
-    const checkQuery = "SELECT * FROM currency_account_trade WHERE account_id = $1 AND user_id = $2";
-    const searchingResult = await pool.query(checkQuery, [data.accountId, data.userId]);
 
-    if (searchingResult.rows.length > 0) {
-      return { success: false, message: "已有收支紀錄，無法刪除" };
-    }
+  const accountData = await getCurrencyAccountById(data.accountId, data.userId);
+  const recordData = await searchingCurrencyAccountRecordList({
+    userId: data.userId,
+    currencyId: accountData.data.currency,
+    accountId: data.accountId,
+    tradeCategory: "",
+    startingDate: "1900-01-01 00:00:00",
+    endDate: "9999-12-31 23:59:59",
+  });
 
-    // Delete the account
+  if (recordData.success && recordData.data.length > 0) {
+    return { success: true, message: "已有收支紀錄", returnCode: -1 };
+  } else if (recordData.success && recordData.data.length === 0) {
+
     return executeSQLsyntax({
       query: "DELETE FROM public.currency_account_list WHERE account_id = $1 AND user_id = $2",
       params: [data.accountId, data.userId],
@@ -160,7 +167,7 @@ export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
       errorMessage: "刪除失敗",
     });
 
-  } catch (error) {
+  } else {
     return { success: false, message: "刪除失敗" };
   }
 }

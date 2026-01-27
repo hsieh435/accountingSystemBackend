@@ -161,16 +161,28 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
   });
 }
 
-export async function getCreditCardExpenditure(data: ICreditCardData) {
+export async function getCreditCardExpenditure({
+  userId,
+  creditcardId,
+  yearMonth = "",
+}: {
+  userId: string;
+  creditcardId: string;
+  yearMonth?: string;
+}) {
 
-  const startingDate = `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00.001`;
-  const endDate =
-    `${getCurrentYear()}-${getCurrentMonth()}-${getDaysInMonth(getCurrentYear(), getCurrentMonth())} 23:59:59.999`;
+  const startingDate = !yearMonth
+    ? `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00.001`
+    : `${getCurrentYear(yearMonth + "-01")}-${getCurrentMonth(yearMonth + "-01")}-01 00:00:00.001`;
+
+  const endDate = !yearMonth
+    ? `${getCurrentYear()}-${getCurrentMonth()}-${getDaysInMonth(getCurrentYear(), getCurrentMonth())} 23:59:59.999`
+    : `${getCurrentYear(yearMonth + "-01")}-${getCurrentMonth(yearMonth + "-01")}-${getDaysInMonth(getCurrentYear(yearMonth + "-01"), getCurrentMonth(yearMonth + "-01"))} 23:59:59.999`;
 
   const creditCardList: string[] = [];
   let totalSpend = 0;
-  if (!data.creditcardId) {
-    const creditCardResult = await searchingCreditCardList({ currencyId: "", userId: data.userId });
+  if (!creditcardId) {
+    const creditCardResult = await searchingCreditCardList({ currencyId: "", userId: userId });
 
     if (creditCardResult.success && creditCardResult.data.length > 0) {
       for (const card of creditCardResult.data) {
@@ -178,14 +190,14 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
       }
     }
   } else {
-    creditCardList.push(data.creditcardId);
+    creditCardList.push(creditcardId);
   }
   // console.log("creditCardList:", creditCardList);
 
   for (let i = 0; i < creditCardList.length; i++) {
     const recordResult = await executeSQLsyntax({
       query: `SELECT * FROM creditcard_trade WHERE creditcard_trade.credit_card_id = $1 AND creditcard_trade.user_id = $2 AND trade_datetime BETWEEN $3 AND $4`,
-      params: [creditCardList[i], data.userId, startingDate, endDate],
+      params: [creditCardList[i], userId, startingDate, endDate],
       isReturnArray: true,
       successMessage: "",
       errorMessage: "結算失敗",
@@ -196,7 +208,7 @@ export async function getCreditCardExpenditure(data: ICreditCardData) {
 
     await executeSQLsyntax({
       query: `UPDATE public.creditcard_list SET expenditure_current_month = $1 WHERE creditcard_id = $2 AND user_id = $3`,
-      params: [totalSpend, creditCardList[i], data.userId],
+      params: [totalSpend, creditCardList[i], userId],
       isReturnArray: true,
       successMessage: "",
       errorMessage: "更新失敗",
