@@ -2,7 +2,7 @@ import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getCurrentYear, getCurrentMonth } from "@/utils/tools";
 import { tradeDateTimeDetect } from "@/services/recordServiceTools";
-import { getCreditCardExpenditure } from "@/services/creditCard/creditCardListServices";
+
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -100,18 +100,6 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
     return { success: true, message: insertResult.message, returnCode: -1 };
   }
 
-
-
-  const expendictResult = await getCreditCardExpenditure({
-    userId: data.updateData.userId,
-    creditcardId: data.updateData.creditCardId,
-    yearMonth: getCurrentYear(data.updateData.tradeDatetime) + "-" + getCurrentMonth(data.updateData.tradeDatetime),
-  })
-  if (!expendictResult.success) {
-    await client.query("ROLLBACK");
-    return { success: true, message: expendictResult.message, returnCode: -1 };
-  }
-
   await client.query("COMMIT");
   return { success: true, message: "新增成功", returnCode: 0 };
 
@@ -170,18 +158,6 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
     return { success: true, message: updateResult.message, returnCode: -1 };
   }
 
-
-
-  const expendictResult = await getCreditCardExpenditure({
-    userId: data.updateData.userId,
-    creditcardId: data.updateData.creditCardId,
-    yearMonth: getCurrentYear(data.updateData.tradeDatetime) + "-" + getCurrentMonth(data.updateData.tradeDatetime),
-  })
-  if (!expendictResult.success) {
-    await client.query("ROLLBACK");
-    return { success: true, message: expendictResult.message, returnCode: -1 };
-  }
-
   await client.query("COMMIT");
   return { success: true, message: "更新成功", returnCode: 0 };
 
@@ -209,12 +185,7 @@ export async function removeCreditCardRecordData(data: { tradeId: string; credit
     errorMessage: "刪除失敗"
   });
 
-  const expendictResult = await getCreditCardExpenditure({
-    userId: data.userId,
-    creditcardId: data.creditCardId,
-    yearMonth: getCurrentYear(record.data.tradeDatetime,) + "-" + getCurrentMonth(record.data.tradeDatetime),
-  })
-  if (!deleteResult.success || !expendictResult.success) {
+  if (!deleteResult.success) {
     await client.query("ROLLBACK");
     return { success: true, message: "刪除失敗", returnCode: -1 };
   }

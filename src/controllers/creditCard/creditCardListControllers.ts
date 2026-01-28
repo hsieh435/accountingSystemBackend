@@ -58,24 +58,6 @@ export async function creditCardUpdate(req: Request, res: Response) {
   }
 }
 
-export async function creditCardExpenditureCalculate(req: Request, res: Response) {
-  try {
-    const result = await creditCardServices.calculateCreditCardExpenditure(req.body);
-    await handleControllersResponse(res, req, result);
-  } catch (err) {
-    await handleControllersResponse(res, req, err);
-  }
-}
-
-export async function creditCardExpenditure(req: Request, res: Response) {
-  try {
-    const result = await creditCardServices.getCreditCardExpenditure(req.body);
-    await handleControllersResponse(res, req, result);
-  } catch (err) {
-    await handleControllersResponse(res, req, err);
-  }
-}
-
 export async function creditCardDelete(req: Request, res: Response) {
   req.body.creditcardId = req.params.creditCardId;
   try {

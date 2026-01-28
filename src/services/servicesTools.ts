@@ -53,6 +53,7 @@ export async function executeSQLsyntax({
     }
 
   } catch (error) {
+    // console.error("SQL Execution Error:", error);
     return { success: false, message: isTesting ? "測試失敗" : errorMessage, data: [], statusCode: 404 };
   }
 }
