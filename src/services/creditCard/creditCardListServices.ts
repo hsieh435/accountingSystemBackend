@@ -1,6 +1,7 @@
 import pool from "@/db";
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { insertCreditCardLimitation } from "@/services/creditCard/creditCardParamsServices";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -23,11 +24,21 @@ export interface ICreditCardData {
 }
 
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
+
   const query = `
-    SELECT creditcard_list.*, currency_list.currency_name
+    SELECT creditcard_list.*, currency_list.currency_name, creditcard_limit.credit_per_month,
+    COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
     FROM creditcard_list
     LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
-    WHERE currency LIKE $1 AND user_id = $2
+    LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '2025-9-01 00:00:00'
+
+	  LEFT JOIN (
+      SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
+      WHERE bill_month = '2025-9-01 00:00:00'
+      GROUP BY credit_card_id
+    ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
+
+    WHERE currency LIKE $1 AND creditcard_list.user_id = $2
     ORDER BY created_date
   `;
 
@@ -37,11 +48,26 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
+
 }
 
 export async function getCreditCardById(creditcardId: string, userId: string) {
   return executeSQLsyntax({
-    query: "SELECT * FROM creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
+    query:
+      `
+      SELECT creditcard_list.*, creditcard_limit.credit_per_month,
+      COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
+      FROM creditcard_list
+      LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
+
+      LEFT JOIN (
+        SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
+        WHERE bill_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
+        GROUP BY credit_card_id
+      ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
+
+      WHERE creditcard_list.creditcard_id = $1 AND creditcard_list.user_id = $2
+      `,
     params: [creditcardId, userId],
     isReturnArray: false,
     successMessage: "查詢成功",
@@ -50,6 +76,8 @@ export async function getCreditCardById(creditcardId: string, userId: string) {
 }
 
 export async function insertCreditCardData(data: ICreditCardData) {
+  const client = await pool.connect();
+  await client.query("BEGIN");
   const currentTimestamp = getCurrentTimestamp();
   const timeStampWithZone = getTimeStampWithZone();
   const creditcardId = `CC-${currentTimestamp}`;
@@ -79,13 +107,32 @@ export async function insertCreditCardData(data: ICreditCardData) {
     data.note,
   ];
 
-  return executeSQLsyntax({
+  const insertResult = await executeSQLsyntax({
     query: insertQuery,
     params: insertParams,
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
+
+  if (!insertResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: insertResult.message, returnCode: -1 };
+  }
+
+  const limitInsertResult = await insertCreditCardLimitation({
+    creditcardId: creditcardId,
+    userId: data.userId,
+    yearMonth: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00`,
+    creditPerMonth: data.creditPerMonth
+  });
+  if (!limitInsertResult.success) {
+    await client.query("ROLLBACK");
+    return { success: true, message: limitInsertResult.message, returnCode: -1 };
+  }
+
+  await client.query("COMMIT");
+  return { success: true, message: "新增信用卡成功" };
 }
 
 export async function updateCreditCardData(data: ICreditCardData) {

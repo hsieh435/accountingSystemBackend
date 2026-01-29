@@ -1,7 +1,5 @@
-import pool from "@/db";
-import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingCreditCardList } from "@/services/creditCard/creditCardListServices";
 import { getCurrentYear, getCurrentMonth, getDaysInMonth } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 
 export interface ICreditCardData {
   creditcardId: string;
@@ -23,8 +21,17 @@ export interface ICreditCardData {
   note: string;
 }
 
+export interface ICreditCardLimitation {
+  creditcardId: string;
+  userId: string;
+  yearMonth: string;
+  creditPerMonth: number;
+}
+
+
+
 export async function getCreditCardLimitation(data: { creditcardId: string; userId: string; yearMonth: string }) {
-  console.log("data:", data);
+  // console.log("data:", data);
   const startingDate = data.yearMonth ? `${data.yearMonth}-01` : "";
   const endDate = data.yearMonth ? `${data.yearMonth}-28` : "";
 
@@ -40,12 +47,44 @@ export async function getCreditCardLimitation(data: { creditcardId: string; user
       WHERE creditcard_limit.creditcard_id LIKE $1 AND creditcard_limit.user_id = $2
       ${data.yearMonth ? "AND creditcard_limit.limit_year_month BETWEEN $3 AND $4" : ""}
       ORDER BY limit_year_month`,
-    params,
+    params: params,
     isReturnArray: true,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
 }
+
+
+export async function insertCreditCardLimitation(data: ICreditCardLimitation) {
+  // console.log("data:", data);
+
+  return executeSQLsyntax({
+    query:
+      `INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, credit_per_month)
+      VALUES ($1, $2, $3, $4)`,
+    params: [data.creditcardId, data.yearMonth, data.userId, data.creditPerMonth],
+    isReturnArray: true,
+    successMessage: "新增成功",
+    errorMessage: "新增失敗",
+  });
+}
+
+
+export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
+  // console.log("data:", data);
+
+  return executeSQLsyntax({
+    query:
+      `UPDATE public.creditcard_limit SET credit_per_month=$4
+      WHERE creditcard_id = $1 AND user_id = $2 AND limit_year_month = $3`,
+    params: [data.creditcardId, data.userId, data.yearMonth, data.creditPerMonth],
+    isReturnArray: true,
+    successMessage: "更新成功",
+    errorMessage: "更新失敗",
+  });
+}
+
+
 
 export async function calculateCreditCardExpenditure(params: {
   creditcardId: string;
