@@ -25,16 +25,16 @@ export interface ICreditCardData {
 
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
 
-  const query = `
+  const searchingQuery = `
     SELECT creditcard_list.*, currency_list.currency_name, creditcard_limit.credit_per_month,
     COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
     FROM creditcard_list
     LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
-    LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '2025-9-01 00:00:00'
+    LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
 
 	  LEFT JOIN (
       SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
-      WHERE bill_month = '2025-9-01 00:00:00'
+      WHERE bill_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
       GROUP BY credit_card_id
     ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
 
@@ -43,7 +43,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
   `;
 
   return executeSQLsyntax({
-    query: query,
+    query: searchingQuery,
     params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -183,21 +183,27 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 }
 
 export async function removeCreditCardData(data: ICreditCardData) {
-  try {
-    const checkQuery = "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2";
-    const searchingResult = await pool.query(checkQuery, [data.creditcardId, data.userId]);
+  const client = await pool.connect();
+  await client.query("BEGIN");
 
-    if (searchingResult.rows.length > 0) {
-      return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
-    } else {
-      return executeSQLsyntax({
-        query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
-        params: [data.creditcardId, data.userId],
-        successMessage: "刪除成功",
-        errorMessage: "刪除失敗",
-      });
-    }
-  } catch (error) {
-    return { success: false, message: "刪除失敗", data: [], statusCode: 404 };
+  const searchingResult = await executeSQLsyntax({
+    query: "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2",
+    params: [data.creditcardId, data.userId],
+    successMessage: "",
+    errorMessage: "",
+  });
+
+  if (searchingResult.success === false) {
+    return { success: true, data: [], message: "連線錯誤，無法刪除", returnCode: -1 };
+  } else if (searchingResult.success === true && searchingResult.data.length > 0) {
+    return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
+  } else if (searchingResult.success === true && searchingResult.data.length === 0) {
+
+    return executeSQLsyntax({
+      query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
+      params: [data.creditcardId, data.userId],
+      successMessage: "刪除成功",
+      errorMessage: "刪除失敗",
+    });
   }
 }

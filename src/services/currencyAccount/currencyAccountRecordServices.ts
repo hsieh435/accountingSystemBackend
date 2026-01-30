@@ -1,7 +1,6 @@
-import pool from "@/db";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import * as currencyAccountListServices from "@/services/currencyAccount/currencyAccountListServices";
-import { getCurrentTimestamp } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {

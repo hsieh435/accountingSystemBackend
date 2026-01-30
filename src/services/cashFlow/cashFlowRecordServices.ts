@@ -58,7 +58,6 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
       AND trade_datetime BETWEEN $5 AND $6
     ORDER BY trade_datetime
   `;
-  // ${data.startingDate && data.endDate ? `AND trade_datetime BETWEEN $5 AND $6` : ""}
 
   const params =
     [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, `%${data.tradeCategory}%`, data.startingDate, data.endDate];

@@ -1,5 +1,5 @@
+import { getCurrentYear, getCurrentMonth, getTimeStampWithZone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getTimeStampWithZone } from "@/utils/tools";
 import { searchingStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
 
 export interface IStockAccountList {
@@ -23,17 +23,51 @@ export interface IStockAccountList {
 
 export async function searchingStockAccountList(data: { currencyId: string; userId: string }) {
   const query = `
-    SELECT stock_account_list.*, currency_list.currency_name FROM stock_account_list
+    SELECT stock_account_list.*, currency_list.currency_name,
+      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+    FROM stock_account_list
+
     LEFT JOIN currency_list ON stock_account_list.currency = currency_list.currency_code
-    WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`;
+
+    LEFT JOIN (
+      SELECT account_id,
+        SUM(CASE WHEN transaction_type = 'expense' THEN trade_total_price ELSE 0 END) AS expense_sum,
+        SUM(CASE WHEN transaction_type = 'income' THEN trade_total_price ELSE 0 END) AS income_sum
+      FROM stock_account_trade
+      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+        AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+      GROUP BY account_id
+    ) trade_totals ON stock_account_list.account_id = trade_totals.account_id
+
+    WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
+    ORDER BY created_date
+  `;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function getStockAccountById(data: { accountId: string; userId: string }) {
   const query = `
-    SELECT * FROM public.stock_account_list
-    WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`;
+    SELECT stock_account_list.*,
+      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+    FROM stock_account_list
+
+    LEFT JOIN (
+      SELECT account_id,
+        SUM(CASE WHEN transaction_type = 'expense' THEN trade_total_price ELSE 0 END) AS expense_sum,
+        SUM(CASE WHEN transaction_type = 'income' THEN trade_total_price ELSE 0 END) AS income_sum
+      FROM stock_account_trade
+      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+        AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+      GROUP BY account_id
+    ) trade_totals ON stock_account_list.account_id = trade_totals.account_id
+
+    WHERE stock_account_list.account_id = '${data.accountId}' AND user_id = '${data.userId}'
+  `;
 
   return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

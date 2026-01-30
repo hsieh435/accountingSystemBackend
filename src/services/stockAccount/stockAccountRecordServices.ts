@@ -1,7 +1,5 @@
-import pool from "@/db";
-import { executeSQLsyntax } from "@/services/servicesTools";
-import { getStockAccountById, updateStockAccountData } from "@/services/stockAccount/stockAccountListServices";
 import { getCurrentTimestamp } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -91,7 +89,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
-    return { success: false, message: dateDetectResult.message };
+    return { success: true, message: dateDetectResult.message, returnCode: -1 };
   } else if (dateDetectResult.success) {
     if (data.updateData.transactionType === "income") {
       data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;
@@ -135,7 +133,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     "update",
   );
   if (!dateDetectResult.success) {
-    return { success: false, message: dateDetectResult.message };
+    return { success: true, message: dateDetectResult.message, returnCode: -1 };
   } else if (dateDetectResult.success) {
     if (data.updateData.transactionType === "income") {
       data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;

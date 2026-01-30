@@ -1,5 +1,5 @@
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
 export interface ICashFlowData {
@@ -13,7 +13,7 @@ export interface ICashFlowData {
   minimumValueAllowed: number;
   alertValue: number;
   openAlert: boolean;
-  createDate: string;
+  createdDate: string;
   note: string;
 }
 
@@ -25,16 +25,31 @@ export interface IAccountSearchingParams {
 
 
 export async function searchingCashFlowList(data: IAccountSearchingParams) {
-  const query = `
-    SELECT cashflow_list.*, currency_list.currency_name
+  const searchingQuery = `
+    SELECT cashflow_list.*, currency_list.currency_name,
+      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
     FROM cashflow_list
+
     LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
+
+    LEFT JOIN (
+      SELECT cashflow_id,
+        SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
+        SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
+      FROM cashflow_trade
+      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+        AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+      GROUP BY cashflow_id
+    ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
+
     WHERE currency LIKE $1 AND user_id = $2
     ORDER BY created_date
   `;
 
   return executeSQLsyntax({
-    query: query,
+    query: searchingQuery,
     params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -43,7 +58,25 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 
 export async function getCashFlowById(cashflowId: string, userId: string) {
   return executeSQLsyntax({
-    query: "SELECT * FROM cashflow_list WHERE cashflow_id = $1 AND user_id = $2",
+    query: `
+      SELECT cashflow_list.*,
+        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+      FROM cashflow_list
+
+      LEFT JOIN (
+        SELECT cashflow_id,
+          SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
+          SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
+          FROM cashflow_trade
+        WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+          AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+        GROUP BY cashflow_id
+      ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
+
+      WHERE cashflow_list.cashflow_id = $1 AND cashflow_list.user_id = $2
+    `,
     params: [cashflowId, userId],
     isReturnArray: false,
     successMessage: "查詢成功",
@@ -147,14 +180,12 @@ export async function removeCashflowData(data: ICashFlowData) {
   if (recordData.success && recordData.data.length > 0) {
     return { success: true, message: "已有收支紀錄", returnCode: -1 };
   } else if (recordData.success && recordData.data.length === 0) {
-
     return executeSQLsyntax({
       query: "DELETE FROM public.cashflow_list WHERE cashflow_id = $1 AND user_id = $2",
       params: [data.cashflowId, data.userId],
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
     });
-
   } else {
     return { success: false, message: "刪除失敗" };
   }

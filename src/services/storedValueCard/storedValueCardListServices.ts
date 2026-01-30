@@ -1,6 +1,6 @@
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { searchingStoredValueCardRecordList } from "@/services/storedValueCard/storedValueCardRecordServices";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 
 export interface IStoredValueCardData {
   storedValueCardId: string;
@@ -21,8 +21,24 @@ export interface IStoredValueCardData {
 
 export async function searchingStoredValueCardList(data: { currencyId: string; userId: string }) {
   const query = `
-    SELECT stored_value_card_list.*, currency_list.currency_name FROM stored_value_card_list
+    SELECT stored_value_card_list.*, currency_list.currency_name,
+      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+    FROM stored_value_card_list
+
     LEFT JOIN currency_list ON stored_value_card_list.currency = currency_list.currency_code
+
+    LEFT JOIN (
+      SELECT stored_value_card_id,
+      SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
+      SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
+      FROM stored_value_card_trade
+      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+      AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+      GROUP BY stored_value_card_id
+    ) trade_totals ON stored_value_card_list.stored_value_card_id = trade_totals.stored_value_card_id
+
     WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
@@ -30,8 +46,23 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
 
 export async function getStoredValueCardData(storedValueCardId: string, userId: string) {
   const query = `
-    SELECT * FROM stored_value_card_list
-    WHERE stored_value_card_id = '${storedValueCardId}' AND user_id = '${userId}'`;
+    SELECT stored_value_card_list.*,
+      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+    FROM stored_value_card_list
+
+    LEFT JOIN (
+      SELECT stored_value_card_id,
+      SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
+      SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
+      FROM stored_value_card_trade
+      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+      AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+      GROUP BY stored_value_card_id
+    ) trade_totals ON stored_value_card_list.stored_value_card_id = trade_totals.stored_value_card_id
+
+    WHERE stored_value_card_list.stored_value_card_id = '${storedValueCardId}' AND stored_value_card_list.user_id = '${userId}'`;
 
   return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

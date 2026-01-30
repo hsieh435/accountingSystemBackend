@@ -1,4 +1,5 @@
 import { executeSQLsyntax } from "@/services/servicesTools";
+import { IStockAccountRecordData } from "@/services/stockAccount/stockAccountRecordServices";
 
 export async function getStockStorageList(data: { stockAccountId: string; userId: string }) {
   const query = `
@@ -10,7 +11,7 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
 
 export async function searchingStorageProfitList(stockAccountId: string, userId: string) {
 
-  const query = `
+  const searchingQuery = `
     SELECT
     ssl.stock_account_id,
     ssl.user_id,
@@ -36,7 +37,7 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
     WHERE ssl.stock_account_id = '${stockAccountId}' AND ssl.user_id = '${userId}'
     GROUP BY ssl.stock_account_id, ssl.user_id, ssl.stock_no`;
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({ query: searchingQuery, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function searchingStockSProfitDetail(data: { stockAccountId: string; userId: string; stockNo: string }) {
@@ -46,4 +47,16 @@ export async function searchingStockSProfitDetail(data: { stockAccountId: string
     ORDER BY trade_datetime`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+}
+
+
+export async function increaseStockStorageQuantity(data: IStockAccountRecordData) {
+
+  const increaseQuery = `
+
+
+  `
+
+
+  return executeSQLsyntax({ query: increaseQuery, successMessage: "增加成功", errorMessage: "增加失敗" });
 }
