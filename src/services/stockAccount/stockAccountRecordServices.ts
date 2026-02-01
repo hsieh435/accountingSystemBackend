@@ -1,6 +1,7 @@
 import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import { updateStockStorageQuantity } from "@/services/stockStorage/storageProfitServices";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -78,6 +79,7 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `ST-${data.updateData.currency}-${getCurrentTimestamp()}`;
+
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
     "stock_account_trade",
@@ -115,6 +117,13 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.tradeTotalPrice,
     data.oriData.oriTradeAmount,
   );
+
+
+
+  // await updateStockStorageQuantity(data);
+
+
+
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
   } else if (insertResult.success === false) {
@@ -145,8 +154,8 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
 
 
   const updateResult = await updateRelatedData(
-     `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
-     WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
+    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+    WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
     [],
     false,
     "更新成功",
@@ -161,6 +170,11 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.tradeTotalPrice,
     data.oriData.oriTradeAmount,
   );
+
+
+  // await updateStockStorageQuantity(data);
+
+
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
   } else if (updateResult.success === false) {

@@ -32,7 +32,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
     LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
     LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
 
-	  LEFT JOIN (
+    LEFT JOIN (
       SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
       WHERE bill_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
       GROUP BY credit_card_id
