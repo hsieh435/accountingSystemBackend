@@ -70,10 +70,14 @@ export async function tradeDateTimeDetect(
     const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
     // console.log("flowOriginal:", flowOriginal.rows);
     const startingAmount = flowOriginal.rows[0].starting_amount;
+    // console.log("hasExistsData:", hasExistsData);
+    // console.log("type:", type);
+    // console.log("recordId:", recordId);
+    // console.log("currentTradeId:", currentTradeId);
 
     if (hasExistsData === true && type === "insert") {
       return { success: false, message: "收支時間點重複" };
-    } else if ((hasExistsData === false && type === "insert") || (hasExistsData === true && recordId === currentTradeId && type === "update")) {
+    } else if ((hasExistsData === false && type === "insert") || type === "update") {
       // console.log("收支時間點沒有重複");
 
       if (nextTradeId === null && prevTradeId !== null) {
@@ -91,6 +95,8 @@ export async function tradeDateTimeDetect(
       }
 
       return { success: false, message: "查詢失敗" };
+    } else {
+      // console.log("0000000000");
     }
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };

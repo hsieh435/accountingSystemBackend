@@ -79,7 +79,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
 
-
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
@@ -162,7 +161,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
-  // console.log("data:", data);
+  console.log("updateCashFlowRecordData:", data);
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
@@ -172,7 +171,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.tradeDatetime,
     "update",
   );
-  // console.log("dateDetectResult:", dateDetectResult);
+  console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   } else if (dateDetectResult.success) {
@@ -233,6 +232,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.tradeAmount,
     data.oriData.oriTradeAmount,
   );
+  console.log("updateResult:", updateResult);
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
   } else if (updateResult.success === false) {
