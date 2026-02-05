@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { getCurrentTimestamp, getCurrentYear, getCurrentMonth } from "@/utils/tools";
+import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 

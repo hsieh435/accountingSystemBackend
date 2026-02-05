@@ -30,55 +30,63 @@ export async function tradeDateTimeDetect(
   const column = sanitizeIdentifier(flowColumn);
 
   try {
-    const result = await pool.query(`
-      SELECT EXISTS (
-      SELECT 1 FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
-      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
-      ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeId,
-      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
-      ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeDatetime,
-      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
-      ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
-      (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
-      ORDER BY trade_datetime DESC LIMIT 1) AS prevRemainingAmount,
-      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
-      ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeDatetime,
-      (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
-      ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeId,
-      (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
-      ORDER BY trade_datetime ASC LIMIT 1) AS nextRemainingAmount,
-      (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
-      ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeDatetime
-    `);
 
-    const hasExistsData = result.rows[0].hasexistsdata;
-    const currentTradeId = result.rows[0].currenttradeid || null;
-    const prevTradeId = result.rows[0].prevtradeid || null;
-    const prevRemainingAmount = result.rows[0].prevremainingamount || null;
-    const prevTradeDatetime = setTimezone(result.rows[0].prevtradedatetime) || null;
-    const nextTradeId = result.rows[0].nexttradeid || null;
-    // const nextRemainingAmount = result.rows[0].nextremainingamount || null;
-    const nextTradeDatetime = setTimezone(result.rows[0].nexttradedatetime) || null;
+    const tradeDatetimeSearchingResult =  await executeSQLsyntax({
+      query: `
+        SELECT EXISTS (
+        SELECT 1 FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+        ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeId,
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+        ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeDatetime,
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
+        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        ORDER BY trade_datetime DESC LIMIT 1) AS prevRemainingAmount,
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeDatetime,
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeId,
+        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        ORDER BY trade_datetime ASC LIMIT 1) AS nextRemainingAmount,
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeDatetime
+      `,
+      isReturnArray: false,
+    })
+
+
+    const hasExistsData = tradeDatetimeSearchingResult.data.hasexistsdata;
+    const currentTradeId = tradeDatetimeSearchingResult.data.currenttradeid || null;
+    const prevTradeId = tradeDatetimeSearchingResult.data.prevtradeid || null;
+    const prevRemainingAmount = tradeDatetimeSearchingResult.data.prevremainingamount || null;
+    const prevTradeDatetime = setTimezone(tradeDatetimeSearchingResult.data.prevtradedatetime) || null;
+    const nextTradeId = tradeDatetimeSearchingResult.data.nexttradeid || null;
+    // const nextRemainingAmount = tradeDatetimeSearchingResult.data.nextremainingamount || null;
+    const nextTradeDatetime = setTimezone(tradeDatetimeSearchingResult.data.nexttradedatetime) || null;
     // const dataTradeDatetime = setTimezone(recordTradeDatetime);
-    // console.log("result:", result.rows);
+    // console.log("tradeDatetimeSearchingResult:", tradeDatetimeSearchingResult);
     // console.log("currentTradeId:", currentTradeId);
     // console.log("prevTradeId:", prevTradeId);
     // console.log("prevTradeDatetime:", prevTradeDatetime);
     // console.log("nextTradeId:", nextTradeId);
     // console.log("nextTradeDatetime:", nextTradeDatetime);
 
-    const flowOriginal = await pool.query(`SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`);
-    // console.log("flowOriginal:", flowOriginal.rows);
-    const startingAmount = flowOriginal.rows[0].starting_amount;
+
+    const flowOriginal = await executeSQLsyntax({
+      query: `SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`,
+      isReturnArray: false,
+    })
+    // console.log("flowOriginal:", flowOriginal);
+    const startingAmount = flowOriginal.data.startingAmount;
     // console.log("hasExistsData:", hasExistsData);
     // console.log("type:", type);
     // console.log("recordId:", recordId);
     // console.log("currentTradeId:", currentTradeId);
 
-    if (hasExistsData === true && type === "insert") {
+    if ((hasExistsData === true && recordId !== currentTradeId)) {
       return { success: false, message: "收支時間點重複" };
-    } else if ((hasExistsData === false && type === "insert") || type === "update") {
-      // console.log("收支時間點沒有重複");
+    } else {
 
       if (nextTradeId === null && prevTradeId !== null) {
         // 新增到最後一筆紀錄，，回傳上一筆交易剩餘金額
@@ -95,8 +103,6 @@ export async function tradeDateTimeDetect(
       }
 
       return { success: false, message: "查詢失敗" };
-    } else {
-      // console.log("0000000000");
     }
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };

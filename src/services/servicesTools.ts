@@ -6,8 +6,8 @@ export async function executeSQLsyntax({
   query,
   params = [],
   isReturnArray = true,
-  successMessage,
-  errorMessage,
+  successMessage = "成功",
+  errorMessage = "失敗",
   isTesting = false,
 }: {
   query: string;

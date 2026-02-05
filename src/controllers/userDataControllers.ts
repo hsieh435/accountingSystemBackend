@@ -4,7 +4,6 @@ import * as userDataServices from "@/services/userData/userDataServices";
 import { handleControllersResponse } from "@/controllers/controllersTools";
 
 const jwt = require("jsonwebtoken");
-// require("dotenv").config();
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function userDataList(req: Request, res: Response) {

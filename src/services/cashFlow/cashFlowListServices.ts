@@ -25,31 +25,30 @@ export interface IAccountSearchingParams {
 
 
 export async function searchingCashFlowList(data: IAccountSearchingParams) {
-  const searchingQuery = `
-    SELECT cashflow_list.*, currency_list.currency_name,
-      COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
-      COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-      COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
-    FROM cashflow_list
-
-    LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
-
-    LEFT JOIN (
-      SELECT cashflow_id,
-        SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
-        SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
-      FROM cashflow_trade
-      WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
-        AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
-      GROUP BY cashflow_id
-    ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
-
-    WHERE currency LIKE $1 AND user_id = $2
-    ORDER BY created_date
-  `;
 
   return executeSQLsyntax({
-    query: searchingQuery,
+    query: `
+      SELECT cashflow_list.*, currency_list.currency_name,
+        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+      FROM cashflow_list
+
+      LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
+
+      LEFT JOIN (
+        SELECT cashflow_id,
+          SUM(CASE WHEN transaction_type = 'expense' THEN trade_amount ELSE 0 END) AS expense_sum,
+          SUM(CASE WHEN transaction_type = 'income' THEN trade_amount ELSE 0 END) AS income_sum
+        FROM cashflow_trade
+        WHERE EXTRACT(YEAR FROM trade_datetime) = '${getCurrentYear()}'
+          AND EXTRACT(MONTH FROM trade_datetime) = '${getCurrentMonth()}'
+        GROUP BY cashflow_id
+      ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
+
+      WHERE currency LIKE $1 AND user_id = $2
+      ORDER BY created_date
+    `,
     params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",

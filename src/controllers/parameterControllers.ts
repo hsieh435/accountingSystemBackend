@@ -2,7 +2,7 @@ import pool from "@/db";
 import { Request, Response } from "express";
 import * as tradeService from "@/services/tradeCategory/tradeCategoryServices";
 import { handleControllersResponse } from "@/controllers/controllersTools";
-// import { keysToCamel } from "@/utils/tools";
+
 
 // credit card Schema
 export async function getSchemasList(req: Request, res: Response) {

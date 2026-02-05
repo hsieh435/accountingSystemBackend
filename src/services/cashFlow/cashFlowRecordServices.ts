@@ -161,7 +161,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
-  console.log("updateCashFlowRecordData:", data);
+  // console.log("updateCashFlowRecordData:", data);
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
@@ -171,7 +171,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.tradeDatetime,
     "update",
   );
-  console.log("dateDetectResult:", dateDetectResult);
+  // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   } else if (dateDetectResult.success) {

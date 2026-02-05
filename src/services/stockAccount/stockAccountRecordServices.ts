@@ -1,7 +1,7 @@
 import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
-import { updateStockStorageQuantity } from "@/services/stockStorage/storageProfitServices";
+// import { updateStockStorageQuantity } from "@/services/stockStorage/storageProfitServices";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
