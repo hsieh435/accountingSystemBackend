@@ -41,16 +41,24 @@ export interface ICashFlowRecordData {
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT cashflow_trade.*,
-      currency_list.currency_name,
-      cashflow_list.cashflow_name,
-      cashflow_list.enable,
-      trade_category.trade_name,
-      transaction_category.transaction_name
+      (
+        SELECT to_jsonb(cashflow_list.*) FROM cashflow_list
+        WHERE cashflow_list.cashflow_id = cashflow_trade.cashflow_id AND cashflow_list.user_id = cashflow_trade.user_id
+      ) AS cashflow_data,
+
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = cashflow_trade.currency
+      ) AS currency_data,
+
+      (
+      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = cashflow_trade.trade_category
+      ) AS trade_category_data,
+
+      (
+      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = cashflow_trade.transaction_type
+      ) AS transaction_category_data
+
     FROM cashflow_trade
-    LEFT JOIN currency_list ON cashflow_trade.currency = currency_list.currency_code
-    LEFT JOIN cashflow_list ON cashflow_trade.cashflow_id = cashflow_list.cashflow_id
-    LEFT JOIN trade_category ON cashflow_trade.trade_category = trade_category.trade_code
-    LEFT JOIN transaction_category ON cashflow_trade.transaction_type = transaction_category.transaction_code
     WHERE cashflow_trade.user_id = $1
       AND cashflow_trade.cashflow_id LIKE $2
       AND cashflow_trade.currency LIKE $3
@@ -59,8 +67,14 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
     ORDER BY trade_datetime
   `;
 
-  const params =
-    [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, `%${data.tradeCategory}%`, data.startingDate, data.endDate];
+  const params = [
+    data.userId,
+    `%${data.accountId}%`,
+    `%${data.currencyId}%`,
+    `%${data.tradeCategory}%`,
+    data.startingDate,
+    data.endDate,
+  ];
 
   return executeSQLsyntax({ query: query, params: params, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
@@ -243,7 +257,11 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   // console.log("data:", data);
 
-  const record = await searchingCashFlowRecordById({ cashflowId: data.cashflowId, tradeId: data.tradeId, userId: data.userId});
+  const record = await searchingCashFlowRecordById({
+    cashflowId: data.cashflowId,
+    tradeId: data.tradeId,
+    userId: data.userId,
+  });
   // console.log("record:", record);
 
   // const deleteResult = await executeSQLsyntax({

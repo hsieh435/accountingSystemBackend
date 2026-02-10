@@ -11,7 +11,7 @@ import creditCardRoutes from "@/routes/creditCardRoutes"
 import currencyAccountRoutes from "@/routes/currencyAccountRoutes";
 import functionListRoutes from "@/routes/functionListRoutes";
 import generalRoutes from "@/routes/generalRoutes";
-import outerWebApiRoutes from "@/routes/outerWebApiRoutes";
+import outerApiRoutes from "@/routes/outerApiRoutes";
 import parameterRoutes from "@/routes/parameterRoutes";
 import storedValueCardRoutes from "@/routes/storedValueCardRoutes";
 import stockAccountRoutes from "@/routes/stockAccountRoutes";
@@ -39,7 +39,7 @@ app.use("/accounting_system_backend", creditCardRoutes);
 app.use("/accounting_system_backend", currencyAccountRoutes);
 app.use("/accounting_system_backend", functionListRoutes);
 app.use("/accounting_system_backend", generalRoutes);
-app.use("/accounting_system_backend", outerWebApiRoutes);
+app.use("/accounting_system_backend", outerApiRoutes);
 app.use("/accounting_system_backend", parameterRoutes);
 app.use("/accounting_system_backend", storedValueCardRoutes);
 app.use("/accounting_system_backend", stockAccountRoutes);

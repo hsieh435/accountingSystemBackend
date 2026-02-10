@@ -13,11 +13,7 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
 export async function searchingStorageProfitList(stockAccountId: string, userId: string) {
   const searchingQuery = `
     SELECT
-    ssl.stock_account_id,
-    ssl.user_id,
-    ssl.stock_no,
-    ssl.stock_name,
-    ssl.storage_quantity,
+    ssl.*,
     json_agg(
       json_build_object(
         'stock_no', ssd.stock_no,
