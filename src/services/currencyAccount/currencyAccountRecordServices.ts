@@ -45,16 +45,24 @@ export interface ICurrencyAccountRecordData {
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT currency_account_trade.*,
-      currency_list.currency_name,
-      currency_account_list.account_name,
-      currency_account_list.enable,
-      trade_category.trade_name,
-      transaction_category.transaction_name
+      (
+      SELECT to_jsonb(currency_account_list.*) FROM currency_account_list
+      WHERE currency_account_list.account_id = currency_account_trade.account_id AND currency_account_list.user_id = currency_account_trade.user_id
+      ) AS account_data,
+
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = currency_account_trade.currency
+      ) AS currency_data,
+
+      (
+      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = currency_account_trade.trade_category
+      ) AS trade_category_data,
+
+      (
+      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = currency_account_trade.transaction_type
+      ) AS transaction_category_data
+
     FROM currency_account_trade
-    LEFT JOIN currency_list ON currency_account_trade.currency = currency_list.currency_code
-    LEFT JOIN currency_account_list ON currency_account_trade.account_id = currency_account_list.account_id
-    LEFT JOIN trade_category ON currency_account_trade.trade_category = trade_category.trade_code
-    LEFT JOIN transaction_category ON currency_account_trade.transaction_type = transaction_category.transaction_code
     WHERE currency_account_trade.currency LIKE $1
       AND currency_account_trade.account_id LIKE $2
       AND currency_account_trade.user_id = $3

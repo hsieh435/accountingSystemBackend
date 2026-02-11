@@ -39,44 +39,37 @@ export interface ICashFlowRecordData {
 }
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
-  const query = `
-    SELECT cashflow_trade.*,
-      (
+  return executeSQLsyntax({
+    query: `
+      SELECT cashflow_trade.*,
+        (
         SELECT to_jsonb(cashflow_list.*) FROM cashflow_list
         WHERE cashflow_list.cashflow_id = cashflow_trade.cashflow_id AND cashflow_list.user_id = cashflow_trade.user_id
-      ) AS cashflow_data,
+        ) AS cashflow_data,
 
-      (
-      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = cashflow_trade.currency
-      ) AS currency_data,
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = cashflow_trade.currency
+        ) AS currency_data,
 
-      (
-      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = cashflow_trade.trade_category
-      ) AS trade_category_data,
+        (
+        SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = cashflow_trade.trade_category
+        ) AS trade_category_data,
 
-      (
-      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = cashflow_trade.transaction_type
-      ) AS transaction_category_data
+        (
+        SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = cashflow_trade.transaction_type
+        ) AS transaction_category_data
 
-    FROM cashflow_trade
-    WHERE cashflow_trade.user_id = $1
-      AND cashflow_trade.cashflow_id LIKE $2
-      AND cashflow_trade.currency LIKE $3
-      AND cashflow_trade.trade_category LIKE $4
-      AND trade_datetime BETWEEN $5 AND $6
-    ORDER BY trade_datetime
-  `;
-
-  const params = [
-    data.userId,
-    `%${data.accountId}%`,
-    `%${data.currencyId}%`,
-    `%${data.tradeCategory}%`,
-    data.startingDate,
-    data.endDate,
-  ];
-
-  return executeSQLsyntax({ query: query, params: params, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+      FROM cashflow_trade
+      WHERE cashflow_trade.user_id = $1
+        AND cashflow_trade.cashflow_id LIKE $2
+        AND cashflow_trade.currency LIKE $3
+        AND cashflow_trade.trade_category LIKE $4
+        AND trade_datetime BETWEEN $5 AND $6
+      ORDER BY trade_datetime`,
+    params: [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, `%${data.tradeCategory}%`, data.startingDate, data.endDate],
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function searchingCashFlowRecordById(data: { cashflowId: string; tradeId: string; userId: string }) {
@@ -220,7 +213,8 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7 WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
+    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
+    WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,

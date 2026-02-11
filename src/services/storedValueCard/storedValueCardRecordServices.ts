@@ -40,24 +40,34 @@ export interface IStoredValueCardRecordData {
 }
 
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
-  const query = `
+  const searchingQuery = `
     SELECT stored_value_card_trade.*,
-      currency_list.currency_name,
-      stored_value_card_list.stored_value_card_name,
-      stored_value_card_list.enable,
-      trade_category.trade_name,
-      transaction_category.transaction_name
-    FROM stored_value_card_trade
-    LEFT JOIN currency_list ON stored_value_card_trade.currency = currency_list.currency_code
-    LEFT JOIN stored_value_card_list ON stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
-    LEFT JOIN trade_category ON stored_value_card_trade.trade_category = trade_category.trade_code
-    LEFT JOIN transaction_category ON stored_value_card_trade.transaction_type = transaction_category.transaction_code
-    WHERE stored_value_card_trade.user_id = '${data.userId}'
-    AND stored_value_card_trade.stored_value_card_id LIKE '%${data.accountId}%'
-    AND stored_value_card_trade.currency LIKE '%${data.currencyId}%'
-    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+      (
+      SELECT to_jsonb(stored_value_card_list.*) FROM stored_value_card_list
+      WHERE stored_value_card_list.stored_value_card_id = stored_value_card_trade.stored_value_card_id AND stored_value_card_list.user_id = stored_value_card_trade.user_id
+      ) AS stored_value_card_data,
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+      (
+        SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = stored_value_card_trade.currency
+      ) AS currency_data,
+
+      (
+      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = stored_value_card_trade.trade_category
+      ) AS trade_category_data,
+
+      (
+      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = stored_value_card_trade.transaction_type
+      ) AS transaction_category_data
+
+    FROM stored_value_card_trade
+
+    WHERE stored_value_card_trade.user_id = '${data.userId}'
+      AND stored_value_card_trade.stored_value_card_id LIKE '%${data.accountId}%'
+      AND stored_value_card_trade.currency LIKE '%${data.currencyId}%'
+      AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
+    ORDER BY trade_datetime`;
+
+  return executeSQLsyntax({ query: searchingQuery, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }
 
 export async function searchingStoredValueCardRecordById(data: {

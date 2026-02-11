@@ -44,16 +44,25 @@ export interface ICreditCardTradeData {
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT creditcard_trade.*,
-      currency_list.currency_name,
-      creditcard_list.creditcard_name,
-      creditcard_list.enable,
-      trade_category.trade_name
-    FROM creditcard_trade LEFT JOIN currency_list ON creditcard_trade.currency = currency_list.currency_code
-    LEFT JOIN creditcard_list ON creditcard_trade.credit_card_id = creditcard_list.creditcard_id
-    LEFT JOIN trade_category ON creditcard_trade.trade_category = trade_category.trade_code
+      (
+      SELECT to_jsonb(creditcard_list.*) FROM creditcard_list
+      WHERE creditcard_list.creditcard_id = creditcard_trade.credit_card_id AND creditcard_list.user_id = creditcard_trade.user_id
+      ) AS creditcard_data,
+
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = creditcard_trade.currency
+      ) AS currency_data,
+
+      (
+      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = creditcard_trade.trade_category
+      ) AS trade_category_data
+
+    FROM creditcard_trade
     WHERE creditcard_trade.credit_card_id LIKE '%${data.accountId}%'
-    AND creditcard_trade.currency LIKE '%${data.currencyId}%' AND creditcard_trade.user_id = '${data.userId}'
-    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+      AND creditcard_trade.currency LIKE '%${data.currencyId}%'
+      AND creditcard_trade.user_id = '${data.userId}'
+      AND creditcard_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
+    ORDER BY trade_datetime`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

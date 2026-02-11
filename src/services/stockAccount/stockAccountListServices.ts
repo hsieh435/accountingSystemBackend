@@ -23,13 +23,16 @@ export interface IStockAccountList {
 
 export async function searchingStockAccountList(data: { currencyId: string; userId: string }) {
   const query = `
-    SELECT stock_account_list.*, currency_list.currency_name,
+    SELECT stock_account_list.*,
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list
+      WHERE currency_list.currency_code = stock_account_list.currency
+      ) AS currency_data,
+
       COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
       COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
       COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
     FROM stock_account_list
-
-    LEFT JOIN currency_list ON stock_account_list.currency = currency_list.currency_code
 
     LEFT JOIN (
       SELECT account_id,

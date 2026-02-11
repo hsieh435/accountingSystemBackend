@@ -50,20 +50,29 @@ export interface IStockAccountRecordData {
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
   const query = `
     SELECT stock_account_trade.*,
-      currency_list.currency_name,
-      stock_account_list.account_name,
-      stock_account_list.enable,
-      trade_category.trade_name,
-      transaction_category.transaction_name
+      (
+      SELECT to_jsonb(stock_account_list.*) FROM stock_account_list
+      WHERE stock_account_list.account_id = stock_account_trade.account_id AND stock_account_list.user_id = stock_account_trade.user_id
+      ) AS account_data,
+
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = stock_account_trade.currency
+      ) AS currency_data,
+
+      (
+      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = stock_account_trade.trade_category
+      ) AS trade_category_data,
+
+      (
+      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = stock_account_trade.transaction_type
+      ) AS transaction_category_data
+
     FROM stock_account_trade
-    LEFT JOIN currency_list ON stock_account_trade.currency = currency_list.currency_code
-    LEFT JOIN stock_account_list ON stock_account_trade.account_id = stock_account_list.account_id
-    LEFT JOIN trade_category ON stock_account_trade.trade_category = trade_category.trade_code
-    LEFT JOIN transaction_category ON stock_account_trade.transaction_type = transaction_category.transaction_code
     WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
-    AND stock_account_trade.account_id LIKE '%${data.accountId}%'
-    AND stock_account_trade.user_id = '${data.userId}'
-    AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}' ORDER BY trade_datetime`;
+      AND stock_account_trade.account_id LIKE '%${data.accountId}%'
+      AND stock_account_trade.user_id = '${data.userId}'
+      AND stock_account_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
+    ORDER BY stock_account_trade.trade_datetime`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

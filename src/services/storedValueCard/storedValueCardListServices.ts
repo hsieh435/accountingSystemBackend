@@ -21,13 +21,16 @@ export interface IStoredValueCardData {
 
 export async function searchingStoredValueCardList(data: { currencyId: string; userId: string }) {
   const query = `
-    SELECT stored_value_card_list.*, currency_list.currency_name,
+    SELECT stored_value_card_list.*,
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list
+      WHERE currency_list.currency_code = stored_value_card_list.currency
+      ) AS currency_data,
+
       COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
       COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
       COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
     FROM stored_value_card_list
-
-    LEFT JOIN currency_list ON stored_value_card_list.currency = currency_list.currency_code
 
     LEFT JOIN (
       SELECT stored_value_card_id,
@@ -39,7 +42,8 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
       GROUP BY stored_value_card_id
     ) trade_totals ON stored_value_card_list.stored_value_card_id = trade_totals.stored_value_card_id
 
-    WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}' ORDER BY created_date`;
+    WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
+    ORDER BY created_date`;
 
   return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
 }

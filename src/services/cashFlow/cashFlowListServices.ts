@@ -28,13 +28,16 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 
   return executeSQLsyntax({
     query: `
-      SELECT cashflow_list.*, currency_list.currency_name,
+      SELECT cashflow_list.*,
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list
+        WHERE currency_list.currency_code = cashflow_list.currency
+        ) AS currency_data,
+
         COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
         COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
       FROM cashflow_list
-
-      LEFT JOIN currency_list ON cashflow_list.currency = currency_list.currency_code
 
       LEFT JOIN (
         SELECT cashflow_id,
@@ -47,8 +50,7 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
       ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
 
       WHERE currency LIKE $1 AND user_id = $2
-      ORDER BY created_date
-    `,
+      ORDER BY created_date`,
     params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",

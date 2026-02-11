@@ -24,14 +24,17 @@ export interface ICurrencyAccountData {
 
 
 export async function searchingCurrencyAccountList(data: { currencyId: string; userId: string }) {
-  const query = `
-    SELECT currency_account_list.*, currency_list.currency_name,
+  const searchingQuery = `
+    SELECT currency_account_list.*,
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list
+      WHERE currency_list.currency_code = currency_account_list.currency
+      ) AS currency_data,
+
       COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
       COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
       COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
     FROM currency_account_list
-
-    LEFT JOIN currency_list ON currency_account_list.currency = currency_list.currency_code
 
     LEFT JOIN (
       SELECT account_id,
@@ -43,12 +46,11 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
       GROUP BY account_id
     ) trade_totals ON currency_account_list.account_id = trade_totals.account_id
 
-    WHERE currency LIKE $1 AND user_id = $2
-    ORDER BY created_date
-  `;
+    WHERE currency_account_list.currency LIKE $1 AND currency_account_list.user_id = $2
+    ORDER BY currency_account_list.created_date`;
 
   return executeSQLsyntax({
-    query: query,
+    query: searchingQuery,
     params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",

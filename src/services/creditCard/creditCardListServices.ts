@@ -26,10 +26,16 @@ export interface ICreditCardData {
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
 
   const searchingQuery = `
-    SELECT creditcard_list.*, currency_list.currency_name, creditcard_limit.credit_per_month,
-    COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
+    SELECT creditcard_list.*,
+      (
+      SELECT to_jsonb(currency_list.*) FROM currency_list
+      WHERE currency_list.currency_code = creditcard_list.currency
+      ) AS currency_data,
+
+      creditcard_limit.credit_per_month,
+      COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
     FROM creditcard_list
-    LEFT JOIN currency_list ON creditcard_list.currency = currency_list.currency_code
+
     LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
 
     LEFT JOIN (
@@ -123,7 +129,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
   const limitInsertResult = await insertCreditCardLimitation({
     creditcardId: creditcardId,
     userId: data.userId,
-    yearMonth: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00`,
+    limitYearMonth: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00`,
     creditPerMonth: data.creditPerMonth
   });
   if (!limitInsertResult.success) {
