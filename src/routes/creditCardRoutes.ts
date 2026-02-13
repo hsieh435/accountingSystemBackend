@@ -19,6 +19,7 @@ router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCard
 
 
 router.post("/api/creditCard/limit", authenticateToken, creditCardParamsControllers.creditCardLimitation);
+router.post("/api/creditCard/limit/increase", authenticateToken, creditCardParamsControllers.creditCardLimitationIncrease);
 router.post("/api/creditCard/limitUpdate", authenticateToken, creditCardParamsControllers.creditCardLimitationUpdate);
 router.put("/api/creditCard/monthExpenditure", authenticateToken, creditCardParamsControllers.creditCardExpenditure);
 

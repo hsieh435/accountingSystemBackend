@@ -13,6 +13,15 @@ export async function creditCardLimitation(req: Request, res: Response) {
   }
 }
 
+export async function creditCardLimitationIncrease(req: Request, res: Response) {
+  try {
+    const result = await creditCardParamsServices.insertCreditCardLimitation(req.body);
+    await handleControllersResponse(res, req, result);
+  } catch (err) {
+    await handleControllersResponse(res, req, err);
+  }
+}
+
 export async function creditCardLimitationUpdate(req: Request, res: Response) {
   try {
     const result = await creditCardParamsServices.updateCreditCardLimitation(req.body);
