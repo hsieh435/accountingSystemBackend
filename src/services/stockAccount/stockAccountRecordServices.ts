@@ -32,6 +32,8 @@ export interface IStockAccountRecordList {
   currency: string;
   tradeDescription: string;
   tradeNote: string;
+  createdDatetime: string;
+  editedDatetime: string;
 }
 
 export interface IOriData {
@@ -88,6 +90,8 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `ST-${data.updateData.currency}-${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
@@ -110,8 +114,8 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   }
 
   const insertResult = await updateRelatedData(
-    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note)
-    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -127,11 +131,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     data.oriData.oriTradeAmount,
   );
 
-
-
   // await updateStockStorageQuantity(data);
-
-
 
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -141,6 +141,8 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
 }
 
 export async function updateStockAccountRecord(data: IStockAccountRecordData) {
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
     "stock_account_trade",
@@ -163,7 +165,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
 
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
     WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
     [],
     false,
@@ -180,9 +182,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     data.oriData.oriTradeAmount,
   );
 
-
   // await updateStockStorageQuantity(data);
-
 
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };

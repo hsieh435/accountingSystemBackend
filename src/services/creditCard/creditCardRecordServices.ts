@@ -26,6 +26,8 @@ export interface ICreditCardRecordList {
   billMonth: string;
   tradeDescription: string;
   tradeNote: string;
+  createdDatetime: string;
+  editedDatetime: string;
 }
 
 export interface IOriData {
@@ -78,6 +80,8 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 
 export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   data.updateData.tradeId = `CC-${data.updateData.currency}-${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_list",
@@ -99,8 +103,8 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
 
   const insertResult = await executeSQLsyntax({
     query:
-      `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-      VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+      `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+      VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     successMessage: "",
     errorMessage: "新增失敗"
   });
@@ -135,6 +139,7 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_list",
@@ -157,7 +162,7 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
 
   const updateResult = await executeSQLsyntax({
     query:
-      `UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
+      `UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
       WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`,
     successMessage: "",
     errorMessage: "更新失敗"

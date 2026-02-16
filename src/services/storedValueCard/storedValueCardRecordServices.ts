@@ -24,6 +24,8 @@ export interface IStoredValueCardRecordList {
   currency: string;
   tradeDescription: string;
   tradeNote: string;
+  createdDatetime: string;
+  editedDatetime: string;
 }
 
 export interface IOriData {
@@ -84,6 +86,8 @@ export async function searchingStoredValueCardRecordById(data: {
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
   data.updateData.tradeId = `SVC-${data.updateData.currency}-${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
@@ -124,8 +128,8 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
 
   const insertResult = await updateRelatedData(
-    `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')`,
+    `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -148,6 +152,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 }
 
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
@@ -171,8 +176,8 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
   }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
-    WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10`,
+    `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
+    WHERE trade_id = $9 AND stored_value_card_id = $10 AND user_id = $11`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
@@ -181,6 +186,7 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
       data.updateData.remainingAmount,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
+      data.updateData.editedDatetime,
       data.updateData.tradeId,
       data.updateData.storedValueCardId,
       data.userId,

@@ -25,6 +25,8 @@ export interface ICurrencyAccountRecordList {
   currency: string;
   tradeDescription: string;
   tradeNote: string;
+  createdDatetime: string;
+  editedDatetime: string;
 }
 
 export interface IOriData {
@@ -95,6 +97,9 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CA-${data.updateData.currency}-${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
     "currency_account_trade",
@@ -118,8 +123,8 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
   const insertResult = await updateRelatedData(
-    `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
       data.updateData.tradeId,
       data.updateData.accountId,
@@ -132,6 +137,8 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
       data.updateData.currency,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
+      data.updateData.createdDatetime,
+      data.updateData.editedDatetime,
     ],
     false,
     "",
@@ -157,6 +164,7 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
 export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
@@ -181,8 +189,8 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.currency_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7
-    WHERE trade_id = $8 AND account_id = $9 AND user_id = $10`,
+    `UPDATE public.currency_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
+    WHERE trade_id = $9 AND account_id = $10 AND user_id = $11`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
@@ -191,6 +199,7 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
       data.updateData.currency,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
+      data.updateData.editedDatetime,
       data.updateData.tradeId,
       data.updateData.accountId,
       data.userId,

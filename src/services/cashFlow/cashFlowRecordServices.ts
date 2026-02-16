@@ -23,6 +23,8 @@ export interface ICashFlowRecordList {
   currency: string;
   tradeDescription: string;
   tradeNote: string;
+  createdDatetime: string;
+  editedDatetime: string;
 }
 
 export interface IOriData {
@@ -85,6 +87,8 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
@@ -132,8 +136,8 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // }
 
   const insertResult = await updateRelatedData(
-    `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
       data.updateData.tradeId,
       data.updateData.cashflowId,
@@ -146,6 +150,8 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.currency,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
+      data.updateData.createdDatetime,
+      data.updateData.editedDatetime,
     ],
     false,
     "新增成功",
@@ -169,6 +175,8 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("updateCashFlowRecordData:", data);
+  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
@@ -213,8 +221,8 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7
-    WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
+    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
+    WHERE trade_id = $9 AND cashflow_id = $10 AND user_id = $11`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
@@ -223,6 +231,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.remainingAmount,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
+      data.updateData.editedDatetime,
       data.updateData.tradeId,
       data.updateData.cashflowId,
       data.userId,
