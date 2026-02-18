@@ -41,7 +41,8 @@ export async function getCreditCardLimitation(data: { creditcardId: string; user
   }
 
   return executeSQLsyntax({
-    query: `SELECT creditcard_limit.*, creditcard_list.creditcard_name
+    query: `
+      SELECT creditcard_limit.*, creditcard_list.creditcard_name
       FROM public.creditcard_limit
       LEFT JOIN creditcard_list ON creditcard_limit.creditcard_id = creditcard_list.creditcard_id
       WHERE creditcard_limit.creditcard_id LIKE $1
@@ -97,8 +98,9 @@ export async function calculateCreditCardExpenditure(params: {
   // console.log("endDate:", endDate);
 
   return executeSQLsyntax({
-    query: `SELECT COALESCE(SUM(trade_amount), 0) AS trade_total FROM creditcard_trade
-    WHERE credit_card_id = $1 AND user_id = $2 AND trade_datetime BETWEEN $3 AND $4`,
+    query: `
+      SELECT COALESCE(SUM(trade_amount), 0) AS trade_total FROM creditcard_trade
+      WHERE credit_card_id = $1 AND user_id = $2 AND trade_datetime BETWEEN $3 AND $4`,
     params: [params.creditcardId, params.userId, startingDate, endDate],
     isReturnArray: false,
     successMessage: "",

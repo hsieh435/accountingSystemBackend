@@ -50,41 +50,50 @@ export interface IStockAccountRecordData {
 }
 
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
-  const query = `
-    SELECT stock_account_trade.*,
-      (
-      SELECT to_jsonb(stock_account_list.*) FROM stock_account_list
-      WHERE stock_account_list.account_id = stock_account_trade.account_id AND stock_account_list.user_id = stock_account_trade.user_id
-      ) AS account_data,
 
-      (
-      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = stock_account_trade.currency
-      ) AS currency_data,
+  return executeSQLsyntax({
+    query: `
+      SELECT stock_account_trade.*,
+        (
+        SELECT to_jsonb(stock_account_list.*) FROM stock_account_list
+        WHERE stock_account_list.account_id = stock_account_trade.account_id AND stock_account_list.user_id = stock_account_trade.user_id
+        ) AS account_data,
 
-      (
-      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = stock_account_trade.trade_category
-      ) AS trade_category_data,
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = stock_account_trade.currency
+        ) AS currency_data,
 
-      (
-      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = stock_account_trade.transaction_type
-      ) AS transaction_category_data
+        (
+        SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = stock_account_trade.trade_category
+        ) AS trade_category_data,
 
-    FROM stock_account_trade
-    WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
-      AND stock_account_trade.account_id LIKE '%${data.accountId}%'
-      AND stock_account_trade.user_id = '${data.userId}'
-      AND stock_account_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
-    ORDER BY stock_account_trade.trade_datetime`;
+        (
+        SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = stock_account_trade.transaction_type
+        ) AS transaction_category_data
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+      FROM stock_account_trade
+      WHERE stock_account_trade.currency LIKE '%${data.currencyId}%'
+        AND stock_account_trade.account_id LIKE '%${data.accountId}%'
+        AND stock_account_trade.user_id = '${data.userId}'
+        AND stock_account_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
+      ORDER BY stock_account_trade.trade_datetime
+    `,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
-  const query = `
-    SELECT * FROM public.stock_account_trade
-    WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'
-  `;
-  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+
+  return executeSQLsyntax({
+    query:  `
+      SELECT * FROM public.stock_account_trade
+      WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'
+    `,
+    isReturnArray: false,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {

@@ -45,35 +45,33 @@ export interface ICurrencyAccountRecordData {
 
 
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
-  const query = `
-    SELECT currency_account_trade.*,
-      (
-      SELECT to_jsonb(currency_account_list.*) FROM currency_account_list
-      WHERE currency_account_list.account_id = currency_account_trade.account_id AND currency_account_list.user_id = currency_account_trade.user_id
-      ) AS account_data,
-
-      (
-      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = currency_account_trade.currency
-      ) AS currency_data,
-
-      (
-      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = currency_account_trade.trade_category
-      ) AS trade_category_data,
-
-      (
-      SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = currency_account_trade.transaction_type
-      ) AS transaction_category_data
-
-    FROM currency_account_trade
-    WHERE currency_account_trade.currency LIKE $1
-      AND currency_account_trade.account_id LIKE $2
-      AND currency_account_trade.user_id = $3
-      AND trade_datetime BETWEEN $4 AND $5
-    ORDER BY trade_datetime
-  `;
 
   return executeSQLsyntax({
-    query: query,
+    query: `
+      SELECT currency_account_trade.*,
+        (
+        SELECT to_jsonb(currency_account_list.*) FROM currency_account_list
+        WHERE currency_account_list.account_id = currency_account_trade.account_id AND currency_account_list.user_id = currency_account_trade.user_id
+        ) AS account_data,
+
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = currency_account_trade.currency
+        ) AS currency_data,
+
+        (
+        SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = currency_account_trade.trade_category
+        ) AS trade_category_data,
+
+        (
+        SELECT to_jsonb(transaction_category.*) FROM transaction_category WHERE transaction_category.transaction_code = currency_account_trade.transaction_type
+        ) AS transaction_category_data
+
+      FROM currency_account_trade
+      WHERE currency_account_trade.currency LIKE $1
+        AND currency_account_trade.account_id LIKE $2
+        AND currency_account_trade.user_id = $3
+        AND trade_datetime BETWEEN $4 AND $5
+      ORDER BY trade_datetime`,
     params: [`%${data.currencyId}%`, `%${data.accountId}%`, data.userId, data.startingDate, data.endDate],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",

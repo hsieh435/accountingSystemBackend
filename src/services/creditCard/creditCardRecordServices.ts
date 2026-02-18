@@ -44,38 +44,44 @@ export interface ICreditCardTradeData {
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
-  const query = `
-    SELECT creditcard_trade.*,
-      (
-      SELECT to_jsonb(creditcard_list.*) FROM creditcard_list
-      WHERE creditcard_list.creditcard_id = creditcard_trade.credit_card_id AND creditcard_list.user_id = creditcard_trade.user_id
-      ) AS creditcard_data,
 
-      (
-      SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = creditcard_trade.currency
-      ) AS currency_data,
+  return executeSQLsyntax({
+    query: `
+      SELECT creditcard_trade.*,
+        (
+        SELECT to_jsonb(creditcard_list.*) FROM creditcard_list
+        WHERE creditcard_list.creditcard_id = creditcard_trade.credit_card_id AND creditcard_list.user_id = creditcard_trade.user_id
+        ) AS creditcard_data,
 
-      (
-      SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = creditcard_trade.trade_category
-      ) AS trade_category_data
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list WHERE currency_list.currency_code = creditcard_trade.currency
+        ) AS currency_data,
 
-    FROM creditcard_trade
-    WHERE creditcard_trade.credit_card_id LIKE '%${data.accountId}%'
-      AND creditcard_trade.currency LIKE '%${data.currencyId}%'
-      AND creditcard_trade.user_id = '${data.userId}'
-      AND creditcard_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
-    ORDER BY trade_datetime`;
+        (
+        SELECT to_jsonb(trade_category.*) FROM trade_category WHERE trade_category.trade_code = creditcard_trade.trade_category
+        ) AS trade_category_data
 
-  return executeSQLsyntax({ query: query, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+      FROM creditcard_trade
+      WHERE creditcard_trade.credit_card_id LIKE '%${data.accountId}%'
+        AND creditcard_trade.currency LIKE '%${data.currencyId}%'
+        AND creditcard_trade.user_id = '${data.userId}'
+        AND creditcard_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
+      ORDER BY trade_datetime`,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-  const query = `
-    SELECT * FROM creditcard_trade
-    WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'
-  `;
 
-  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({
+    query: `
+      SELECT * FROM creditcard_trade
+      WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`,
+    isReturnArray: false,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗"
+  });
 }
 
 export async function insertCreditCardRecordData(data: ICreditCardTradeData) {

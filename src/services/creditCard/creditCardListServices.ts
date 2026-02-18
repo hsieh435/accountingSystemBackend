@@ -24,33 +24,32 @@ export interface ICreditCardData {
 }
 
 export async function searchingCreditCardList(data: { currencyId: string; userId: string }) {
-
-  const searchingQuery = `
-    SELECT creditcard_list.*,
-      (
-      SELECT to_jsonb(currency_list.*) FROM currency_list
-      WHERE currency_list.currency_code = creditcard_list.currency
-      ) AS currency_data,
-
-      creditcard_limit.credit_per_month,
-      COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
-    FROM creditcard_list
-
-    LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
-
-    LEFT JOIN (
-      SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
-      WHERE bill_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
-      GROUP BY credit_card_id
-    ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
-
-    WHERE currency LIKE $1 AND creditcard_list.user_id = $2
-    ORDER BY created_date
-  `;
+  // console.log("data:", data);
+  // console.log("getCurrentYear:", `'${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'`);
 
   return executeSQLsyntax({
-    query: searchingQuery,
-    params: [`%${data.currencyId}%`, data.userId],
+    query: `
+      SELECT creditcard_list.*,
+        (
+        SELECT to_jsonb(currency_list.*) FROM currency_list
+        WHERE currency_list.currency_code = creditcard_list.currency
+        ) AS currency_data,
+
+        creditcard_limit.limit_year_month,
+        COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
+      FROM creditcard_list
+
+      LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id
+        AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
+
+      LEFT JOIN (
+        SELECT credit_card_id, SUM(trade_amount) AS expenditure_current_month FROM creditcard_trade
+        WHERE bill_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
+        GROUP BY credit_card_id
+      ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
+
+      WHERE creditcard_list.currency LIKE '%${data.currencyId}%' AND creditcard_list.user_id = '${data.userId}'
+      ORDER BY created_date`,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -61,7 +60,7 @@ export async function getCreditCardById(creditcardId: string, userId: string) {
   return executeSQLsyntax({
     query:
       `
-      SELECT creditcard_list.*, creditcard_limit.credit_per_month,
+      SELECT creditcard_list.*, creditcard_limit.limit_year_month,
       COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
       FROM creditcard_list
       LEFT JOIN creditcard_limit ON creditcard_list.creditcard_id = creditcard_limit.creditcard_id AND creditcard_limit.limit_year_month = '${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00'
@@ -72,9 +71,8 @@ export async function getCreditCardById(creditcardId: string, userId: string) {
         GROUP BY credit_card_id
       ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
 
-      WHERE creditcard_list.creditcard_id = $1 AND creditcard_list.user_id = $2
+      WHERE creditcard_list.creditcard_id = '${creditcardId}' AND creditcard_list.user_id = '${userId}'
       `,
-    params: [creditcardId, userId],
     isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -88,34 +86,30 @@ export async function insertCreditCardData(data: ICreditCardData) {
   const timeStampWithZone = getTimeStampWithZone();
   const creditcardId = `CC-${currentTimestamp}`;
 
-  const insertQuery = `
-    INSERT INTO public.creditcard_list(
-      creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
-      creditcard_bank_name, creditcard_schema, currency, credit_per_month,
-      expiration_date, alert_value, open_alert, enable, created_date, note
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-  `;
-  const insertParams = [
-    creditcardId,
-    data.userId,
-    data.accountType,
-    data.creditcardName,
-    data.creditcardBankCode,
-    data.creditcardBankName,
-    data.creditcardSchema,
-    data.currency,
-    data.creditPerMonth,
-    data.expirationDate,
-    data.alertValue,
-    data.openAlert,
-    data.enable,
-    timeStampWithZone,
-    data.note,
-  ];
-
   const insertResult = await executeSQLsyntax({
-    query: insertQuery,
-    params: insertParams,
+    query: `
+      INSERT INTO public.creditcard_list(
+        creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
+        creditcard_bank_name, creditcard_schema, currency, credit_per_month,
+        expiration_date, alert_value, open_alert, enable, created_date, note
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+    params: [
+      creditcardId,
+      data.userId,
+      data.accountType,
+      data.creditcardName,
+      data.creditcardBankCode,
+      data.creditcardBankName,
+      data.creditcardSchema,
+      data.currency,
+      data.creditPerMonth,
+      data.expirationDate,
+      data.alertValue,
+      data.openAlert,
+      data.enable,
+      timeStampWithZone,
+      data.note,
+    ],
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
@@ -142,26 +136,23 @@ export async function insertCreditCardData(data: ICreditCardData) {
 }
 
 export async function updateCreditCardData(data: ICreditCardData) {
-  const query = `
-    UPDATE public.creditcard_list
-    SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, credit_per_month = $4, alert_value = $5, open_alert = $6, note = $7
-    WHERE creditcard_id = $8 AND user_id = $9
-  `;
-  const params = [
-    data.creditcardName,
-    data.creditcardBankCode,
-    data.creditcardBankName,
-    data.creditPerMonth,
-    data.alertValue,
-    data.openAlert,
-    data.note,
-    data.creditcardId,
-    data.userId,
-  ];
 
   return executeSQLsyntax({
-    query: query,
-    params: params,
+    query: `
+      UPDATE public.creditcard_list
+      SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, credit_per_month = $4, alert_value = $5, open_alert = $6, note = $7
+      WHERE creditcard_id = $8 AND user_id = $9`,
+    params: [
+      data.creditcardName,
+      data.creditcardBankCode,
+      data.creditcardBankName,
+      data.creditPerMonth,
+      data.alertValue,
+      data.openAlert,
+      data.note,
+      data.creditcardId,
+      data.userId,
+    ],
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",

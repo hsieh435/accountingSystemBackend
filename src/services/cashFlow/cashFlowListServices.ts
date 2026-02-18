@@ -22,10 +22,7 @@ export interface IAccountSearchingParams {
   userId: string;
 }
 
-
-
 export async function searchingCashFlowList(data: IAccountSearchingParams) {
-
   return executeSQLsyntax({
     query: `
       SELECT cashflow_list.*,
@@ -49,9 +46,8 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
         GROUP BY cashflow_id
       ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
 
-      WHERE currency LIKE $1 AND user_id = $2
+      WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
       ORDER BY created_date`,
-    params: [`%${data.currencyId}%`, data.userId],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -76,9 +72,8 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
         GROUP BY cashflow_id
       ) trade_totals ON cashflow_list.cashflow_id = trade_totals.cashflow_id
 
-      WHERE cashflow_list.cashflow_id = $1 AND cashflow_list.user_id = $2
+      WHERE cashflow_list.cashflow_id = '${cashflowId}' AND cashflow_list.user_id = '${userId}'
     `,
-    params: [cashflowId, userId],
     isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -89,31 +84,27 @@ export async function insertCashflowData(data: ICashFlowData) {
   const currentTimestamp = getCurrentTimestamp();
   const timeStampWithZone = getTimeStampWithZone();
   const cashflowId = `CF-${currentTimestamp}`;
-  const insertQuery = `
-    INSERT INTO public.cashflow_list(
-    cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-  `;
-
-  const insertParams = [
-    cashflowId,
-    data.userId,
-    data.accountType,
-    data.cashflowName,
-    data.currency,
-    data.startingAmount,
-    data.startingAmount,
-    data.minimumValueAllowed,
-    data.alertValue,
-    data.openAlert,
-    true,
-    timeStampWithZone,
-    data.note,
-  ];
 
   return executeSQLsyntax({
-    query: insertQuery,
-    params: insertParams,
+    query: `
+      INSERT INTO public.cashflow_list(
+      cashflow_id, user_id, account_type, cashflow_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+    params: [
+      cashflowId,
+      data.userId,
+      data.accountType,
+      data.cashflowName,
+      data.currency,
+      data.startingAmount,
+      data.startingAmount,
+      data.minimumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      true,
+      timeStampWithZone,
+      data.note,
+    ],
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
@@ -121,24 +112,21 @@ export async function insertCashflowData(data: ICashFlowData) {
 }
 
 export async function updateCashflowData(data: ICashFlowData) {
-  const query = `
-    UPDATE public.cashflow_list
-    SET cashflow_name = $1, minimum_value_allowed = $2, alert_value = $3, open_alert = $4, note = $5
-    WHERE cashflow_id = $6 AND user_id = $7
-  `;
-  const params = [
-    data.cashflowName,
-    data.minimumValueAllowed,
-    data.alertValue,
-    data.openAlert,
-    data.note,
-    data.cashflowId,
-    data.userId,
-  ];
 
   return executeSQLsyntax({
-    query: query,
-    params: params,
+    query: `
+      UPDATE public.cashflow_list
+      SET cashflow_name = $1, minimum_value_allowed = $2, alert_value = $3, open_alert = $4, note = $5
+      WHERE cashflow_id = $6 AND user_id = $7`,
+    params: [
+      data.cashflowName,
+      data.minimumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      data.note,
+      data.cashflowId,
+      data.userId,
+    ],
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -146,9 +134,9 @@ export async function updateCashflowData(data: ICashFlowData) {
 }
 
 export async function enableCashFlowStatus(data: ICashFlowData) {
-  const query = "UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3";
+
   return executeSQLsyntax({
-    query: query,
+    query: `UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3`,
     params: [true, data.cashflowId, data.userId],
     isReturnArray: false,
     successMessage: "啟用成功",
@@ -158,7 +146,7 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
 
 export async function disableCashFlowStatus(data: ICashFlowData) {
   return executeSQLsyntax({
-    query: "UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3",
+    query: `UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3`,
     params: [false, data.cashflowId, data.userId],
     isReturnArray: false,
     successMessage: "停用成功",

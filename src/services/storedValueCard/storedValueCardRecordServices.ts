@@ -42,8 +42,10 @@ export interface IStoredValueCardRecordData {
 }
 
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
-  const searchingQuery = `
-    SELECT stored_value_card_trade.*,
+
+  return executeSQLsyntax({
+    query: `
+      SELECT stored_value_card_trade.*,
       (
       SELECT to_jsonb(stored_value_card_list.*) FROM stored_value_card_list
       WHERE stored_value_card_list.stored_value_card_id = stored_value_card_trade.stored_value_card_id AND stored_value_card_list.user_id = stored_value_card_trade.user_id
@@ -67,9 +69,10 @@ export async function searchingStoredValueCardRecordList(data: IFinanceRecordSea
       AND stored_value_card_trade.stored_value_card_id LIKE '%${data.accountId}%'
       AND stored_value_card_trade.currency LIKE '%${data.currencyId}%'
       AND trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
-    ORDER BY trade_datetime`;
-
-  return executeSQLsyntax({ query: searchingQuery, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+    ORDER BY trade_datetime`,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗",
+  });
 }
 
 export async function searchingStoredValueCardRecordById(data: {
@@ -77,11 +80,14 @@ export async function searchingStoredValueCardRecordById(data: {
   tradeId: string;
   userId: string;
 }) {
-  const query = `
-    SELECT * FROM public.stored_value_card_trade
-    WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
-
-  return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "查詢成功", errorMessage: "查詢失敗" });
+  return executeSQLsyntax({
+    query: `
+      SELECT * FROM public.stored_value_card_trade
+      WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`,
+    isReturnArray: false,
+    successMessage: "查詢成功",
+    errorMessage: "查詢失敗",
+  });
 }
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
@@ -110,8 +116,6 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     }
   }
 
-
-
   // const insertResult = await executeSQLsyntax({
   //   query: `
   //     INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
@@ -124,8 +128,6 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
   // if (insertResult.success === false) {
   //   return { success: true, message: insertResult.message, returnCode: -1 };
   // }
-
-
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
