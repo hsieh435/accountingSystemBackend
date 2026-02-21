@@ -14,6 +14,7 @@ export interface ICreditCardData {
   currency: string;
   currencyName?: string;
   creditPerMonth: number;
+  startDate: string;
   expirationDate: string;
   alertValue: number;
   expenditureCurrentMonth: number;
@@ -89,10 +90,8 @@ export async function insertCreditCardData(data: ICreditCardData) {
   const insertResult = await executeSQLsyntax({
     query: `
       INSERT INTO public.creditcard_list(
-        creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code,
-        creditcard_bank_name, creditcard_schema, currency, credit_per_month,
-        expiration_date, alert_value, open_alert, enable, created_date, note
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+      creditcard_id, user_id, account_type, creditcard_name, creditcard_bank_code, creditcard_bank_name, creditcard_schema, currency, alert_value, open_alert, enable, start_date, expiration_date, created_date, note)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
     params: [
       creditcardId,
       data.userId,
@@ -102,11 +101,12 @@ export async function insertCreditCardData(data: ICreditCardData) {
       data.creditcardBankName,
       data.creditcardSchema,
       data.currency,
-      data.creditPerMonth,
-      data.expirationDate,
       data.alertValue,
       data.openAlert,
+      data.creditPerMonth,
       data.enable,
+      data.startDate,
+      data.expirationDate,
       timeStampWithZone,
       data.note,
     ],
@@ -123,7 +123,8 @@ export async function insertCreditCardData(data: ICreditCardData) {
   const limitInsertResult = await insertCreditCardLimitation({
     creditcardId: creditcardId,
     userId: data.userId,
-    limitYearMonth: `${getCurrentYear()}-${getCurrentMonth()}-01 00:00:00`,
+    startDate: data.startDate,
+    expirationDate: data.expirationDate,
     creditPerMonth: data.creditPerMonth
   });
   if (!limitInsertResult.success) {
