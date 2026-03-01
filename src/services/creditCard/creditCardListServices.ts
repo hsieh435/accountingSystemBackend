@@ -13,7 +13,7 @@ export interface ICreditCardData {
   creditcardSchema: string;
   currency: string;
   currencyName?: string;
-  creditPerMonth: number;
+  limitCredit: number;
   startDate: string;
   expirationDate: string;
   alertValue: number;
@@ -37,6 +37,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
         ) AS currency_data,
 
         creditcard_limit.limit_year_month,
+        creditcard_limit.limit_credit,
         COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
       FROM creditcard_list
 
@@ -103,7 +104,6 @@ export async function insertCreditCardData(data: ICreditCardData) {
       data.currency,
       data.alertValue,
       data.openAlert,
-      data.creditPerMonth,
       data.enable,
       data.startDate,
       data.expirationDate,
@@ -125,7 +125,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
     userId: data.userId,
     startDate: data.startDate,
     expirationDate: data.expirationDate,
-    creditPerMonth: data.creditPerMonth
+    creditPerMonth: data.limitCredit
   });
   if (!limitInsertResult.success) {
     await client.query("ROLLBACK");
@@ -141,15 +141,15 @@ export async function updateCreditCardData(data: ICreditCardData) {
   return executeSQLsyntax({
     query: `
       UPDATE public.creditcard_list
-      SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, credit_per_month = $4, alert_value = $5, open_alert = $6, note = $7
+      SET creditcard_name=$1, creditcard_bank_code=$2, creditcard_bank_name=$3, alert_value=$4, open_alert=$5, enable=$6, note=$7
       WHERE creditcard_id = $8 AND user_id = $9`,
     params: [
       data.creditcardName,
       data.creditcardBankCode,
       data.creditcardBankName,
-      data.creditPerMonth,
       data.alertValue,
       data.openAlert,
+      data.enable,
       data.note,
       data.creditcardId,
       data.userId,
@@ -182,7 +182,6 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 
 export async function removeCreditCardData(data: ICreditCardData) {
   const client = await pool.connect();
-  await client.query("BEGIN");
 
   const searchingResult = await executeSQLsyntax({
     query: "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2",
@@ -197,11 +196,36 @@ export async function removeCreditCardData(data: ICreditCardData) {
     return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
   } else if (searchingResult.success === true && searchingResult.data.length === 0) {
 
-    return executeSQLsyntax({
+    await client.query("BEGIN");
+
+    const deleteCreditcardDataResult = await executeSQLsyntax({
       query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
       params: [data.creditcardId, data.userId],
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
     });
+
+    if (deleteCreditcardDataResult.success === false) {
+      await client.query("ROLLBACK");
+      return { success: true, data: [], message: deleteCreditcardDataResult.message, returnCode: -1 };
+    } else if (deleteCreditcardDataResult.success === true) {
+
+      const deleteParamsResult = await executeSQLsyntax({
+        query:
+          `DELETE FROM public.creditcard_limit WHERE creditcard_id = '${data.creditcardId}' AND user_id = ${data.userId}`,
+        successMessage: "刪除成功",
+        errorMessage: "刪除失敗",
+      });
+
+      if (deleteParamsResult.success === false) {
+        await client.query("ROLLBACK");
+        return { success: true, data: [], message: deleteParamsResult.message, returnCode: -1 };
+      } else if (deleteParamsResult.success === true) {
+        await client.query("COMMIT");
+        return { success: true, data: [], message: "刪除成功", returnCode: 1 };
+      }
+
+    }
+
   }
 }

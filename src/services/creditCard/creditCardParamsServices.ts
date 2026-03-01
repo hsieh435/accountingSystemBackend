@@ -64,7 +64,7 @@ export async function insertCreditCardLimitation({
   expirationDate,
   creditPerMonth,
 }: { creditcardId: string; userId: string; startDate: string; expirationDate: string; creditPerMonth: number }) {
-  // console.log("data:", data);
+  console.log("data:", creditcardId, userId, startDate, expirationDate, creditPerMonth);
   const startYear = getCurrentYear(startDate);
   const startMonth = getCurrentMonth(startDate);
   const finalYear = getCurrentYear(expirationDate);
@@ -75,17 +75,15 @@ export async function insertCreditCardLimitation({
       const limitYearMonth = `${i}-${String(j).padStart(2, "0")}-01 00:00:00`;
       const aaaaa = await executeSQLsyntax({
         query:
-          `INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, credit_per_month)
+          `INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, limit_credit)
           VALUES ($1, $2, $3, $4)`,
         params: [creditcardId, limitYearMonth, userId, creditPerMonth],
-        isReturnArray: true,
-        // successMessage: "新增成功",
-        // errorMessage: "新增失敗",
       });
+
+      console.log("aaaaa:", aaaaa);
 
       if (aaaaa.success === false) {
         return { success: false, message: "新增失敗", data: [] };
-        break;
       }
 
     }
@@ -98,7 +96,7 @@ export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
 
   return executeSQLsyntax({
     query:
-      `UPDATE public.creditcard_limit SET credit_per_month = $4
+      `UPDATE public.creditcard_limit SET limit_credit = $4
       WHERE creditcard_id = $1 AND user_id = $2 AND limit_year_month = $3`,
     params: [data.creditcardId, data.userId, data.limitYearMonth, data.creditPerMonth],
     isReturnArray: true,
