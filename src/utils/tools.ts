@@ -47,17 +47,17 @@ export function getCurrentYMD() {
 }
 
 // 取得當下或日期時間字串年分，type 為 number
-export function getCurrentYear(dateString: string = "") {
+export function getCurrentYear(dateString: string | number | Date = "") {
   return dateString === "" ? new Date().getFullYear() : new Date(dateString).getFullYear();
 }
 
 // 取得當下或日期時間字串月分，type 為 number
-export function getCurrentMonth(dateString: string = "") {
+export function getCurrentMonth(dateString: string | number | Date = "") {
   return dateString === "" ? new Date().getMonth() + 1 : new Date(dateString).getMonth() + 1;
 }
 
 // 取得當下或日期時間字串日，type 為 number
-export function getCurrentDate(dateString: string = "") {
+export function getCurrentDate(dateString: string | number | Date = "") {
   return dateString === "" ? new Date().getDate() : new Date(dateString).getDate();
 }
 
@@ -69,21 +69,15 @@ export function getDaysInMonth(year: number | string = "", month: number | strin
   return new Date(year === "" ? getCurrentYear() : Number(year), month === "" ? getCurrentMonth() : Number(month), 0).getDate();
 }
 
-// 取得當下時間戳，type 為 number
-export function getCurrentTimestamp() {
-  return new Date().getTime();
+// 取得時間戳，type 為 number
+export function getCurrentTimestamp(dateTimes: string | number | Date = "") {
+  return dateTimes === "" ? new Date().getTime() : new Date(dateTimes).getTime();
 }
 
 
 
 // 西元年日期格式 yyyy / mm / dd hh:mm:ss 或 yyyy / mm / dd
 export function yearMonthDayTimeFormat(dateString: Date | string | number, hasTime: boolean = true): string {
-  // const localDate = new Date();
-  // 轉換為 UTC 字串
-  // const utcString = localDate.toISOString();
-  // console.log("UTC 時間:", utcString);
-
-
   const date = new Date(dateString);
   if (isNaN(date.getTime()) || !dateString) return "";
 
