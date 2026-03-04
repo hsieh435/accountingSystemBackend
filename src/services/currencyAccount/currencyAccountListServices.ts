@@ -145,8 +145,9 @@ export async function updateCurrencyAccountData(data: ICurrencyAccountData) {
 
 export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
   return executeSQLsyntax({
-    query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
-    params: [true, data.accountId, data.userId],
+    query: `
+      UPDATE public.currency_account_list SET enable = ${true}
+      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -155,8 +156,9 @@ export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
 
 export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
   return executeSQLsyntax({
-    query: "UPDATE public.currency_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3",
-    params: [false, data.accountId, data.userId],
+    query: `
+      UPDATE public.currency_account_list SET enable = ${false}
+      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -178,8 +180,9 @@ export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
     return { success: true, message: "已有收支紀錄", returnCode: -1 };
   } else if (recordData.success && recordData.data.length === 0) {
     return executeSQLsyntax({
-      query: "DELETE FROM public.currency_account_list WHERE account_id = $1 AND user_id = $2",
-      params: [data.accountId, data.userId],
+      query: `
+        DELETE FROM public.currency_account_list
+        WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
     });

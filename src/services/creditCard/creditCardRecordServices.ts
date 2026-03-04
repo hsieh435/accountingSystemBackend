@@ -108,8 +108,8 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   await client.query("BEGIN");
 
   const insertResult = await executeSQLsyntax({
-    query:
-      `INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    query: `
+      INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
       VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     successMessage: "",
     errorMessage: "新增失敗"
@@ -167,8 +167,8 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
   await client.query("BEGIN");
 
   const updateResult = await executeSQLsyntax({
-    query:
-      `UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
+    query: `
+      UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
       WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`,
     successMessage: "",
     errorMessage: "更新失敗"
@@ -198,9 +198,10 @@ export async function removeCreditCardRecordData(data: { tradeId: string; credit
   await client.query("BEGIN");
 
   const deleteResult = await executeSQLsyntax({
-    query:
-      `DELETE FROM public.creditcard_trade
-      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+    query: `
+      DELETE FROM public.creditcard_trade
+      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}'
+        AND user_id = '${data.userId}'`,
     successMessage: "",
     errorMessage: "刪除失敗"
   });

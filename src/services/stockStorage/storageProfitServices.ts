@@ -98,8 +98,10 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordData) 
 
 
     const updateResult = await executeSQLsyntax({
-      query: `UPDATE public.stock_storage_list SET storage_quantity = ${currentQuantity + data.updateData.quantity}
-      WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
+      query: `
+        UPDATE public.stock_storage_list
+        SET storage_quantity = ${currentQuantity + data.updateData.quantity}
+        WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
       params: [data.updateData.accountId, data.userId, data.updateData.stockNo],
       successMessage: "更新成功",
       errorMessage: "更新失敗",

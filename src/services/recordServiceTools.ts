@@ -161,9 +161,9 @@ export async function updateRelatedData(
 
     // 更新後續紀錄的 remaining_amount
     const recordUpdateResult = await executeSQLsyntax({
-      query:
-        `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
-      params: [amountDifference, tradeDatetime, flowId],
+      query: `
+        UPDATE ${recordTable} SET remaining_amount = remaining_amount + ${amountDifference}
+        WHERE trade_datetime > '${tradeDatetime}' AND ${column} = '${flowId}'`,
       isReturnArray: false,
       successMessage: "更新成功",
       errorMessage: "更新失敗",

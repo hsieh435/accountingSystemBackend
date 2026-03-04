@@ -86,7 +86,7 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
 
   return executeSQLsyntax({
-    query:  `
+    query: `
       SELECT * FROM public.stock_account_trade
       WHERE trade_id = '${tradeId}' AND account_id = '${accountId}' AND user_id = '${userId}'
     `,

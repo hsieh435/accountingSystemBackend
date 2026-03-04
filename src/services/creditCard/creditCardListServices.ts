@@ -60,8 +60,7 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
 
 export async function getCreditCardById(creditcardId: string, userId: string) {
   return executeSQLsyntax({
-    query:
-      `
+    query: `
       SELECT creditcard_list.*, creditcard_limit.limit_year_month,
       COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month
       FROM creditcard_list
@@ -73,8 +72,7 @@ export async function getCreditCardById(creditcardId: string, userId: string) {
         GROUP BY credit_card_id
       ) trade_totals ON creditcard_list.creditcard_id = trade_totals.credit_card_id
 
-      WHERE creditcard_list.creditcard_id = '${creditcardId}' AND creditcard_list.user_id = '${userId}'
-      `,
+      WHERE creditcard_list.creditcard_id = '${creditcardId}' AND creditcard_list.user_id = '${userId}'`,
     isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -162,8 +160,9 @@ export async function updateCreditCardData(data: ICreditCardData) {
 
 export async function enableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
-    query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
-    params: [true, data.creditcardId, data.userId],
+    query: `
+      UPDATE public.creditcard_list SET enable = ${true}
+      WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "成功",
     errorMessage: "失敗",
@@ -172,8 +171,9 @@ export async function enableCreditCardStatus(data: ICreditCardData) {
 
 export async function disableCreditCardStatus(data: ICreditCardData) {
   return executeSQLsyntax({
-    query: "UPDATE public.creditcard_list SET enable = $1 WHERE creditcard_id = $2 AND user_id = $3",
-    params: [false, data.creditcardId, data.userId],
+    query: `
+      UPDATE public.creditcard_list SET enable = ${false}
+      WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "成功",
     errorMessage: "失敗",
@@ -184,8 +184,9 @@ export async function removeCreditCardData(data: ICreditCardData) {
   const client = await pool.connect();
 
   const searchingResult = await executeSQLsyntax({
-    query: "SELECT * FROM creditcard_trade WHERE credit_card_id = $1 AND user_id = $2",
-    params: [data.creditcardId, data.userId],
+    query: `
+      SELECT * FROM creditcard_trade
+      WHERE credit_card_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
     successMessage: "",
     errorMessage: "",
   });
@@ -199,8 +200,9 @@ export async function removeCreditCardData(data: ICreditCardData) {
     await client.query("BEGIN");
 
     const deleteCreditcardDataResult = await executeSQLsyntax({
-      query: "DELETE FROM public.creditcard_list WHERE creditcard_id = $1 AND user_id = $2",
-      params: [data.creditcardId, data.userId],
+      query: `
+        DELETE FROM public.creditcard_list
+        WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
     });
@@ -211,8 +213,9 @@ export async function removeCreditCardData(data: ICreditCardData) {
     } else if (deleteCreditcardDataResult.success === true) {
 
       const deleteParamsResult = await executeSQLsyntax({
-        query:
-          `DELETE FROM public.creditcard_limit WHERE creditcard_id = '${data.creditcardId}' AND user_id = ${data.userId}`,
+        query: `
+          DELETE FROM public.creditcard_limit
+          WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
         successMessage: "刪除成功",
         errorMessage: "刪除失敗",
       });

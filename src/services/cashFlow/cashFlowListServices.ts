@@ -136,8 +136,10 @@ export async function updateCashflowData(data: ICashFlowData) {
 export async function enableCashFlowStatus(data: ICashFlowData) {
 
   return executeSQLsyntax({
-    query: `UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3`,
-    params: [true, data.cashflowId, data.userId],
+    query: `
+      UPDATE public.cashflow_list SET enable = ${true}
+      WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`,
+    params: [],
     isReturnArray: false,
     successMessage: "啟用成功",
     errorMessage: "啟用失敗",
@@ -146,8 +148,10 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
 
 export async function disableCashFlowStatus(data: ICashFlowData) {
   return executeSQLsyntax({
-    query: `UPDATE public.cashflow_list SET enable = $1 WHERE cashflow_id = $2 AND user_id = $3`,
-    params: [false, data.cashflowId, data.userId],
+    query: `
+      UPDATE public.cashflow_list SET enable = ${false}
+      WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`,
+    params: [],
     isReturnArray: false,
     successMessage: "停用成功",
     errorMessage: "停用失敗",
@@ -170,8 +174,9 @@ export async function removeCashflowData(data: ICashFlowData) {
     return { success: true, message: "已有收支紀錄", returnCode: -1 };
   } else if (recordData.success && recordData.data.length === 0) {
     return executeSQLsyntax({
-      query: "DELETE FROM public.cashflow_list WHERE cashflow_id = $1 AND user_id = $2",
-      params: [data.cashflowId, data.userId],
+      query: `
+        DELETE FROM public.cashflow_list
+        WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`,
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
     });

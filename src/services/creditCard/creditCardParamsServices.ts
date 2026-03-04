@@ -74,8 +74,8 @@ export async function insertCreditCardLimitation({
     for (let j = i === startYear ? startMonth : 1; j <= (i === finalYear ? finalMonth : 12); j++) {
       const limitYearMonth = `${i}-${String(j).padStart(2, "0")}-01 00:00:00`;
       const aaaaa = await executeSQLsyntax({
-        query:
-          `INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, limit_credit)
+        query: `
+          INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, limit_credit)
           VALUES ($1, $2, $3, $4)`,
         params: [creditcardId, limitYearMonth, userId, creditPerMonth],
       });
@@ -95,8 +95,8 @@ export async function insertCreditCardLimitation({
 export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
 
   return executeSQLsyntax({
-    query:
-      `UPDATE public.creditcard_limit SET limit_credit = $4
+    query: `
+      UPDATE public.creditcard_limit SET limit_credit = $4
       WHERE creditcard_id = $1 AND user_id = $2 AND limit_year_month = $3`,
     params: [data.creditcardId, data.userId, data.limitYearMonth, data.creditPerMonth],
     isReturnArray: true,
