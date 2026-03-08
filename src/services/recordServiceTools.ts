@@ -85,27 +85,27 @@ export async function tradeDateTimeDetect(
     // console.log("currentTradeId:", currentTradeId);
 
     if ((hasExistsData === true && recordId !== currentTradeId)) {
-      return { success: false, message: "收支時間點重複" };
+      return { success: false, message: "收支時間點重複", returnCode: 0 };
     } else {
 
       if (nextTradeId === null && prevTradeId !== null) {
         // 新增到最後一筆紀錄，，回傳上一筆交易剩餘金額
-        return { success: true, message: "", returnAmount: prevRemainingAmount };
+        return { success: true, message: "", returnAmount: prevRemainingAmount, returnCode: 0 };
       } else if (prevTradeId === null && nextTradeId === null) {
         // 新增到最初紀錄，回傳金流初始金額
-        return { success: true, message: "", returnAmount: startingAmount };
+        return { success: true, message: "", returnAmount: startingAmount, returnCode: 0 };
       } else if (nextTradeId !== null && prevTradeId === null) {
         // 新增金流第一筆紀錄，回傳金流初始金額
-        return { success: true, message: "", returnAmount: startingAmount };
+        return { success: true, message: "", returnAmount: startingAmount, returnCode: 0 };
       } else if (nextTradeId !== null && prevTradeId !== null) {
         // 新增到中間紀錄，回傳上一筆交易剩餘金額
-        return { success: true, message: "", returnAmount: prevRemainingAmount };
+        return { success: true, message: "", returnAmount: prevRemainingAmount, returnCode: 0 };
       }
 
-      return { success: false, message: "查詢失敗" };
+      return { success: false, message: "查詢失敗", returnCode: -1 };
     }
   } catch (err) {
-    return { success: false, message: err instanceof Error ? err.message : String(err) };
+    return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };
   }
 }
 
@@ -125,6 +125,8 @@ export async function updateRelatedData(
   dataTradeAmount: number,
   oriTradeAmount: number,
 ) {
+  // console.log("mainExecuteQuery:", mainExecuteQuery);
+  // console.log("mainExecuteParams:", mainExecuteParams);
   const flowListTable = sanitizeIdentifier(flowListTableName);
   const recordTable = sanitizeIdentifier(recordTableName);
   const column = sanitizeIdentifier(flowColumn);
@@ -189,10 +191,10 @@ export async function updateRelatedData(
     }
     await client.query("COMMIT");
     // console.log("更新餘額成功");
-    return { success: true, message: "更新餘額成功" };
+    return { success: true, message: "更新餘額成功", returnCode: 0 };
   } catch (err) {
     await client.query("ROLLBACK");
-    return { success: false, message: err };
+    return { success: false, message: err, returnCode: -1  };
   } finally {
     client.release();
   }

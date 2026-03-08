@@ -1,5 +1,5 @@
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { getCurrentTimestamp } from "@/utils/tools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -175,7 +175,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("updateCashFlowRecordData:", data);
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
@@ -221,7 +221,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
+    `UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7, edited_datetime=$8
     WHERE trade_id = $9 AND cashflow_id = $10 AND user_id = $11`,
     [
       data.updateData.tradeDatetime,
@@ -249,10 +249,10 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.tradeAmount,
     data.oriData.oriTradeAmount,
   );
-  console.log("updateResult:", updateResult);
-  if (updateResult.success === true) {
+  // console.log("updateResult:", updateResult);
+  if (updateResult.success === true && updateResult.returnCode === 0) {
     return { success: true, message: "更新成功" };
-  } else if (updateResult.success === false) {
+  } else {
     return { success: true, message: "更新失敗", returnCode: -1 };
   }
 }
