@@ -1,7 +1,7 @@
-import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
-// import { updateStockStorageQuantity } from "@/services/stockStorage/storageProfitServices";
+
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -99,8 +99,8 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `ST-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
@@ -150,7 +150,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
 }
 
 export async function updateStockAccountRecord(data: IStockAccountRecordData) {
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",

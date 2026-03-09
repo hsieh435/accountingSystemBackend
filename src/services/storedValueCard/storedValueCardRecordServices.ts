@@ -1,5 +1,5 @@
-import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -92,8 +92,8 @@ export async function searchingStoredValueCardRecordById(data: {
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
   data.updateData.tradeId = `SVC-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
@@ -154,7 +154,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 }
 
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",

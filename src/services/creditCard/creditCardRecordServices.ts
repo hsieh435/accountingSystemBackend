@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 
@@ -86,8 +86,8 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
 
 export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   data.updateData.tradeId = `CC-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_list",
@@ -145,7 +145,7 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
   // console.log("data:", data);
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_list",

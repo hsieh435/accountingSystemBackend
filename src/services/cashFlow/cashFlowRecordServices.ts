@@ -87,8 +87,8 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",

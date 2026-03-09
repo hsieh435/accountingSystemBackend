@@ -1,5 +1,5 @@
-import { getCurrentTimestamp } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
+import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
 import { tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -97,8 +97,8 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
   // console.log("data:", data);
   data.updateData.tradeId = `CA-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getCurrentTimestamp()}`;
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
@@ -164,7 +164,7 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
 export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
-  data.updateData.editedDatetime = `${getCurrentTimestamp()}`;
+  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
