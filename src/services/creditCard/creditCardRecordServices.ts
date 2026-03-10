@@ -1,17 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
-import { tradeDateTimeDetect } from "@/services/recordServiceTools";
-
-
-export interface IFinanceRecordSearchingParams {
-  accountId: string;
-  currencyId: string;
-  tradeCategory: string;
-  startingDate: string;
-  endDate: string;
-  userId: string;
-}
+import { type IFinanceRecordSearchingParams, tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface ICreditCardRecordList {
   tradeId: string;

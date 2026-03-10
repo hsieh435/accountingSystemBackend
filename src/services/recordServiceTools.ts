@@ -2,6 +2,15 @@ import pool from "@/db";
 import { setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools"
 
+export interface IFinanceRecordSearchingParams {
+  accountId: string;
+  currencyId: string;
+  tradeCategory: string;
+  startingDate: string;
+  endDate: string;
+  userId: string;
+}
+
 export interface IOriData {
   oriTradeDatetime: string;
   oriTradeAmount: number;
