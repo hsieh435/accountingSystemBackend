@@ -99,7 +99,6 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.accountId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "insert",
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -149,7 +148,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     data.updateData.accountId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "update",
   );
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };

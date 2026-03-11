@@ -93,7 +93,6 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     data.updateData.storedValueCardId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "insert",
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
@@ -140,7 +139,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
   } else if (insertResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
+    return insertResult;
   }
 }
 
@@ -154,7 +153,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     data.updateData.storedValueCardId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "update",
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
@@ -200,7 +198,7 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
   } else if (updateResult.success === false) {
-    return { success: true, message: "更新失敗", returnCode: -1 };
+    return updateResult;
   }
 }
 
@@ -240,6 +238,6 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
   if (deleteResult.success === true) {
     return { success: true, message: "刪除成功" };
   } else if (deleteResult.success === false) {
-    return { success: true, message: "刪除失敗", returnCode: -1 };
+    return deleteResult;
   }
 }

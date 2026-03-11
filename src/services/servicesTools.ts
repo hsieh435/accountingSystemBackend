@@ -1,4 +1,5 @@
 import pool from "@/db";
+import type { PoolClient } from "pg";
 import { keysToCamel } from "@/utils/tools";
 
 // Helper function for update / insert operations
@@ -9,6 +10,7 @@ export async function executeSQLsyntax({
   successMessage = "成功",
   errorMessage = "失敗",
   isTesting = false,
+  client,
 }: {
   query: string;
   params?: any;
@@ -16,8 +18,9 @@ export async function executeSQLsyntax({
   successMessage?: string;
   errorMessage?: string;
   isTesting?: boolean;
+  client?: PoolClient;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
-  // console.log("Query executed:", query);
+  console.log("Query executed:", query);
   // console.log("Parameters:", params);
 
   if (isTesting === true) {
@@ -25,9 +28,10 @@ export async function executeSQLsyntax({
   }
 
   try {
-    const sqlExecuteResult = await pool.query(query, params);
+    const queryExecutor = client ?? pool;
+    const sqlExecuteResult = await queryExecutor.query(query, params);
     // console.log("SQL Result:", sqlExecuteResult);
-    // console.log("SQL Result:", sqlExecuteResult.rows);
+    console.log("SQL Result:", sqlExecuteResult.rows);
     // console.log("SQL command:", sqlExecuteResult.command);
     // console.log("SQL rowCount:", sqlExecuteResult.rowCount);
 

@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { setTimezone } from "@/utils/tools";
-import { executeSQLsyntax } from "@/services/servicesTools"
+import { executeSQLsyntax } from "@/services/servicesTools";
 
 export interface IFinanceRecordSearchingParams {
   accountId: string;
@@ -32,7 +32,6 @@ export async function tradeDateTimeDetect(
   flowId: string,
   recordId: string,
   recordTradeDatetime: string,
-  type: string,
 ): Promise<any> {
   const flowListTable = sanitizeIdentifier(flowListTableName);
   const tradeTable = sanitizeIdentifier(tradeTableName);
@@ -40,29 +39,30 @@ export async function tradeDateTimeDetect(
 
   try {
 
-    const tradeDatetimeSearchingResult =  await executeSQLsyntax({
+    const tradeDatetimeSearchingResult = await executeSQLsyntax({
       query: `
         SELECT EXISTS (
-        SELECT 1 FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}') AS hasExistsData,
-        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+        SELECT 1 FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime = $2) AS hasExistsData,
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime = $2
         ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeId,
-        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime = '${recordTradeDatetime}'
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime = $2
         ORDER BY trade_datetime DESC LIMIT 1) AS currentTradeDatetime,
-        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime < $2
         ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeId,
-        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime < $2
         ORDER BY trade_datetime DESC LIMIT 1) AS prevRemainingAmount,
-        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime < '${recordTradeDatetime}'
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime < $2
         ORDER BY trade_datetime DESC LIMIT 1) AS prevTradeDatetime,
-        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        (SELECT trade_id FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime > $2
         ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeId,
-        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        (SELECT remaining_amount FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime > $2
         ORDER BY trade_datetime ASC LIMIT 1) AS nextRemainingAmount,
-        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = '${flowId}' AND trade_datetime > '${recordTradeDatetime}'
+        (SELECT trade_datetime FROM ${tradeTable} WHERE ${column} = $1 AND trade_datetime > $2
         ORDER BY trade_datetime ASC LIMIT 1) AS nextTradeDatetime
       `,
+      params: [flowId, recordTradeDatetime],
       isReturnArray: false,
-    })
+    });
 
 
     const hasExistsData = tradeDatetimeSearchingResult.data.hasexistsdata;
@@ -83,9 +83,10 @@ export async function tradeDateTimeDetect(
 
 
     const flowOriginal = await executeSQLsyntax({
-      query: `SELECT * FROM ${flowListTable} WHERE ${column} = '${flowId}'`,
+      query: `SELECT * FROM ${flowListTable} WHERE ${column} = $1`,
+      params: [flowId],
       isReturnArray: false,
-    })
+    });
     // console.log("flowOriginal:", flowOriginal);
     const startingAmount = flowOriginal.data.startingAmount;
     // console.log("hasExistsData:", hasExistsData);
@@ -93,7 +94,7 @@ export async function tradeDateTimeDetect(
     // console.log("recordId:", recordId);
     // console.log("currentTradeId:", currentTradeId);
 
-    if ((hasExistsData === true && recordId !== currentTradeId)) {
+    if (hasExistsData === true && recordId !== currentTradeId) {
       return { success: false, message: "收支時間點重複", returnCode: 0 };
     } else {
 
@@ -140,32 +141,28 @@ export async function updateRelatedData(
   const recordTable = sanitizeIdentifier(recordTableName);
   const column = sanitizeIdentifier(flowColumn);
 
-  const amountDifference = (() => {
-    switch (true) {
-      case dataTransactionType === oriTransactionType:
-        return oriTradeAmount - dataTradeAmount;
-      case dataTransactionType === "income" && oriTransactionType === "expense":
-        return dataTradeAmount + oriTradeAmount;
-      case dataTransactionType === "expense" && oriTransactionType === "income":
-        return -dataTradeAmount - oriTradeAmount;
-      default:
-        return 0;
-    }
-  })();
+  // Calculate the net effect: income adds to balance, expense subtracts
+  const newNetAmount = dataTransactionType === "income" ? dataTradeAmount : -dataTradeAmount;
+  const oriNetAmount = oriTransactionType === "income" ? oriTradeAmount : -oriTradeAmount;
+  const amountDifference = newNetAmount - oriNetAmount;
 
 
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
 
-
     // 執行主要的新增或更新操作
     const mainExecuteResult = await executeSQLsyntax({
-      query: mainExecuteQuery, params: mainExecuteParams, isReturnArray, successMessage, errorMessage,
+      query: mainExecuteQuery,
+      params: mainExecuteParams,
+      isReturnArray,
+      successMessage,
+      errorMessage,
+      client,
     });
     if (mainExecuteResult.success === false) {
       await client.query("ROLLBACK");
-      return { success: true, message: errorMessage, returnCode: -1 };
+      return { success: false, message: errorMessage, returnCode: -1 };
     }
 
 
@@ -173,11 +170,13 @@ export async function updateRelatedData(
     // 更新後續紀錄的 remaining_amount
     const recordUpdateResult = await executeSQLsyntax({
       query: `
-        UPDATE ${recordTable} SET remaining_amount = remaining_amount + ${amountDifference}
-        WHERE trade_datetime > '${tradeDatetime}' AND ${column} = '${flowId}'`,
+        UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
+        WHERE trade_datetime > $2 AND ${column} = $3`,
+      params: [amountDifference, tradeDatetime, flowId],
       isReturnArray: false,
       successMessage: "更新成功",
       errorMessage: "更新失敗",
+      client,
     });
 
 
@@ -186,24 +185,28 @@ export async function updateRelatedData(
     const flowUpdateResult = await executeSQLsyntax({
       query: `
         UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
-        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
-        WHERE ${flowColumn} = '${flowId}'`,
+        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable} WHERE ${column} = $1) AND frt.${column} = $1)
+        WHERE ${column} = $1`,
+      params: [flowId],
       isReturnArray: false,
       successMessage: "更新成功",
       errorMessage: "更新失敗",
+      client,
     });
 
+    console.log("recordUpdateResult:", recordUpdateResult);
+    console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
-      return { success: true, message: "更新餘額失敗", returnCode: -1 };
+      return { success: false, message: "更新餘額失敗", returnCode: -1 };
     }
     await client.query("COMMIT");
     // console.log("更新餘額成功");
     return { success: true, message: "更新餘額成功", returnCode: 0 };
   } catch (err) {
     await client.query("ROLLBACK");
-    return { success: false, message: err, returnCode: -1  };
+    return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };
   } finally {
     client.release();
   }

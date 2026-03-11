@@ -86,10 +86,10 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
     query: `
       INSERT INTO public.stored_value_card_list(stored_value_card_id, user_id, account_type, stored_value_card_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, enable, created_date, note)
       VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
-      isReturnArray: false,
-      successMessage: "新增成功",
-      errorMessage: "新增失敗"
-    });
+    isReturnArray: false,
+    successMessage: "新增成功",
+    errorMessage: "新增失敗"
+  });
 }
 
 export async function updateStoredValueCardData(data: IStoredValueCardData) {
@@ -122,10 +122,10 @@ export async function disableStoredValueCardStatus(data: IStoredValueCardData) {
     query: `
       UPDATE public.stored_value_card_list SET enable = ${false}
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
-      isReturnArray: false,
-      successMessage: "停用成功",
-      errorMessage: "停用失敗"
-    });
+    isReturnArray: false,
+    successMessage: "停用成功",
+    errorMessage: "停用失敗"
+  });
 }
 
 export async function removeStoredValueCardData(data: IStoredValueCardData) {

@@ -86,7 +86,6 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
     data.updateData.creditCardId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "insert",
   );
   console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -144,7 +143,6 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
     data.updateData.creditCardId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "insert",
   );
   console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {

@@ -73,17 +73,16 @@ export async function insertCreditCardLimitation({
   for (let i = startYear; i <= finalYear; i++) {
     for (let j = i === startYear ? startMonth : 1; j <= (i === finalYear ? finalMonth : 12); j++) {
       const limitYearMonth = `${i}-${String(j).padStart(2, "0")}-01 00:00:00`;
-      const aaaaa = await executeSQLsyntax({
+      const insertResult = await executeSQLsyntax({
         query: `
           INSERT INTO public.creditcard_limit(creditcard_id, limit_year_month, user_id, limit_credit)
           VALUES ($1, $2, $3, $4)`,
         params: [creditcardId, limitYearMonth, userId, creditPerMonth],
       });
+      console.log("insertResult:", insertResult);
 
-      console.log("aaaaa:", aaaaa);
-
-      if (aaaaa.success === false) {
-        return { success: false, message: "新增失敗", data: [] };
+      if (insertResult.success === false) {
+        return insertResult;
       }
 
     }

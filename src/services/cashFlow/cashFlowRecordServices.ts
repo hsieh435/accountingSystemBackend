@@ -88,7 +88,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.cashflowId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "insert",
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -160,7 +159,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
   } else if (insertResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
+    return insertResult;
   }
 }
 
@@ -175,7 +174,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     data.updateData.cashflowId,
     data.updateData.tradeId,
     data.updateData.tradeDatetime,
-    "update",
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -244,7 +242,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   if (updateResult.success === true && updateResult.returnCode === 0) {
     return { success: true, message: "更新成功" };
   } else {
-    return { success: true, message: "更新失敗", returnCode: -1 };
+    return updateResult;
   }
 }
 
@@ -290,6 +288,6 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   if (deleteResult.success === true) {
     return { success: true, message: "刪除成功" };
   } else if (deleteResult.success === false) {
-    return { success: true, message: "刪除失敗", returnCode: -1 };
+    return deleteResult;
   }
 }
