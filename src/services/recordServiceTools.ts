@@ -129,11 +129,11 @@ export async function updateRelatedData(
   recordTableName: string,
   flowColumn: string,
   flowId: string,
-  tradeDatetime: string,
-  dataTransactionType: string,
-  oriTransactionType: string,
-  dataTradeAmount: number,
-  oriTradeAmount: number,
+  // tradeDatetime: string,
+  // dataTransactionType: string,
+  // oriTransactionType: string,
+  // dataTradeAmount: number,
+  // oriTradeAmount: number,
 ) {
   // console.log("mainExecuteQuery:", mainExecuteQuery);
   // console.log("mainExecuteParams:", mainExecuteParams);
@@ -141,10 +141,6 @@ export async function updateRelatedData(
   const recordTable = sanitizeIdentifier(recordTableName);
   const column = sanitizeIdentifier(flowColumn);
 
-  // Calculate the net effect: income adds to balance, expense subtracts
-  const newNetAmount = dataTransactionType === "income" ? dataTradeAmount : -dataTradeAmount;
-  const oriNetAmount = oriTransactionType === "income" ? oriTradeAmount : -oriTradeAmount;
-  const amountDifference = newNetAmount - oriNetAmount;
 
 
   const client = await pool.connect();
@@ -166,18 +162,58 @@ export async function updateRelatedData(
     }
 
 
+    // WITH balance_calc AS (
+    //   SELECT ct.trade_id, ct.cashflow_id, ct.trade_datetime, ct.trade_amount, ct.transaction_type, cl.starting_amount,
+    //   -- 從 starting_amount 開始，依序累計每筆交易
+    //   cl.starting_amount +
+    //   SUM(CASE
+    //     WHEN ct.transaction_type = 'income' THEN ct.trade_amount ELSE -ct.trade_amount
+    //     END
+    // 	) OVER (
+    // 	  PARTITION BY ct.cashflow_id
+    // 	  ORDER BY ct.trade_datetime ASC
+    // 	  ROWS UNBOUNDED PRECEDING
+    // 	) AS new_balance
+    //   FROM cashflow_trade ct
+    //   JOIN cashflow_list cl ON ct.cashflow_id = cl.cashflow_id
+    // )
+    // UPDATE cashflow_trade SET remaining_amount = bc.new_balance
+    // FROM balance_calc bc WHERE cashflow_trade.trade_id = bc.trade_id;
+
+
 
     // 更新後續紀錄的 remaining_amount
     const recordUpdateResult = await executeSQLsyntax({
       query: `
-        UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
-        WHERE trade_datetime > $2 AND ${column} = $3`,
-      params: [amountDifference, tradeDatetime, flowId],
-      isReturnArray: false,
+        WITH balance_calc AS (
+          SELECT rT.trade_id, rT.${column}, rT.trade_datetime, rT.trade_amount, rT.transaction_type, aT.starting_amount,
+          aT.starting_amount + SUM(CASE
+            WHEN rT.transaction_type = 'income' THEN rT.trade_amount ELSE -rT.trade_amount END
+              ) OVER (PARTITION BY rT.${column}
+              ORDER BY rT.trade_datetime ASC ROWS UNBOUNDED PRECEDING
+              ) AS new_balance
+            FROM ${recordTable} rT
+          JOIN ${flowListTable} aT ON rT.${column} = aT.${column}
+          WHERE rT.${column} = $1
+          )
+        UPDATE ${recordTable} SET remaining_amount = bc.new_balance
+        FROM balance_calc bc WHERE ${recordTable}.trade_id = bc.trade_id`,
+      params: [flowId],
+      isReturnArray: true,
       successMessage: "更新成功",
       errorMessage: "更新失敗",
       client,
     });
+    // const recordUpdateResult = await executeSQLsyntax({
+    //   query: `
+    //     UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
+    //     WHERE trade_datetime > $2 AND ${column} = $3`,
+    //   params: [amountDifference, tradeDatetime, flowId],
+    //   isReturnArray: true,
+    //   successMessage: "更新成功",
+    //   errorMessage: "更新失敗",
+    //   client,
+    // });
 
 
 
@@ -188,7 +224,7 @@ export async function updateRelatedData(
         WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable} WHERE ${column} = $1) AND frt.${column} = $1)
         WHERE ${column} = $1`,
       params: [flowId],
-      isReturnArray: false,
+      isReturnArray: true,
       successMessage: "更新成功",
       errorMessage: "更新失敗",
       client,

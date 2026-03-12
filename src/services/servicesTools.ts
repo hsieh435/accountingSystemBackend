@@ -20,7 +20,7 @@ export async function executeSQLsyntax({
   isTesting?: boolean;
   client?: PoolClient;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
-  console.log("Query executed:", query);
+  // console.log("Query executed:", query);
   // console.log("Parameters:", params);
 
   if (isTesting === true) {
@@ -31,7 +31,7 @@ export async function executeSQLsyntax({
     const queryExecutor = client ?? pool;
     const sqlExecuteResult = await queryExecutor.query(query, params);
     // console.log("SQL Result:", sqlExecuteResult);
-    console.log("SQL Result:", sqlExecuteResult.rows);
+    // console.log("SQL Result:", sqlExecuteResult.rows);
     // console.log("SQL command:", sqlExecuteResult.command);
     // console.log("SQL rowCount:", sqlExecuteResult.rowCount);
 

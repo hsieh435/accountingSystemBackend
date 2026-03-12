@@ -110,26 +110,6 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
 
   await client.query("COMMIT");
   return { success: true, message: "新增成功", returnCode: 0 };
-
-  // try {
-
-    // const insertResult = await pool.query(`
-    //   INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-    //   VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
-    // `);
-    // console.log("insertResult:", insertResult);
-
-    // if (insertResult.rowCount === 1) {
-    //   return { success: true, userData: insertResult.rows[0] };
-    // } else {
-    //   return { success: false, userData: [] };
-    // }
-  // } catch (err) {
-  //   return { success: false, message: err instanceof Error ? err.message : String(err) };
-  // }
-
-  // await client.query("ROLLBACK");
-  // await client.query("COMMIT");
 }
 
 export async function updateCreditCardData(data: ICreditCardTradeData) {
@@ -168,14 +148,6 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
 
   await client.query("COMMIT");
   return { success: true, message: "更新成功", returnCode: 0 };
-
-
-
-  // const updateResult = await pool.query(`
-  //   UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}'
-  //   WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'
-  // `);
-  // return updateResult.rowCount === 1;
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
@@ -201,17 +173,4 @@ export async function removeCreditCardRecordData(data: { tradeId: string; credit
 
   await client.query("COMMIT");
   return { success: true, message: "刪除成功", returnCode: 0 };
-
-
-
-  // const deleteResult = await pool.query(
-  //   `DELETE FROM public.creditcard_trade
-  //   WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
-  // );
-  // // console.log("deleteResult:", deleteResult);
-  // if (deleteResult.rowCount === 1) {
-  //   return { success: true, message: "刪除成功" };
-  // } else {
-  //   return { success: false, message: "刪除失敗" };
-  // }
 }

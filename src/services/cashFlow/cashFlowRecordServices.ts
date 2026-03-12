@@ -19,10 +19,8 @@ export interface ICashFlowRecordList {
 }
 
 export interface IOriData {
-  oriTradeDatetime: string;
   oriTradeAmount: number;
   oriRemainingAmount: number;
-  oriTransactionType: string;
 }
 
 export interface ICashFlowRecordData {
@@ -92,38 +90,9 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
-    }
   }
 
-  // const insertResult = await executeSQLsyntax({
-  //   query:
-  //     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-  //     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-  //   params: [
-  //     data.updateData.tradeId,
-  //     data.updateData.cashflowId,
-  //     data.userId,
-  //     data.updateData.tradeDatetime,
-  //     data.updateData.tradeCategory,
-  //     data.updateData.transactionType,
-  //     data.updateData.tradeAmount,
-  //     data.updateData.remainingAmount,
-  //     data.updateData.currency,
-  //     data.updateData.tradeDescription,
-  //     data.updateData.tradeNote,
-  //   ],
-  //   isReturnArray: false,
-  //   successMessage: "新增成功",
-  //   errorMessage: "新增失敗"
-  // });
-  // if (insertResult.success === false) {
-  //   return { success: true, message: insertResult.message, returnCode: -1 };
-  // }
+
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
@@ -136,7 +105,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
       data.updateData.tradeCategory,
       data.updateData.transactionType,
       data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
+      0,
       data.updateData.currency,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
@@ -150,11 +119,11 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -178,46 +147,17 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
-    }
   }
 
-  // const updateResult = await executeSQLsyntax({
-  //   query:
-  //     `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7 WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
-  //   params: [
-  //     data.updateData.tradeDatetime,
-  //     data.updateData.tradeCategory,
-  //     data.updateData.transactionType,
-  //     data.updateData.tradeAmount,
-  //     data.updateData.remainingAmount,
-  //     data.updateData.tradeDescription,
-  //     data.updateData.tradeNote,
-  //     data.updateData.tradeId,
-  //     data.updateData.cashflowId,
-  //     data.userId,
-  //   ],
-  //   isReturnArray: false,
-  //   successMessage: "更新成功",
-  //   errorMessage: "更新失敗"
-  // });
-  // if (updateResult.success === false) {
-  //   return { success: true, message: updateResult.message, returnCode: -1 };
-  // }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.cashflow_trade SET trade_datetime=$1, trade_category=$2, transaction_type=$3, trade_amount=$4, remaining_amount=$5, trade_description=$6, trade_note=$7, edited_datetime=$8
-    WHERE trade_id = $9 AND cashflow_id = $10 AND user_id = $11`,
+    `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
+    WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
       data.updateData.transactionType,
       data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
       data.updateData.editedDatetime,
@@ -232,11 +172,11 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_trade",
     "cashflow_id",
     data.updateData.cashflowId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   // console.log("updateResult:", updateResult);
   if (updateResult.success === true && updateResult.returnCode === 0) {
@@ -256,17 +196,7 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
   });
   // console.log("record:", record);
 
-  // const deleteResult = await executeSQLsyntax({
-  //   query: `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
-  //   params: [data.tradeId, data.cashflowId, data.userId],
-  //   isReturnArray: false,
-  //   successMessage: "刪除成功",
-  //   errorMessage: "刪除失敗",
-  // });
-  // // console.log("deleteResult:", deleteResult);
-  // if (deleteResult.success === false) {
-  //   return { success: true, message: deleteResult.message, returnCode: -1 };
-  // }
+
 
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
@@ -278,11 +208,11 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
     "cashflow_trade",
     "cashflow_id",
     record.data.cashflowId,
-    record.data.tradeDatetime,
-    record.data.transactionType,
-    record.data.transactionType,
-    0,
-    record.data.tradeAmount,
+    // record.data.tradeDatetime,
+    // record.data.transactionType,
+    // record.data.transactionType,
+    // 0,
+    // record.data.tradeAmount,
   );
 
   if (deleteResult.success === true) {

@@ -102,12 +102,6 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
-    }
   }
 
 
@@ -123,7 +117,7 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
       data.updateData.tradeCategory,
       data.updateData.transactionType,
       data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
+      0,
       data.updateData.currency,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
@@ -137,11 +131,11 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     "currency_account_trade",
     "account_id",
     data.updateData.accountId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -167,14 +161,7 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
-    }
   }
-
 
 
   const updateResult = await updateRelatedData(
@@ -200,11 +187,11 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     "currency_account_trade",
     "account_id",
     data.updateData.accountId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -228,11 +215,11 @@ export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "currency_account_trade",
     "account_id",
     record.data.accountId,
-    record.data.tradeDatetime,
-    record.data.transactionType,
-    record.data.transactionType,
-    0,
-    record.data.tradeAmount,
+    // record.data.tradeDatetime,
+    // record.data.transactionType,
+    // record.data.transactionType,
+    // 0,
+    // record.data.tradeAmount,
   );
 
   if (deleteResult.success === true) {

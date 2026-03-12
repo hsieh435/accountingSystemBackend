@@ -103,17 +103,11 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeTotalPrice;
-    }
   }
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
+    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${0}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -122,14 +116,24 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     "stock_account_trade",
     "account_id",
     data.updateData.accountId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeTotalPrice,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeTotalPrice,
+    // data.oriData.oriTradeAmount,
   );
 
+
+
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
   // await updateStockStorageQuantity(data);
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
+
+
 
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -151,14 +155,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
   );
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeTotalPrice;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeTotalPrice;
-    }
   }
-
 
 
   const updateResult = await updateRelatedData(
@@ -172,14 +169,24 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     "stock_account_trade",
     "account_id",
     data.updateData.accountId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeTotalPrice,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeTotalPrice,
+    // data.oriData.oriTradeAmount,
   );
 
+
+
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
   // await updateStockStorageQuantity(data);
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
+
+
 
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -201,11 +208,11 @@ export async function removeStockAccountRecord(data: IStockAccountRecordList) {
     "stock_account_trade",
     "account_id",
     record.data.accountId,
-    record.data.tradeDatetime,
-    record.data.transactionType,
-    record.data.transactionType,
-    0,
-    record.data.tradeTotalPrice,
+    // record.data.tradeDatetime,
+    // record.data.transactionType,
+    // record.data.transactionType,
+    // 0,
+    // record.data.tradeTotalPrice,
   );
 
   if (deleteResult.success === true) {

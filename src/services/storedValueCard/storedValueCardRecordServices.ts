@@ -98,30 +98,13 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
-  } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
-    }
   }
 
-  // const insertResult = await executeSQLsyntax({
-  //   query: `
-  //     INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note)
-  //     VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}')
-  //   `,
-  //   isReturnArray: false,
-  //   successMessage: "新增成功",
-  //   errorMessage: "新增失敗",
-  // });
-  // if (insertResult.success === false) {
-  //   return { success: true, message: insertResult.message, returnCode: -1 };
-  // }
+
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
+    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${0}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -130,11 +113,11 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     "stored_value_card_trade",
     "stored_value_card_id",
     data.updateData.storedValueCardId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -167,14 +150,13 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
   }
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, remaining_amount = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
-    WHERE trade_id = $9 AND stored_value_card_id = $10 AND user_id = $11`,
+    `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
+    WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10`,
     [
       data.updateData.tradeDatetime,
       data.updateData.tradeCategory,
       data.updateData.transactionType,
       data.updateData.tradeAmount,
-      data.updateData.remainingAmount,
       data.updateData.tradeDescription,
       data.updateData.tradeNote,
       data.updateData.editedDatetime,
@@ -189,11 +171,11 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     "stored_value_card_trade",
     "stored_value_card_id",
     data.updateData.storedValueCardId,
-    data.updateData.tradeDatetime,
-    data.updateData.transactionType,
-    data.oriData.oriTransactionType,
-    data.updateData.tradeAmount,
-    data.oriData.oriTradeAmount,
+    // data.updateData.tradeDatetime,
+    // data.updateData.transactionType,
+    // data.oriData.oriTransactionType,
+    // data.updateData.tradeAmount,
+    // data.oriData.oriTradeAmount,
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -203,11 +185,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
 }
 
 export async function removeStoredValueCardRecordById(data: IStoredValueCardRecordList) {
-  // const query = `
-  //   DELETE FROM public.stored_value_card_trade
-  //   WHERE stored_value_card_id = '${data.storedValueCardId}' AND trade_id = '${data.tradeId}' AND user_id = '${data.userId}'`;
-
-  // return executeSQLsyntax({ query: query, isReturnArray: false, successMessage: "刪除成功", errorMessage: "刪除失敗" });
 
   const record = await searchingStoredValueCardRecordList({
     accountId: data.storedValueCardId,
@@ -228,11 +205,11 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
     "stored_value_card_trade",
     "stored_value_card_id",
     record.data.storedValueCardId,
-    record.data.tradeDatetime,
-    record.data.transactionType,
-    record.data.oriTransactionType,
-    0,
-    record.data.tradeAmount,
+    // record.data.tradeDatetime,
+    // record.data.transactionType,
+    // record.data.oriTransactionType,
+    // 0,
+    // record.data.tradeAmount,
   );
 
   if (deleteResult.success === true) {
