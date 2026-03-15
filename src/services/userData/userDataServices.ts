@@ -33,8 +33,7 @@ export async function accountDataChange(data: { userId: string; userName: string
 
   return executeSQLsyntax({
     query: `
-      UPDATE user_data
-        SET user_name = '${data.userName}', user_password = '${data.userNewPassword}'
+      UPDATE user_data SET user_name = '${data.userName}', user_password = '${data.userNewPassword}'
       WHERE user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",

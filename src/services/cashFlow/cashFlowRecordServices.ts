@@ -18,16 +18,7 @@ export interface ICashFlowRecordList {
   editedDatetime: string;
 }
 
-export interface IOriData {
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-}
 
-export interface ICashFlowRecordData {
-  updateData: ICashFlowRecordList;
-  oriData: IOriData;
-  userId: string;
-}
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   return executeSQLsyntax({
@@ -73,19 +64,19 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
   });
 }
 
-export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
+export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
   // console.log("data:", data);
-  data.updateData.tradeId = `CF-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+  data.tradeId = `CF-${data.currency}-${getCurrentTimestamp()}`;
+  data.createdDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
-    data.updateData.cashflowId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.cashflowId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -98,19 +89,19 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
-      data.updateData.tradeId,
-      data.updateData.cashflowId,
+      data.tradeId,
+      data.cashflowId,
       data.userId,
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
       0,
-      data.updateData.currency,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-      data.updateData.createdDatetime,
-      data.updateData.editedDatetime,
+      data.currency,
+      data.tradeDescription,
+      data.tradeNote,
+      data.createdDatetime,
+      data.editedDatetime,
     ],
     false,
     "新增成功",
@@ -118,12 +109,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
-    data.updateData.cashflowId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.cashflowId,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -132,19 +118,19 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordData) {
   }
 }
 
-export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
+export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
   // console.log("updateCashFlowRecordData:", data);
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
-    data.updateData.cashflowId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.cashflowId,
+    data.tradeId,
+    data.tradeDatetime,
   );
-  // console.log("dateDetectResult:", dateDetectResult);
+  console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
@@ -154,15 +140,15 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
     WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
     [
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-      data.updateData.editedDatetime,
-      data.updateData.tradeId,
-      data.updateData.cashflowId,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
+      data.tradeDescription,
+      data.tradeNote,
+      data.editedDatetime,
+      data.tradeId,
+      data.cashflowId,
       data.userId,
     ],
     false,
@@ -171,12 +157,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
-    data.updateData.cashflowId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.cashflowId,
   );
   // console.log("updateResult:", updateResult);
   if (updateResult.success === true && updateResult.returnCode === 0) {
@@ -187,16 +168,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordData) {
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-  // console.log("data:", data);
-
-  const record = await searchingCashFlowRecordById({
-    cashflowId: data.cashflowId,
-    tradeId: data.tradeId,
-    userId: data.userId,
-  });
-  // console.log("record:", record);
-
-
 
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
@@ -207,12 +178,7 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
     "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
-    record.data.cashflowId,
-    // record.data.tradeDatetime,
-    // record.data.transactionType,
-    // record.data.transactionType,
-    // 0,
-    // record.data.tradeAmount,
+    data.cashflowId,
   );
 
   if (deleteResult.success === true) {

@@ -151,8 +151,6 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
-  const record = await getCreditCardRecordById(data.tradeId, data.creditCardId, data.userId);
-
 
   const client = await pool.connect();
   await client.query("BEGIN");
@@ -160,8 +158,7 @@ export async function removeCreditCardRecordData(data: { tradeId: string; credit
   const deleteResult = await executeSQLsyntax({
     query: `
       DELETE FROM public.creditcard_trade
-      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}'
-        AND user_id = '${data.userId}'`,
+      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
     successMessage: "",
     errorMessage: "刪除失敗"
   });

@@ -79,7 +79,6 @@ export const error = ({
     status: statusCode,
     statusText: "OK",
   };
-  // res.json(response);
 
   return response;
 };

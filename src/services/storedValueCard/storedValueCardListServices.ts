@@ -29,6 +29,11 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
         WHERE currency_list.currency_code = stored_value_card_list.currency
         ) AS currency_data,
 
+        (
+        SELECT COUNT(*)::INTEGER FROM stored_value_card_trade
+        WHERE stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
+        ) AS frequency,
+
         COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
         COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month

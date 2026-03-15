@@ -20,19 +20,6 @@ export interface ICurrencyAccountRecordList {
   editedDatetime: string;
 }
 
-export interface IOriData {
-  oriTradeDatetime: string;
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-  oriTransactionType: string;
-}
-
-export interface ICurrencyAccountRecordData {
-  updateData: ICurrencyAccountRecordList;
-  oriData: IOriData;
-  userId: string;
-}
-
 
 
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
@@ -85,19 +72,19 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
 
 
 
-export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
+export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
   // console.log("data:", data);
-  data.updateData.tradeId = `CA-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+  data.tradeId = `CA-${data.currency}-${getCurrentTimestamp()}`;
+  data.createdDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
     "currency_account_trade",
     "account_id",
-    data.updateData.accountId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.accountId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -110,19 +97,19 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
-      data.updateData.tradeId,
-      data.updateData.accountId,
-      data.updateData.tradeDatetime,
+      data.tradeId,
+      data.accountId,
+      data.tradeDatetime,
       data.userId,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
       0,
-      data.updateData.currency,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-      data.updateData.createdDatetime,
-      data.updateData.editedDatetime,
+      data.currency,
+      data.tradeDescription,
+      data.tradeNote,
+      data.createdDatetime,
+      data.editedDatetime,
     ],
     false,
     "",
@@ -130,12 +117,7 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     "currency_account_list",
     "currency_account_trade",
     "account_id",
-    data.updateData.accountId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.accountId,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -147,16 +129,16 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
 
-export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordData) {
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_list",
     "currency_account_trade",
     "account_id",
-    data.updateData.accountId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.accountId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -168,16 +150,16 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     `UPDATE public.currency_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
     WHERE trade_id = $9 AND account_id = $10 AND user_id = $11`,
     [
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
-      data.updateData.currency,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-      data.updateData.editedDatetime,
-      data.updateData.tradeId,
-      data.updateData.accountId,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
+      data.currency,
+      data.tradeDescription,
+      data.tradeNote,
+      data.editedDatetime,
+      data.tradeId,
+      data.accountId,
       data.userId,
     ],
     false,
@@ -186,12 +168,7 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
     "currency_account_list",
     "currency_account_trade",
     "account_id",
-    data.updateData.accountId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.accountId,
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -203,7 +180,6 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordDa
 
 
 export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
-  const record = await getCurrencyAccountRecordById({ accountId: data.accountId, tradeId: data.tradeId, userId: data.userId});
 
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3`,
@@ -214,12 +190,7 @@ export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "currency_account_list",
     "currency_account_trade",
     "account_id",
-    record.data.accountId,
-    // record.data.tradeDatetime,
-    // record.data.transactionType,
-    // record.data.transactionType,
-    // 0,
-    // record.data.tradeAmount,
+    data.accountId,
   );
 
   if (deleteResult.success === true) {

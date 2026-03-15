@@ -36,6 +36,11 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
         WHERE currency_list.currency_code = creditcard_list.currency
         ) AS currency_data,
 
+        (
+        SELECT COUNT(*)::INTEGER FROM creditcard_trade
+        WHERE creditcard_trade.credit_card_id = creditcard_list.creditcard_id
+        ) AS frequency,
+
         creditcard_limit.limit_year_month,
         creditcard_limit.limit_credit,
         COALESCE(trade_totals.expenditure_current_month, 0) AS expenditure_current_month

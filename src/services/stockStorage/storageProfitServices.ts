@@ -1,6 +1,6 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { IStockAccountRecordData } from "@/services/stockAccount/stockAccountRecordServices";
+import { IStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
 
 export async function getStockStorageList(data: { stockAccountId: string; userId: string }) {
 
@@ -53,7 +53,7 @@ export async function searchingStockSProfitDetail(data: { stockAccountId: string
   });
 }
 
-export async function updateStockStorageQuantity(data: IStockAccountRecordData) {
+export async function updateStockStorageQuantity(data: IStockAccountRecordList) {
   const client = await pool.connect();
   await client.query("BEGIN");
 
@@ -62,7 +62,7 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordData) 
       SELECT * FROM public.stock_storage_list
       WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3
     `,
-    params: [data.updateData.accountId, data.userId, data.updateData.stockNo],
+    params: [data.accountId, data.userId, data.stockNo],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -78,11 +78,11 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordData) 
         INSERT INTO public.stock_storage_list(stock_account_id, user_id, stock_no, stock_name, storage_quantity)
         VALUES ($1, $2, $3, $4, $5)`,
       params: [
-        data.updateData.accountId,
+        data.accountId,
         data.userId,
-        data.updateData.stockNo,
-        data.updateData.stockName,
-        data.updateData.quantity,
+        data.stockNo,
+        data.stockName,
+        data.quantity,
       ],
       successMessage: "增加成功",
       errorMessage: "增加失敗",
@@ -100,9 +100,9 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordData) 
     const updateResult = await executeSQLsyntax({
       query: `
         UPDATE public.stock_storage_list
-        SET storage_quantity = ${currentQuantity + data.updateData.quantity}
+        SET storage_quantity = ${currentQuantity + data.quantity}
         WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
-      params: [data.updateData.accountId, data.userId, data.updateData.stockNo],
+      params: [data.accountId, data.userId, data.stockNo],
       successMessage: "更新成功",
       errorMessage: "更新失敗",
     });

@@ -19,18 +19,7 @@ export interface IStoredValueCardRecordList {
   editedDatetime: string;
 }
 
-export interface IOriData {
-  oriTradeDatetime: string;
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-  oriTransactionType: string;
-}
 
-export interface IStoredValueCardRecordData {
-  updateData: IStoredValueCardRecordList;
-  oriData: IOriData;
-  userId: string;
-}
 
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
 
@@ -81,18 +70,18 @@ export async function searchingStoredValueCardRecordById(data: {
   });
 }
 
-export async function insertStoredValueCardRecord(data: IStoredValueCardRecordData) {
-  data.updateData.tradeId = `SVC-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+export async function insertStoredValueCardRecord(data: IStoredValueCardRecordList) {
+  data.tradeId = `SVC-${data.currency}-${getCurrentTimestamp()}`;
+  data.createdDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
-    data.updateData.storedValueCardId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.storedValueCardId,
+    data.tradeId,
+    data.tradeDatetime,
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
@@ -104,7 +93,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ('${data.updateData.tradeId}', '${data.updateData.storedValueCardId}', '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', ${data.updateData.tradeAmount}, ${0}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
+    VALUES ('${data.tradeId}', '${data.storedValueCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, ${0}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -112,12 +101,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
     "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
-    data.updateData.storedValueCardId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.storedValueCardId,
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -126,26 +110,26 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordDa
   }
 }
 
-export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordData) {
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordList) {
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
-    data.updateData.storedValueCardId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.storedValueCardId,
+    data.tradeId,
+    data.tradeDatetime,
   );
 
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: false, message: dateDetectResult.message };
   } else if (dateDetectResult.success) {
-    if (data.updateData.transactionType === "income") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount + data.updateData.tradeAmount;
-    } else if (data.updateData.transactionType === "expense") {
-      data.updateData.remainingAmount = dateDetectResult.returnAmount - data.updateData.tradeAmount;
+    if (data.transactionType === "income") {
+      data.remainingAmount = dateDetectResult.returnAmount + data.tradeAmount;
+    } else if (data.transactionType === "expense") {
+      data.remainingAmount = dateDetectResult.returnAmount - data.tradeAmount;
     }
   }
 
@@ -153,15 +137,15 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     `UPDATE public.stored_value_card_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
     WHERE trade_id = $8 AND stored_value_card_id = $9 AND user_id = $10`,
     [
-      data.updateData.tradeDatetime,
-      data.updateData.tradeCategory,
-      data.updateData.transactionType,
-      data.updateData.tradeAmount,
-      data.updateData.tradeDescription,
-      data.updateData.tradeNote,
-      data.updateData.editedDatetime,
-      data.updateData.tradeId,
-      data.updateData.storedValueCardId,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
+      data.tradeDescription,
+      data.tradeNote,
+      data.editedDatetime,
+      data.tradeId,
+      data.storedValueCardId,
       data.userId,
     ],
     false,
@@ -170,12 +154,7 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
-    data.updateData.storedValueCardId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeAmount,
-    // data.oriData.oriTradeAmount,
+    data.storedValueCardId,
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -186,15 +165,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
 
 export async function removeStoredValueCardRecordById(data: IStoredValueCardRecordList) {
 
-  const record = await searchingStoredValueCardRecordList({
-    accountId: data.storedValueCardId,
-    currencyId: data.currency,
-    tradeCategory: "",
-    startingDate: "1970-01-01 00:00:00",
-    endDate: "2100-12-31 23:59:59",
-    userId: data.userId,
-  });
-
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.stored_value_card_trade WHERE stored_value_card_id = $1 AND trade_id = $2 AND user_id = $3`,
     [data.storedValueCardId, data.tradeId, data.userId],
@@ -204,12 +174,7 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
     "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
-    record.data.storedValueCardId,
-    // record.data.tradeDatetime,
-    // record.data.transactionType,
-    // record.data.oriTransactionType,
-    // 0,
-    // record.data.tradeAmount,
+    data.storedValueCardId,
   );
 
   if (deleteResult.success === true) {

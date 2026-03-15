@@ -28,26 +28,32 @@ export interface ICreditCardLimitation {
   creditPerMonth: number;
 }
 
-
-
 export async function getCreditCardLimitation(data: { creditcardId: string; userId: string; yearMonth: string }) {
-  // console.log("data:", data);
-  const startingDate = data.yearMonth ? `${data.yearMonth}-01` : "";
-  const endDate = data.yearMonth ? `${data.yearMonth}-28` : "";
-
   const params: any[] = [`%${data.creditcardId}%`, data.userId];
+
+  let dateWhereCondition = "";
+
   if (data.yearMonth) {
+    const [yearStr, monthStr] = data.yearMonth.split("-");
+    const lastDay = getDaysInMonth(Number(yearStr), Number(monthStr));
+    const startingDate = `${data.yearMonth}-01`;
+    const endDate = `${data.yearMonth}-${String(lastDay).padStart(2, "0")} 23:59:59`;
     params.push(startingDate, endDate);
+    dateWhereCondition = "AND creditcard_limit.limit_year_month BETWEEN $3 AND $4";
   }
 
   return executeSQLsyntax({
     query: `
-      SELECT creditcard_limit.*, creditcard_list.creditcard_name
+      SELECT creditcard_limit.*, creditcard_list.creditcard_name, COALESCE(SUM(cT.trade_amount), 0) as total_spent
       FROM public.creditcard_limit
       LEFT JOIN creditcard_list ON creditcard_limit.creditcard_id = creditcard_list.creditcard_id
+      LEFT JOIN creditcard_trade cT ON creditcard_limit.creditcard_id = cT.credit_card_id AND creditcard_limit.user_id = cT.user_id
+        AND cT.trade_datetime >= creditcard_limit.limit_year_month
+        AND cT.trade_datetime < creditcard_limit.limit_year_month + INTERVAL '1 month'
       WHERE creditcard_limit.creditcard_id LIKE $1
         AND creditcard_limit.user_id = $2
-        ${data.yearMonth ? "AND creditcard_limit.limit_year_month BETWEEN $3 AND $4" : ""}
+        ${dateWhereCondition}
+      GROUP BY creditcard_limit.creditcard_id, creditcard_limit.limit_year_month, creditcard_limit.user_id, creditcard_limit.limit_credit, creditcard_list.creditcard_name
       ORDER BY limit_year_month, creditcard_id`,
     params: params,
     isReturnArray: true,
@@ -56,14 +62,19 @@ export async function getCreditCardLimitation(data: { creditcardId: string; user
   });
 }
 
-
 export async function insertCreditCardLimitation({
   creditcardId,
   userId,
   startDate,
   expirationDate,
   creditPerMonth,
-}: { creditcardId: string; userId: string; startDate: string; expirationDate: string; creditPerMonth: number }) {
+}: {
+  creditcardId: string;
+  userId: string;
+  startDate: string;
+  expirationDate: string;
+  creditPerMonth: number;
+}) {
   console.log("data:", creditcardId, userId, startDate, expirationDate, creditPerMonth);
   const startYear = getCurrentYear(startDate);
   const startMonth = getCurrentMonth(startDate);
@@ -84,15 +95,12 @@ export async function insertCreditCardLimitation({
       if (insertResult.success === false) {
         return insertResult;
       }
-
     }
   }
   return { success: true, message: "新增成功", data: [] };
 }
 
-
 export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.creditcard_limit SET limit_credit = $4
@@ -103,8 +111,6 @@ export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
     errorMessage: "更新失敗",
   });
 }
-
-
 
 export async function calculateCreditCardExpenditure(params: {
   creditcardId: string;

@@ -32,6 +32,11 @@ export async function searchingCurrencyAccountList(data: { currencyId: string; u
         WHERE currency_list.currency_code = currency_account_list.currency
         ) AS currency_data,
 
+        (
+        SELECT COUNT(*)::INTEGER FROM currency_account_trade
+        WHERE currency_account_trade.account_id = currency_account_list.account_id
+        ) AS frequency,
+
         COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
         COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month

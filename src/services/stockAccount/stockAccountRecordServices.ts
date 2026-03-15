@@ -26,18 +26,7 @@ export interface IStockAccountRecordList {
   editedDatetime: string;
 }
 
-export interface IOriData {
-  oriTradeDatetime: string;
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-  oriTransactionType: string;
-}
 
-export interface IStockAccountRecordData {
-  updateData: IStockAccountRecordList;
-  oriData: IOriData;
-  userId: string;
-}
 
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
 
@@ -86,19 +75,19 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
   });
 }
 
-export async function insertStockAccountRecord(data: IStockAccountRecordData) {
+export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   // console.log("data:", data);
-  data.updateData.tradeId = `ST-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+  data.tradeId = `ST-${data.currency}-${getCurrentTimestamp()}`;
+  data.createdDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
     "stock_account_trade",
     "account_id",
-    data.updateData.accountId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.accountId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -107,7 +96,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ('ST-${data.updateData.currency}-${getCurrentTimestamp()}', ${data.updateData.accountId}, '${data.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', '${data.updateData.transactionType}', '${data.updateData.stockNo}', '${data.updateData.stockName}', ${data.updateData.pricePerShare}, ${data.updateData.quantity}, ${data.updateData.stockTotalPrice}, ${data.updateData.handlingFee}, ${data.updateData.transactionTax}, ${data.updateData.tradeTotalPrice}, ${0}, '${data.updateData.currency}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
+    VALUES ('ST-${data.currency}-${getCurrentTimestamp()}', ${data.accountId}, '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', '${data.stockNo}', '${data.stockName}', ${data.pricePerShare}, ${data.quantity}, ${data.stockTotalPrice}, ${data.handlingFee}, ${data.transactionTax}, ${data.tradeTotalPrice}, ${0}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
     [],
     false,
     "新增成功",
@@ -115,12 +104,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
     "stock_account_list",
     "stock_account_trade",
     "account_id",
-    data.updateData.accountId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeTotalPrice,
-    // data.oriData.oriTradeAmount,
+    data.accountId,
   );
 
 
@@ -142,16 +126,16 @@ export async function insertStockAccountRecord(data: IStockAccountRecordData) {
   }
 }
 
-export async function updateStockAccountRecord(data: IStockAccountRecordData) {
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+export async function updateStockAccountRecord(data: IStockAccountRecordList) {
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_list",
     "stock_account_trade",
     "account_id",
-    data.updateData.accountId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.accountId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
@@ -159,8 +143,8 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
 
 
   const updateResult = await updateRelatedData(
-    `UPDATE public.stock_account_trade SET trade_datetime = '${data.updateData.tradeDatetime}', stock_no = '${data.updateData.stockNo}', stock_name = '${data.updateData.stockName}', price_per_share = ${data.updateData.pricePerShare}, quantity = ${data.updateData.quantity}, stock_total_price = ${data.updateData.stockTotalPrice}, handling_fee = ${data.updateData.handlingFee}, transaction_tax = ${data.updateData.transactionTax}, trade_total_price = ${data.updateData.tradeTotalPrice}, trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
-    WHERE trade_id = '${data.updateData.tradeId}' AND account_id = '${data.updateData.accountId}' AND user_id = '${data.userId}'`,
+    `UPDATE public.stock_account_trade SET trade_datetime = '${data.tradeDatetime}', stock_no = '${data.stockNo}', stock_name = '${data.stockName}', price_per_share = ${data.pricePerShare}, quantity = ${data.quantity}, stock_total_price = ${data.stockTotalPrice}, handling_fee = ${data.handlingFee}, transaction_tax = ${data.transactionTax}, trade_total_price = ${data.tradeTotalPrice}, trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
+    WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     [],
     false,
     "更新成功",
@@ -168,12 +152,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
     "stock_account_list",
     "stock_account_trade",
     "account_id",
-    data.updateData.accountId,
-    // data.updateData.tradeDatetime,
-    // data.updateData.transactionType,
-    // data.oriData.oriTransactionType,
-    // data.updateData.tradeTotalPrice,
-    // data.oriData.oriTradeAmount,
+    data.accountId,
   );
 
 
@@ -196,7 +175,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordData) {
 }
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
-  const record = await getStockAccountRecordById(data.tradeId, data.accountId, data.userId);
 
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.stock_account_trade WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
@@ -207,12 +185,7 @@ export async function removeStockAccountRecord(data: IStockAccountRecordList) {
     "stock_account_list",
     "stock_account_trade",
     "account_id",
-    record.data.accountId,
-    // record.data.tradeDatetime,
-    // record.data.transactionType,
-    // record.data.transactionType,
-    // 0,
-    // record.data.tradeTotalPrice,
+    data.accountId,
   );
 
   if (deleteResult.success === true) {
