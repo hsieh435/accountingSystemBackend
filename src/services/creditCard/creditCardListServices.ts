@@ -144,7 +144,7 @@ export async function updateCreditCardData(data: ICreditCardData) {
   return executeSQLsyntax({
     query: `
       UPDATE public.creditcard_list
-      SET creditcard_name=$1, creditcard_bank_code=$2, creditcard_bank_name=$3, alert_value=$4, open_alert=$5, enable=$6, note=$7
+      SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, alert_value = $4, open_alert = $5, enable = $6, note = $7
       WHERE creditcard_id = $8 AND user_id = $9`,
     params: [
       data.creditcardName,

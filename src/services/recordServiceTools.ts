@@ -1,5 +1,4 @@
 import pool from "@/db";
-import { setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 
 export interface IFinanceRecordSearchingParams {
@@ -11,13 +10,6 @@ export interface IFinanceRecordSearchingParams {
   userId: string;
 }
 
-export interface IOriData {
-  oriTradeDatetime: string;
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-  oriTransactionType: string;
-}
-
 function sanitizeIdentifier(name: string): string {
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) {
     throw new Error(`Invalid identifier: ${name}`);
@@ -26,13 +18,12 @@ function sanitizeIdentifier(name: string): string {
 }
 
 export async function tradeDateTimeDetect(
-  flowListTableName: string,
   tradeTableName: string,
   flowColumn: string,
   flowId: string,
   recordId: string,
   recordTradeDatetime: string,
-): Promise<any> {
+): Promise<{ success: boolean; data?: any; message?: string; returnCode?: number }> {
   const tradeTable = sanitizeIdentifier(tradeTableName);
   const column = sanitizeIdentifier(flowColumn);
 
@@ -101,20 +92,17 @@ export async function updateRelatedData(
   successMessage: string,
   errorMessage: string,
   flowListTableName: string,
-  recordTableName: string,
-  flowColumn: string,
+  flowColumnName: string,
   flowId: string,
-  // tradeDatetime: string,
-  // dataTransactionType: string,
-  // oriTransactionType: string,
-  // dataTradeAmount: number,
-  // oriTradeAmount: number,
+  recordTableName: string,
+  recordColumnName: string
 ) {
   // console.log("mainExecuteQuery:", mainExecuteQuery);
   // console.log("mainExecuteParams:", mainExecuteParams);
   const flowListTable = sanitizeIdentifier(flowListTableName);
+  const flowColumn = sanitizeIdentifier(flowColumnName);
   const recordTable = sanitizeIdentifier(recordTableName);
-  const column = sanitizeIdentifier(flowColumn);
+  const recordColumn = sanitizeIdentifier(recordColumnName);
 
 
 
@@ -161,19 +149,19 @@ export async function updateRelatedData(
     const recordUpdateResult = await executeSQLsyntax({
       query: `
         WITH balance_calc AS (
-          SELECT rT.trade_id, rT.${column}, rT.trade_datetime, rT.trade_amount, rT.transaction_type, aT.starting_amount,
+          SELECT rT.trade_id, rT.${flowColumn}, rT.trade_datetime, rT.${recordColumn}, rT.transaction_type, aT.starting_amount,
           aT.starting_amount + SUM(CASE
-            WHEN rT.transaction_type = 'income' THEN rT.trade_amount ELSE -rT.trade_amount END
-              ) OVER (PARTITION BY rT.${column}
+            WHEN rT.transaction_type = 'income' THEN rT.${recordColumn} ELSE -rT.${recordColumn} END
+              ) OVER (PARTITION BY rT.${flowColumn}
               ORDER BY rT.trade_datetime ASC ROWS UNBOUNDED PRECEDING
               ) AS new_balance
             FROM ${recordTable} rT
-          JOIN ${flowListTable} aT ON rT.${column} = aT.${column}
-          WHERE rT.${column} = $1
+          JOIN ${flowListTable} aT ON rT.${flowColumn} = aT.${flowColumn}
+          WHERE rT.${flowColumn} = $1
           )
         UPDATE ${recordTable} SET remaining_amount = bc.new_balance
         FROM balance_calc bc
-        WHERE ${recordTable}.trade_id = bc.trade_id AND ${recordTable}.${column} = $1`,
+        WHERE ${recordTable}.trade_id = bc.trade_id AND ${recordTable}.${flowColumn} = $1`,
       params: [flowId],
       isReturnArray: true,
       successMessage: "更新成功",
@@ -197,8 +185,8 @@ export async function updateRelatedData(
     const flowUpdateResult = await executeSQLsyntax({
       query: `
         UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
-        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable} WHERE ${column} = $1) AND frt.${column} = $1)
-        WHERE ${column} = $1`,
+        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable} WHERE ${flowColumn} = $1) AND frt.${flowColumn} = $1)
+        WHERE ${flowColumn} = $1`,
       params: [flowId],
       isReturnArray: true,
       successMessage: "更新成功",
@@ -206,8 +194,8 @@ export async function updateRelatedData(
       client,
     });
 
-    console.log("recordUpdateResult:", recordUpdateResult);
-    console.log("flowUpdateResult:", flowUpdateResult);
+    // console.log("recordUpdateResult:", recordUpdateResult);
+    // console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
@@ -224,43 +212,3 @@ export async function updateRelatedData(
   }
   // console.log("更新餘額成功");
 }
-
-// export async function updateFlowRecordRemainingAmount(
-//   recordTable: string,
-//   column: string,
-//   amountDifference: number,
-//   tradeDatetime: string,
-//   flowId: string,
-// ) {
-
-//   return executeSQLsyntax({
-//     query:
-//       `UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1 WHERE trade_datetime > $2 AND ${column} = $3`,
-//     params: [amountDifference, tradeDatetime, flowId],
-//     isReturnArray: false,
-//     successMessage: "更新成功",
-//     errorMessage: "更新失敗",
-//   });
-// }
-
-// export async function updateFlowDataRemainingAmount(
-//   flowListTable: string,
-//   recordTable: string,
-//   flowColumn: string,
-//   flowId: string,
-// ) {
-//   // console.log("flowListTable:", flowListTable);
-//   // console.log("recordTable:", recordTable);
-//   // console.log("flowColumn:", flowColumn);
-//   // console.log("flowId:", flowId);
-
-//   return executeSQLsyntax({
-//     query: `
-//       UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
-//       WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable}) AND frt.${flowColumn} = '${flowId}')
-//       WHERE ${flowColumn} = '${flowId}'`,
-//     isReturnArray: false,
-//     successMessage: "更新成功",
-//     errorMessage: "更新失敗",
-//   });
-// }

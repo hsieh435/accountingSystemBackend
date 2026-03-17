@@ -1,5 +1,5 @@
-import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IStoredValueCardRecordList {
@@ -76,7 +76,6 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordLi
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
     data.storedValueCardId,
@@ -99,9 +98,10 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordLi
     "新增成功",
     "新增失敗",
     "stored_value_card_list",
-    "stored_value_card_trade",
     "stored_value_card_id",
     data.storedValueCardId,
+    "stored_value_card_trade",
+    "trade_amount",
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -114,7 +114,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "stored_value_card_list",
     "stored_value_card_trade",
     "stored_value_card_id",
     data.storedValueCardId,
@@ -125,12 +124,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
   // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: false, message: dateDetectResult.message };
-  } else if (dateDetectResult.success) {
-    if (data.transactionType === "income") {
-      data.remainingAmount = dateDetectResult.returnAmount + data.tradeAmount;
-    } else if (data.transactionType === "expense") {
-      data.remainingAmount = dateDetectResult.returnAmount - data.tradeAmount;
-    }
   }
 
   const updateResult = await updateRelatedData(
@@ -152,9 +145,10 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
     "更新成功",
     "更新失敗",
     "stored_value_card_list",
-    "stored_value_card_trade",
     "stored_value_card_id",
     data.storedValueCardId,
+    "stored_value_card_trade",
+    "trade_amount",
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -172,9 +166,10 @@ export async function removeStoredValueCardRecordById(data: IStoredValueCardReco
     "刪除成功",
     "刪除失敗",
     "stored_value_card_list",
-    "stored_value_card_trade",
     "stored_value_card_id",
     data.storedValueCardId,
+    "stored_value_card_trade",
+    "trade_amount",
   );
 
   if (deleteResult.success === true) {

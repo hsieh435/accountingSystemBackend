@@ -1,6 +1,6 @@
 import pool from "@/db";
-import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { type IFinanceRecordSearchingParams, tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface ICreditCardRecordList {
@@ -18,19 +18,6 @@ export interface ICreditCardRecordList {
   tradeNote: string;
   createdDatetime: string;
   editedDatetime: string;
-}
-
-export interface IOriData {
-  oriTradeDatetime: string;
-  oriTradeAmount: number;
-  oriRemainingAmount: number;
-  oriTransactionType: string;
-}
-
-export interface ICreditCardTradeData {
-  updateData: ICreditCardRecordList;
-  oriData: IOriData;
-  userId: string;
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
@@ -74,18 +61,17 @@ export async function getCreditCardRecordById(tradeId: string, creditCardId: str
   });
 }
 
-export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
-  data.updateData.tradeId = `CC-${data.updateData.currency}-${getCurrentTimestamp()}`;
-  data.updateData.createdDatetime = `${getTimeStampWithZone()}`;
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
+  data.tradeId = `CC-${data.currency}-${getCurrentTimestamp()}`;
+  data.createdDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "creditcard_list",
     "creditcard_trade",
     "credit_card_id",
-    data.updateData.creditCardId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.creditCardId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -99,7 +85,7 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   const insertResult = await executeSQLsyntax({
     query: `
       INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-      VALUES ('${data.updateData.tradeId}', '${data.updateData.creditCardId}', '${data.updateData.userId}', '${data.updateData.tradeDatetime}', '${data.updateData.tradeCategory}', ${data.updateData.tradeAmount}, ${data.updateData.remainingAmount}, '${data.updateData.currency}', '${data.updateData.billMonth}', '${data.updateData.tradeDescription}', '${data.updateData.tradeNote}', '${data.updateData.createdDatetime}', '${data.updateData.editedDatetime}')`,
+      VALUES ('${data.tradeId}', '${data.creditCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
     successMessage: "",
     errorMessage: "新增失敗"
   });
@@ -112,17 +98,16 @@ export async function insertCreditCardRecordData(data: ICreditCardTradeData) {
   return { success: true, message: "新增成功", returnCode: 0 };
 }
 
-export async function updateCreditCardData(data: ICreditCardTradeData) {
+export async function updateCreditCardData(data: ICreditCardRecordList) {
   // console.log("data:", data);
-  data.updateData.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "creditcard_list",
     "creditcard_trade",
     "credit_card_id",
-    data.updateData.creditCardId,
-    data.updateData.tradeId,
-    data.updateData.tradeDatetime,
+    data.creditCardId,
+    data.tradeId,
+    data.tradeDatetime,
   );
   console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
@@ -136,8 +121,8 @@ export async function updateCreditCardData(data: ICreditCardTradeData) {
 
   const updateResult = await executeSQLsyntax({
     query: `
-      UPDATE public.creditcard_trade SET trade_datetime = '${data.updateData.tradeDatetime}', trade_category = '${data.updateData.tradeCategory}', trade_amount = ${data.updateData.tradeAmount}, currency = '${data.updateData.currency}', bill_month = '${data.updateData.billMonth}', trade_description = '${data.updateData.tradeDescription}', trade_note = '${data.updateData.tradeNote}', edited_datetime = '${data.updateData.editedDatetime}'
-      WHERE trade_id = '${data.updateData.tradeId}' AND credit_card_id = '${data.updateData.creditCardId}' AND user_id = '${data.updateData.userId}'`,
+      UPDATE public.creditcard_trade SET trade_datetime = '${data.tradeDatetime}', trade_category = '${data.tradeCategory}', trade_amount = ${data.tradeAmount}, currency = '${data.currency}', bill_month = '${data.billMonth}', trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
+      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
     successMessage: "",
     errorMessage: "更新失敗"
   });

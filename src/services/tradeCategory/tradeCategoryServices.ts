@@ -1,3 +1,4 @@
+import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 
 // 收支類型 interface
@@ -14,7 +15,7 @@ export interface ITradeCategory {
 
 export async function getAllTradeCategory() {
   return executeSQLsyntax({
-    query: `SELECT * FROM trade_category ORDER BY sort`,
+    query: `SELECT * FROM trade_category ORDER BY sort, trade_code`,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗"
   });
@@ -53,9 +54,37 @@ export async function updateTradeCategory(data: ITradeCategory) {
 }
 
 export async function removeTradeCategory(code: string) {
-  return executeSQLsyntax({
+
+  const client = await pool.connect();
+  await client.query("BEGIN");
+
+  const deleteResult = await executeSQLsyntax({
     query: `DELETE FROM public.trade_category WHERE trade_code = '${code}'`,
     successMessage: "刪除成功",
-    errorMessage: "刪除失敗"
+    errorMessage: "刪除失敗",
+    client
   });
+
+
+  const updateResult = await executeSQLsyntax({
+    query: `
+      UPDATE table_a SET cashflow_trade = 'else' WHERE trade_category = '${code}';
+      UPDATE table_b SET stored_value_card_trade = 'else' WHERE trade_category = '${code}';
+      UPDATE table_c SET creditcard_trade = 'else' WHERE trade_category = '${code}';
+      UPDATE table_d SET currency_account_trade = 'else' WHERE trade_category = '${code}';
+      UPDATE table_e SET stock_account_trade = 'else' WHERE trade_category = '${code}';
+    `,
+    successMessage: "刪除成功",
+    errorMessage: "刪除失敗",
+    client
+  });
+
+
+  if (!deleteResult.success || !updateResult.success) {
+    await client.query("ROLLBACK");
+    return { success: false, message: "刪除失敗", returnCode: -1 };
+  } else {
+    await client.query("COMMIT");
+    return { success: true, message: "刪除成功", returnCode: 0 };
+  }
 }

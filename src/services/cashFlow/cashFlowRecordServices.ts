@@ -1,5 +1,5 @@
-import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface ICashFlowRecordList {
@@ -71,7 +71,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
     data.cashflowId,
@@ -107,9 +106,10 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
     "新增成功",
     "新增失敗",
     "cashflow_list",
-    "cashflow_trade",
     "cashflow_id",
     data.cashflowId,
+    "cashflow_trade",
+    "trade_amount",
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -123,7 +123,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "cashflow_list",
     "cashflow_trade",
     "cashflow_id",
     data.cashflowId,
@@ -155,9 +154,10 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
     "更新成功",
     "更新失敗",
     "cashflow_list",
-    "cashflow_trade",
     "cashflow_id",
     data.cashflowId,
+    "cashflow_trade",
+    "trade_amount",
   );
   // console.log("updateResult:", updateResult);
   if (updateResult.success === true && updateResult.returnCode === 0) {
@@ -176,9 +176,10 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
     "刪除成功",
     "刪除失敗",
     "cashflow_list",
-    "cashflow_trade",
     "cashflow_id",
     data.cashflowId,
+    "cashflow_trade",
+    "trade_amount",
   );
 
   if (deleteResult.success === true) {

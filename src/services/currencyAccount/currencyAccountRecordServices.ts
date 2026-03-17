@@ -1,5 +1,5 @@
-import { executeSQLsyntax } from "@/services/servicesTools";
 import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { executeSQLsyntax } from "@/services/servicesTools";
 import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface ICurrencyAccountRecordList {
@@ -79,7 +79,6 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "currency_account_list",
     "currency_account_trade",
     "account_id",
     data.accountId,
@@ -115,9 +114,10 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "",
     "新增失敗",
     "currency_account_list",
-    "currency_account_trade",
     "account_id",
     data.accountId,
+    "currency_account_trade",
+    "trade_amount",
   );
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -133,7 +133,6 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   data.editedDatetime = `${getTimeStampWithZone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
-    "currency_account_list",
     "currency_account_trade",
     "account_id",
     data.accountId,
@@ -166,9 +165,10 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "更新成功",
     "更新失敗",
     "currency_account_list",
-    "currency_account_trade",
     "account_id",
     data.accountId,
+    "currency_account_trade",
+    "trade_amount",
   );
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -188,9 +188,10 @@ export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "刪除成功",
     "刪除失敗",
     "currency_account_list",
-    "currency_account_trade",
     "account_id",
     data.accountId,
+    "currency_account_trade",
+    "trade_amount",
   );
 
   if (deleteResult.success === true) {
