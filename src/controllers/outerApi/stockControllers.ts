@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { handleControllersResponse } from "@/controllers/controllersTools";
-import { getCurrentYear } from "@/utils/tools";
+import { getCurrentYear, getCurrentYMD } from "@/utils/tools";
 
 // 搜尋股票列表
 export async function getAllStockList(req: Request, res: Response) {
@@ -40,7 +40,7 @@ export async function getStockPriceHistoryRecord(req: Request, res: Response) {
 
   try {
     const response = await fetch(
-      `https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=${data.stockNo}&date=${data.startDate}&end_date=${data.endDate}`,
+      `https://api.finmindtrade.com/api/v3/data?dataset=TaiwanStockPrice&stock_id=${data.stockNo}&date=${getCurrentYMD(data.startDate)}&end_date=${getCurrentYMD(data.endDate)}`,
       {
         method: "GET",
         headers: {
@@ -102,7 +102,7 @@ export async function getStockPerPbrInfo(req: Request, res: Response) {
 
   try {
     const response = await fetch(
-      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=${data.startDate}&end_date=${data.endDate}`,
+      `https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPER&data_id=${data.stockNo}&start_date=${getCurrentYMD(data.startDate)}&end_date=${getCurrentYMD(data.endDate)}`,
       {
         method: "GET",
         headers: {

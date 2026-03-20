@@ -22,7 +22,6 @@ export interface IStockAccountList {
 }
 
 export async function searchingStockAccountList(data: { currencyId: string; userId: string }) {
-
   return executeSQLsyntax({
     query: `
       SELECT stock_account_list.*,
@@ -36,9 +35,9 @@ export async function searchingStockAccountList(data: { currencyId: string; user
         WHERE stock_account_trade.account_id = stock_account_list.account_id
         ) AS frequency,
 
-        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
-        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
       FROM stock_account_list
 
       LEFT JOIN (
@@ -54,18 +53,17 @@ export async function searchingStockAccountList(data: { currencyId: string; user
       WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
       ORDER BY created_date`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function getStockAccountById(data: { accountId: string; userId: string }) {
-
   return executeSQLsyntax({
     query: `
       SELECT stock_account_list.*,
-        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
-        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
       FROM stock_account_list
 
       LEFT JOIN (
@@ -81,7 +79,7 @@ export async function getStockAccountById(data: { accountId: string; userId: str
       WHERE stock_account_list.account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -94,42 +92,40 @@ export async function insertStockAccountData(data: IStockAccountList) {
       VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
     isReturnArray: false,
     successMessage: "新增成功",
-    errorMessage: "新增失敗"
+    errorMessage: "新增失敗",
   });
 }
 
 export async function updateStockAccountData(data: IStockAccountList) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', starting_amount = ${data.startingAmount}, present_amount = ${data.presentAmount}, minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, enable = ${data.enable}, created_date = '${data.createdDate}', note = '${data.note}'
       WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
-    errorMessage: "更新失敗" });
+    errorMessage: "更新失敗",
+  });
 }
 
 export async function enableStockAccountStatus(data: IStockAccountList) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stock_account_list SET enable = ${true}
       WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
-    errorMessage: "更新失敗"
+    errorMessage: "更新失敗",
   });
 }
 
 export async function disableStockAccountStatus(data: IStockAccountList) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stock_account_list SET enable = ${false}
       WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
-    errorMessage: "更新失敗"
+    errorMessage: "更新失敗",
   });
 }
 
@@ -150,9 +146,8 @@ export async function removeStockAccountData(data: IStockAccountList) {
     return executeSQLsyntax({
       query: `DELETE FROM stock_account_trade WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
       successMessage: "移除成功",
-      errorMessage: "移除失敗"
+      errorMessage: "移除失敗",
     });
-
   } else {
     return { success: false, message: "刪除失敗" };
   }

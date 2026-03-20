@@ -20,7 +20,6 @@ export interface IStoredValueCardData {
 }
 
 export async function searchingStoredValueCardList(data: { currencyId: string; userId: string }) {
-
   return executeSQLsyntax({
     query: `
       SELECT stored_value_card_list.*,
@@ -34,9 +33,9 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
         WHERE stored_value_card_trade.stored_value_card_id = stored_value_card_list.stored_value_card_id
         ) AS frequency,
 
-        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
-        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
       FROM stored_value_card_list
 
       LEFT JOIN (
@@ -52,18 +51,17 @@ export async function searchingStoredValueCardList(data: { currencyId: string; u
       WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
       ORDER BY created_date`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function getStoredValueCardData(storedValueCardId: string, userId: string) {
-
   return executeSQLsyntax({
     query: `
       SELECT stored_value_card_list.*,
-        COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
-        COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
+        COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
       FROM stored_value_card_list
 
       LEFT JOIN (
@@ -79,7 +77,7 @@ export async function getStoredValueCardData(storedValueCardId: string, userId: 
       WHERE stored_value_card_list.stored_value_card_id = '${storedValueCardId}' AND stored_value_card_list.user_id = '${userId}'`,
     isReturnArray: false,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -93,43 +91,40 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
       VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
     isReturnArray: false,
     successMessage: "新增成功",
-    errorMessage: "新增失敗"
+    errorMessage: "新增失敗",
   });
 }
 
 export async function updateStoredValueCardData(data: IStoredValueCardData) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stored_value_card_list SET stored_value_card_name = '${data.storedValueCardName}', minimum_value_allowed = ${data.minimumValueAllowed}, maximum_value_allowed = ${data.maximumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}'
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "更新成功",
-    errorMessage: "更新失敗"
+    errorMessage: "更新失敗",
   });
 }
 
 export async function enableStoredValueCardStatus(data: IStoredValueCardData) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stored_value_card_list SET enable = ${true}
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "啟用成功",
-    errorMessage: "啟用失敗"
+    errorMessage: "啟用失敗",
   });
 }
 
 export async function disableStoredValueCardStatus(data: IStoredValueCardData) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.stored_value_card_list SET enable = ${false}
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "停用成功",
-    errorMessage: "停用失敗"
+    errorMessage: "停用失敗",
   });
 }
 
@@ -148,13 +143,12 @@ export async function removeStoredValueCardData(data: IStoredValueCardData) {
     // console.log("data:", recordData.data);
     return { success: false, message: "已有收支紀錄" };
   } else if (recordData.success && recordData.data.length === 0) {
-
     return executeSQLsyntax({
       query: `
         DELETE FROM public.stored_value_card_list
         WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
       successMessage: "刪除成功",
-      errorMessage: "刪除失敗"
+      errorMessage: "刪除失敗",
     });
   } else {
     return { success: false, message: "刪除失敗" };

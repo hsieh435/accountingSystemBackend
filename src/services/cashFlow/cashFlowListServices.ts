@@ -38,7 +38,7 @@ export async function searchingCashFlowList(data: IAccountSearchingParams) {
 
         COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_expenditure_current_month
       FROM cashflow_list
 
       LEFT JOIN (
@@ -64,7 +64,7 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
       SELECT cashflow_list.*,
         COALESCE(trade_totals.expense_sum, 0) AS expense_expenditure_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_expenditure_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_Loss_expenditure_current_month
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_expenditure_current_month
       FROM cashflow_list
 
       LEFT JOIN (
@@ -117,7 +117,6 @@ export async function insertCashflowData(data: ICashFlowData) {
 }
 
 export async function updateCashflowData(data: ICashFlowData) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.cashflow_list
@@ -139,7 +138,6 @@ export async function updateCashflowData(data: ICashFlowData) {
 }
 
 export async function enableCashFlowStatus(data: ICashFlowData) {
-
   return executeSQLsyntax({
     query: `
       UPDATE public.cashflow_list SET enable = ${true}
