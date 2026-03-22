@@ -1,6 +1,10 @@
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import {
+  type IFinanceRecordSearchingParams,
+  tradeDateTimeDetect,
+  updateRelatedData,
+} from "@/services/recordServiceToolsCopy";
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -17,8 +21,6 @@ export interface ICashFlowRecordList {
   createdDatetime: string;
   editedDatetime: string;
 }
-
-
 
 export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
   return executeSQLsyntax({
@@ -48,9 +50,16 @@ export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingP
         AND cashflow_trade.trade_category LIKE $4
         AND trade_datetime BETWEEN $5 AND $6
       ORDER BY trade_datetime`,
-    params: [data.userId, `%${data.accountId}%`, `%${data.currencyId}%`, `%${data.tradeCategory}%`, data.startingDate, data.endDate],
+    params: [
+      data.userId,
+      `%${data.accountId}%`,
+      `%${data.currencyId}%`,
+      `%${data.tradeCategory}%`,
+      data.startingDate,
+      data.endDate,
+    ],
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -67,8 +76,8 @@ export async function searchingCashFlowRecordById(data: { cashflowId: string; tr
 export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
   // console.log("data:", data);
   data.tradeId = `CF-${data.currency}-${getCurrentTimestamp()}`;
-  data.createdDatetime = `${getTimeStampWithZone()}`;
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.createdDatetime = `${setTimezone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_trade",
@@ -81,8 +90,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
-
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
@@ -120,7 +127,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
   // console.log("updateCashFlowRecordData:", data);
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "cashflow_trade",
@@ -133,7 +140,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
 
   const updateResult = await updateRelatedData(
     `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
@@ -168,7 +174,6 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
     [data.tradeId, data.cashflowId, data.userId],

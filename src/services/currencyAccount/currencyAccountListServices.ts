@@ -1,4 +1,4 @@
-import { getCurrentYear, getCurrentMonth, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentYear, getCurrentMonth, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { searchingCurrencyAccountRecordList } from "@/services/currencyAccount/currencyAccountRecordServices";
 
@@ -88,7 +88,7 @@ export async function getCurrencyAccountById(accountId: string, userId: string) 
 }
 
 export async function insertCurrencyAccountData(data: ICurrencyAccountData) {
-  const timeStampWithZone = getTimeStampWithZone();
+  const timeStampWithZone = setTimezone();
 
   return executeSQLsyntax({
     query: `

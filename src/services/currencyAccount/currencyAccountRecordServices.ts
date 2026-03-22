@@ -1,6 +1,10 @@
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import {
+  type IFinanceRecordSearchingParams,
+  tradeDateTimeDetect,
+  updateRelatedData,
+} from "@/services/recordServiceToolsCopy";
 
 export interface ICurrencyAccountRecordList {
   tradeId: string;
@@ -20,10 +24,7 @@ export interface ICurrencyAccountRecordList {
   editedDatetime: string;
 }
 
-
-
 export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
-
   return executeSQLsyntax({
     query: `
       SELECT currency_account_trade.*,
@@ -56,8 +57,6 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSea
   });
 }
 
-
-
 export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
   return executeSQLsyntax({
     query: `
@@ -70,13 +69,11 @@ export async function getCurrencyAccountRecordById(data: { tradeId: string; acco
   });
 }
 
-
-
 export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
   // console.log("data:", data);
   data.tradeId = `CA-${data.currency}-${getCurrentTimestamp()}`;
-  data.createdDatetime = `${getTimeStampWithZone()}`;
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.createdDatetime = `${setTimezone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_trade",
@@ -89,8 +86,6 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
-
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
@@ -126,11 +121,8 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   }
 }
 
-
-
-
 export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "currency_account_trade",
@@ -143,7 +135,6 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
 
   const updateResult = await updateRelatedData(
     `UPDATE public.currency_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
@@ -177,10 +168,7 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
   }
 }
 
-
-
 export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
-
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3`,
     [data.tradeId, data.accountId, data.userId],

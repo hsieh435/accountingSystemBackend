@@ -1,5 +1,5 @@
 import pool from "@/db";
-import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { insertCreditCardLimitation } from "@/services/creditCard/creditCardParamsServices";
 
@@ -88,7 +88,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
   const client = await pool.connect();
   await client.query("BEGIN");
   const currentTimestamp = getCurrentTimestamp();
-  const timeStampWithZone = getTimeStampWithZone();
+  const timeStampWithZone = setTimezone();
   const creditcardId = `CC-${currentTimestamp}`;
 
   const insertResult = await executeSQLsyntax({

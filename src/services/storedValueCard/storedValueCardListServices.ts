@@ -1,4 +1,4 @@
-import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { searchingStoredValueCardRecordList } from "@/services/storedValueCard/storedValueCardRecordServices";
 
@@ -83,7 +83,7 @@ export async function getStoredValueCardData(storedValueCardId: string, userId: 
 
 export async function insertStoredValueCardData(data: IStoredValueCardData) {
   const currentTimestamp = getCurrentTimestamp();
-  const timeStampWithZone = getTimeStampWithZone();
+  const timeStampWithZone = setTimezone();
 
   return executeSQLsyntax({
     query: `

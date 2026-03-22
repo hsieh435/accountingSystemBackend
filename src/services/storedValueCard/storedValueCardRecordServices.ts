@@ -1,6 +1,10 @@
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import {
+  type IFinanceRecordSearchingParams,
+  tradeDateTimeDetect,
+  updateRelatedData,
+} from "@/services/recordServiceToolsCopy";
 
 export interface IStoredValueCardRecordList {
   tradeId: string;
@@ -19,10 +23,7 @@ export interface IStoredValueCardRecordList {
   editedDatetime: string;
 }
 
-
-
 export async function searchingStoredValueCardRecordList(data: IFinanceRecordSearchingParams) {
-
   return executeSQLsyntax({
     query: `
       SELECT stored_value_card_trade.*,
@@ -72,8 +73,8 @@ export async function searchingStoredValueCardRecordById(data: {
 
 export async function insertStoredValueCardRecord(data: IStoredValueCardRecordList) {
   data.tradeId = `SVC-${data.currency}-${getCurrentTimestamp()}`;
-  data.createdDatetime = `${getTimeStampWithZone()}`;
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.createdDatetime = `${setTimezone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_trade",
@@ -87,8 +88,6 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordLi
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
-
 
   const insertResult = await updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
@@ -111,7 +110,7 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordLi
 }
 
 export async function updateStoredValueCardRecordData(data: IStoredValueCardRecordList) {
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stored_value_card_trade",
@@ -158,7 +157,6 @@ export async function updateStoredValueCardRecordData(data: IStoredValueCardReco
 }
 
 export async function removeStoredValueCardRecordById(data: IStoredValueCardRecordList) {
-
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.stored_value_card_trade WHERE stored_value_card_id = $1 AND trade_id = $2 AND user_id = $3`,
     [data.storedValueCardId, data.tradeId, data.userId],

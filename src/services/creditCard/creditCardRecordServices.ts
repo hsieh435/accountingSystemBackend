@@ -1,7 +1,7 @@
 import pool from "@/db";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect } from "@/services/recordServiceTools";
+import { type IFinanceRecordSearchingParams, tradeDateTimeDetect } from "@/services/recordServiceToolsCopy";
 
 export interface ICreditCardRecordList {
   tradeId: string;
@@ -21,7 +21,6 @@ export interface ICreditCardRecordList {
 }
 
 export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
-
   return executeSQLsyntax({
     query: `
       SELECT creditcard_trade.*,
@@ -45,26 +44,25 @@ export async function searchingCreditCardRecordList(data: IFinanceRecordSearchin
         AND creditcard_trade.trade_datetime BETWEEN '${data.startingDate}' AND '${data.endDate}'
       ORDER BY trade_datetime`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function getCreditCardRecordById(tradeId: string, creditCardId: string, userId: string) {
-
   return executeSQLsyntax({
     query: `
       SELECT * FROM creditcard_trade
       WHERE trade_id = '${tradeId}' AND credit_card_id = '${creditCardId}' AND user_id = '${userId}'`,
     isReturnArray: false,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
   data.tradeId = `CC-${data.currency}-${getCurrentTimestamp()}`;
-  data.createdDatetime = `${getTimeStampWithZone()}`;
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.createdDatetime = `${setTimezone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_trade",
@@ -73,11 +71,10 @@ export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
     data.tradeId,
     data.tradeDatetime,
   );
-  console.log("dateDetectResult:", dateDetectResult);
+  // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
 
   const client = await pool.connect();
   await client.query("BEGIN");
@@ -87,7 +84,7 @@ export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
       INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
       VALUES ('${data.tradeId}', '${data.creditCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
     successMessage: "",
-    errorMessage: "新增失敗"
+    errorMessage: "新增失敗",
   });
   if (!insertResult.success) {
     await client.query("ROLLBACK");
@@ -100,7 +97,7 @@ export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
 
 export async function updateCreditCardData(data: ICreditCardRecordList) {
   // console.log("data:", data);
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "creditcard_trade",
@@ -109,12 +106,10 @@ export async function updateCreditCardData(data: ICreditCardRecordList) {
     data.tradeId,
     data.tradeDatetime,
   );
-  console.log("dateDetectResult:", dateDetectResult);
+  // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
-
 
   const client = await pool.connect();
   await client.query("BEGIN");
@@ -124,7 +119,7 @@ export async function updateCreditCardData(data: ICreditCardRecordList) {
       UPDATE public.creditcard_trade SET trade_datetime = '${data.tradeDatetime}', trade_category = '${data.tradeCategory}', trade_amount = ${data.tradeAmount}, currency = '${data.currency}', bill_month = '${data.billMonth}', trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
       WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
     successMessage: "",
-    errorMessage: "更新失敗"
+    errorMessage: "更新失敗",
   });
   if (!updateResult.success) {
     await client.query("ROLLBACK");
@@ -136,7 +131,6 @@ export async function updateCreditCardData(data: ICreditCardRecordList) {
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
-
   const client = await pool.connect();
   await client.query("BEGIN");
 
@@ -145,7 +139,7 @@ export async function removeCreditCardRecordData(data: { tradeId: string; credit
       DELETE FROM public.creditcard_trade
       WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
     successMessage: "",
-    errorMessage: "刪除失敗"
+    errorMessage: "刪除失敗",
   });
 
   if (!deleteResult.success) {

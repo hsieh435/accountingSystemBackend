@@ -71,7 +71,7 @@ export async function tradeDateTimeDetect(
         // 新增到最後一筆紀錄
         return { success: true, message: "", returnCode: 0 };
 
-      } else if (nextTradeId !== null && prevTradeId !== null) {
+      } else  if (nextTradeId !== null && prevTradeId !== null) {
         // 新增到中間紀錄
         return { success: true, message: "", returnCode: 0 };
 
@@ -95,7 +95,7 @@ export async function updateRelatedData(
   flowColumnName: string,
   flowId: string,
   recordTableName: string,
-  recordColumnName: string,
+  recordColumnName: string
 ) {
   // console.log("mainExecuteQuery:", mainExecuteQuery);
   // console.log("mainExecuteParams:", mainExecuteParams);
@@ -145,8 +145,8 @@ export async function updateRelatedData(
 
 
 
-    // 合併更新 remaining_amount 與 present_amount，確保一次 SQL 執行完成
-    const flowUpdateResult = await executeSQLsyntax({
+    // 更新後續紀錄的 remaining_amount
+    const recordUpdateResult = await executeSQLsyntax({
       query: `
         WITH balance_calc AS (
           SELECT rT.trade_id, rT.${flowColumn}, rT.trade_datetime, rT.${recordColumn}, rT.transaction_type, aT.starting_amount,
@@ -158,19 +158,34 @@ export async function updateRelatedData(
             FROM ${recordTable} rT
           JOIN ${flowListTable} aT ON rT.${flowColumn} = aT.${flowColumn}
           WHERE rT.${flowColumn} = $1
-          ),
-        updated_record AS (
-          UPDATE ${recordTable} SET remaining_amount = bc.new_balance
-          FROM balance_calc bc
-          WHERE ${recordTable}.trade_id = bc.trade_id AND ${recordTable}.${flowColumn} = $1
-          RETURNING ${recordTable}.remaining_amount, ${recordTable}.trade_datetime
-        )
-        UPDATE ${flowListTable} SET present_amount = (
-          SELECT ur.remaining_amount
-          FROM updated_record ur
-          ORDER BY ur.trade_datetime DESC
-          LIMIT 1
-        )
+          )
+        UPDATE ${recordTable} SET remaining_amount = bc.new_balance
+        FROM balance_calc bc
+        WHERE ${recordTable}.trade_id = bc.trade_id AND ${recordTable}.${flowColumn} = $1`,
+      params: [flowId],
+      isReturnArray: true,
+      successMessage: "更新成功",
+      errorMessage: "更新失敗",
+      client,
+    });
+    // const recordUpdateResult = await executeSQLsyntax({
+    //   query: `
+    //     UPDATE ${recordTable} SET remaining_amount = remaining_amount + $1
+    //     WHERE trade_datetime > $2 AND ${column} = $3`,
+    //   params: [amountDifference, tradeDatetime, flowId],
+    //   isReturnArray: true,
+    //   successMessage: "更新成功",
+    //   errorMessage: "更新失敗",
+    //   client,
+    // });
+
+
+
+    // 更新 present_amount，pass client，加上 await 確保同步執行
+    const flowUpdateResult = await executeSQLsyntax({
+      query: `
+        UPDATE ${flowListTable} SET present_amount = (SELECT frt.remaining_amount FROM ${recordTable} AS frt
+        WHERE frt.trade_datetime = (SELECT MAX(trade_datetime) FROM ${recordTable} WHERE ${flowColumn} = $1) AND frt.${flowColumn} = $1)
         WHERE ${flowColumn} = $1`,
       params: [flowId],
       isReturnArray: true,
@@ -179,9 +194,10 @@ export async function updateRelatedData(
       client,
     });
 
+    // console.log("recordUpdateResult:", recordUpdateResult);
     // console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
-    if (!flowUpdateResult.success) {
+    if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
       return { success: false, message: "更新餘額失敗", returnCode: -1 };
     }

@@ -1,4 +1,4 @@
-import { getCurrentYear, getCurrentMonth, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentYear, getCurrentMonth, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { searchingStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
 
@@ -84,7 +84,7 @@ export async function getStockAccountById(data: { accountId: string; userId: str
 }
 
 export async function insertStockAccountData(data: IStockAccountList) {
-  const timeStampWithZone = getTimeStampWithZone();
+  const timeStampWithZone = setTimezone();
 
   return executeSQLsyntax({
     query: `

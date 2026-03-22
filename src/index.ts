@@ -6,8 +6,8 @@ dotenv.config();
 
 
 
-import cashFlowRoutes from "@/routes/cashFlowRoutes"
-import creditCardRoutes from "@/routes/creditCardRoutes"
+import cashFlowRoutes from "@/routes/cashFlowRoutes";
+import creditCardRoutes from "@/routes/creditCardRoutes";
 import currencyAccountRoutes from "@/routes/currencyAccountRoutes";
 import functionListRoutes from "@/routes/functionListRoutes";
 import generalRoutes from "@/routes/generalRoutes";

@@ -1,7 +1,11 @@
 import pool from "@/db";
-import { getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import {
+  type IFinanceRecordSearchingParams,
+  tradeDateTimeDetect,
+  updateRelatedData,
+} from "@/services/recordServiceToolsCopy";
 
 export interface IStockAccountRecordList {
   tradeId: string;
@@ -27,10 +31,7 @@ export interface IStockAccountRecordList {
   editedDatetime: string;
 }
 
-
-
 export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
-
   return executeSQLsyntax({
     query: `
       SELECT stock_account_trade.*,
@@ -59,12 +60,11 @@ export async function searchingStockAccountRecordList(data: IFinanceRecordSearch
       ORDER BY stock_account_trade.trade_datetime
     `,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function getStockAccountRecordById(tradeId: string, accountId: string, userId: string) {
-
   return executeSQLsyntax({
     query: `
       SELECT * FROM public.stock_account_trade
@@ -72,15 +72,15 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
     `,
     isReturnArray: false,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
 export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   // console.log("data:", data);
   data.tradeId = `ST-${data.currency}-${getCurrentTimestamp()}`;
-  data.createdDatetime = `${getTimeStampWithZone()}`;
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.createdDatetime = `${setTimezone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_trade",
@@ -93,7 +93,6 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
 
   // const client = await pool.connect();
   // await client.query("BEGIN");
@@ -112,8 +111,6 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
     "trade_total_price",
   );
 
-
-
   ////////////////////////////////
   ////////////////////////////////
   ////////////////////////////////
@@ -121,8 +118,6 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   ////////////////////////////////
   ////////////////////////////////
   ////////////////////////////////
-
-
 
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -132,7 +127,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
 }
 
 export async function updateStockAccountRecord(data: IStockAccountRecordList) {
-  data.editedDatetime = `${getTimeStampWithZone()}`;
+  data.editedDatetime = `${setTimezone()}`;
 
   const dateDetectResult = await tradeDateTimeDetect(
     "stock_account_trade",
@@ -144,7 +139,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
-
 
   const updateResult = await updateRelatedData(
     `UPDATE public.stock_account_trade SET trade_datetime = '${data.tradeDatetime}', stock_no = '${data.stockNo}', stock_name = '${data.stockName}', price_per_share = ${data.pricePerShare}, quantity = ${data.quantity}, stock_total_price = ${data.stockTotalPrice}, handling_fee = ${data.handlingFee}, transaction_tax = ${data.transactionTax}, trade_total_price = ${data.stockTotalPrice + data.handlingFee + data.transactionTax}, trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
@@ -160,8 +154,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
     "trade_total_price",
   );
 
-
-
   ////////////////////////////////
   ////////////////////////////////
   ////////////////////////////////
@@ -169,8 +161,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
   ////////////////////////////////
   ////////////////////////////////
   ////////////////////////////////
-
-
 
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };
@@ -180,7 +170,6 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
 }
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
-
   const deleteResult = await updateRelatedData(
     `DELETE FROM public.stock_account_trade WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     [],

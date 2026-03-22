@@ -1,4 +1,4 @@
-import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, getTimeStampWithZone } from "@/utils/tools";
+import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
@@ -87,7 +87,7 @@ export async function getCashFlowById(cashflowId: string, userId: string) {
 
 export async function insertCashflowData(data: ICashFlowData) {
   const currentTimestamp = getCurrentTimestamp();
-  const timeStampWithZone = getTimeStampWithZone();
+  const timeStampWithZone = setTimezone();
   const cashflowId = `CF-${currentTimestamp}`;
 
   return executeSQLsyntax({
