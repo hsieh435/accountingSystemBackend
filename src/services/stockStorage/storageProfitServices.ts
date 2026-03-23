@@ -69,7 +69,6 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
   console.log("searchingResult:", searchingResult);
 
   if (!searchingResult.success) {
-    await client.query("ROLLBACK");
     return { success: true, message: searchingResult.message, returnCode: -1 };
   } else if (searchingResult.success && searchingResult.data.length === 0) {
 
@@ -86,10 +85,12 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
       ],
       successMessage: "增加成功",
       errorMessage: "增加失敗",
+      client,
     });
 
     if (!increaseResult.success) {
       await client.query("ROLLBACK");
+      client.release();
       return { success: true, message: increaseResult.message, returnCode: -1 };
     }
 
@@ -105,15 +106,18 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
       params: [data.accountId, data.userId, data.stockNo],
       successMessage: "更新成功",
       errorMessage: "更新失敗",
+      client,
     });
 
     if (!updateResult.success) {
       await client.query("ROLLBACK");
+      client.release();
       return { success: true, message: updateResult.message, returnCode: -1 };
     }
   }
 
 
   await client.query("COMMIT");
+  client.release();
   return { success: true, message: "操作成功", returnCode: 0 };
 }

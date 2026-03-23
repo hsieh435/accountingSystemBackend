@@ -64,7 +64,6 @@ export async function disableStoredValueCard(req: Request, res: Response) {
 }
 
 export async function storedValueCardDelete(req: Request, res: Response) {
-  req.body.storedValueCardId = req.params.storedValueCardId;
   try {
     const result = await storedValueCardListServices.removeStoredValueCardData(req.body);
     await handleControllersResponse(res, req, result);

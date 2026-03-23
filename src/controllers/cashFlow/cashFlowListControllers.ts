@@ -48,11 +48,7 @@ export async function disableCashFlow(req: Request, res: Response) {
 
 export async function cashFlowDelete(req: Request, res: Response) {
   try {
-    const result = await cashFlowServices.removeCashflowData({
-      ...req.body,
-      cashflowId: req.params.cashflowId,
-    });
-
+    const result = await cashFlowServices.removeCashflowData(req.body);
     await handleControllersResponse(res, req, result);
   } catch (err) {
     await handleControllersResponse(res, req, err);

@@ -170,19 +170,17 @@ export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
 }
 
 export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
-  const accountData = await getCurrencyAccountById(data.accountId, data.userId);
-  const recordData = await searchingCurrencyAccountRecordList({
-    userId: data.userId,
-    currencyId: accountData.data.currency,
-    accountId: data.accountId,
-    tradeCategory: "",
-    startingDate: "1900-01-01 00:00:00",
-    endDate: "9999-12-31 23:59:59",
+
+  const recordDetectResult = await executeSQLsyntax({
+    query: `
+      SELECT 1 FROM public.currency_account_trade
+      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}' AND currency = '${data.currency}'
+      `,
   });
 
-  if (recordData.success && recordData.data.length > 0) {
+  if (recordDetectResult.success && recordDetectResult.data.length > 0) {
     return { success: true, message: "已有收支紀錄", returnCode: -1 };
-  } else if (recordData.success && recordData.data.length === 0) {
+  } else if (recordDetectResult.success && recordDetectResult.data.length === 0) {
     return executeSQLsyntax({
       query: `
         DELETE FROM public.currency_account_list
@@ -191,6 +189,6 @@ export async function removeCurrencyAccountData(data: ICurrencyAccountData) {
       errorMessage: "刪除失敗",
     });
   } else {
-    return { success: false, message: "刪除失敗" };
+    return { success: false, message: "刪除失敗", returnCode: -1 };
   }
 }

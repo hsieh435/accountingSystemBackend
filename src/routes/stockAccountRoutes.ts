@@ -15,7 +15,7 @@ router.post("/api/stockAccount/create", authenticateToken, stockAccountControlle
 router.put("/api/stockAccount/update", authenticateToken, stockAccountControllers.stockAccountUpdate);
 router.get("/api/stockAccount/enable/:stockAccountId", authenticateToken, stockAccountControllers.enableStockAccount);
 router.get("/api/stockAccount/disable/:stockAccountId", authenticateToken, stockAccountControllers.disableStockAccount);
-router.get("/api/stockAccount/delete/:stockAccountId", authenticateToken, stockAccountControllers.stockAccountDelete);
+router.post("/api/stockAccount/delete", authenticateToken, stockAccountControllers.stockAccountDelete);
 
 
 

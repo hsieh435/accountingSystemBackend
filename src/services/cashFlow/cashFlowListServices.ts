@@ -1,6 +1,5 @@
 import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingCashFlowRecordList } from "@/services/cashFlow/cashFlowRecordServices";
 
 export interface ICashFlowData {
   cashflowId: string;
@@ -162,20 +161,18 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
 }
 
 export async function removeCashflowData(data: ICashFlowData) {
-  const cashFlowData = await getCashFlowById(data.cashflowId, data.userId);
-  const recordData = await searchingCashFlowRecordList({
-    userId: data.userId,
-    currencyId: cashFlowData.data.currency,
-    accountId: data.cashflowId,
-    tradeCategory: "",
-    startingDate: "1900-01-01 00:00:00",
-    endDate: "9999-12-31 23:59:59",
+
+  const recordDetectResult = await executeSQLsyntax({
+    query: `
+      SELECT 1 FROM public.cashflow_list
+      WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}' AND currency = '${data.currency}'
+      `,
   });
-  // console.log("cashFlowData:", cashFlowData);
-  // console.log("recordData:", recordData);
-  if (recordData.success && recordData.data.length > 0) {
+
+  // console.log("recordDetectResult:", recordDetectResult);
+  if (recordDetectResult.success && recordDetectResult.data.length > 0) {
     return { success: true, message: "已有收支紀錄", returnCode: -1 };
-  } else if (recordData.success && recordData.data.length === 0) {
+  } else if (recordDetectResult.success && recordDetectResult.data.length === 0) {
     return executeSQLsyntax({
       query: `
         DELETE FROM public.cashflow_list
@@ -184,6 +181,6 @@ export async function removeCashflowData(data: ICashFlowData) {
       errorMessage: "刪除失敗",
     });
   } else {
-    return { success: false, message: "刪除失敗" };
+    return { success: false, message: "刪除失敗", returnCode: -1 };
   }
 }

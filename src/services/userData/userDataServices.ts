@@ -1,4 +1,4 @@
-import { getCurrentYMD } from "@/utils/tools";
+import { setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 
 
@@ -20,7 +20,7 @@ export async function createUser(data: { userAccount: string; userName: string; 
   return executeSQLsyntax({
     query: `
       INSERT INTO user_data (user_id, user_name, user_password, created_date)
-      VALUES ('${data.userAccount}', '${data.userName}', '${data.userPassword}', '${getCurrentYMD()}')`,
+      VALUES ('${data.userAccount}', '${data.userName}', '${data.userPassword}', '${setTimezone()}')`,
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗"

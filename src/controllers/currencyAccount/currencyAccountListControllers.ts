@@ -60,7 +60,6 @@ export async function disableCurrencyAccount(req: Request, res: Response) {
 }
 
 export async function currencyAccountDelete(req: Request, res: Response) {
-  req.body.accountId = req.params.accountId;
   try {
     const result = await currencyAccountServices.removeCurrencyAccountData(req.body);
     await handleControllersResponse(res, req, result);

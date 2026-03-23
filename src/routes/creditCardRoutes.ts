@@ -14,7 +14,7 @@ router.post("/api/creditCard/create", authenticateToken, creditCardControllers.c
 router.put("/api/creditCard/update", authenticateToken, creditCardControllers.creditCardUpdate);
 router.get("/api/creditCard/enable/:creditCardId", authenticateToken, creditCardControllers.enableCreditCard);
 router.get("/api/creditCard/disable/:creditCardId", authenticateToken, creditCardControllers.disableCreditCard);
-router.get("/api/creditCard/delete/:creditCardId", authenticateToken, creditCardControllers.creditCardDelete);
+router.post("/api/creditCard/delete", authenticateToken, creditCardControllers.creditCardDelete);
 
 
 

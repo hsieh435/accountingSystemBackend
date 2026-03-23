@@ -188,20 +188,16 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
 export async function removeCreditCardData(data: ICreditCardData) {
   const client = await pool.connect();
 
-  const searchingResult = await executeSQLsyntax({
+  const recordDetectResult = await executeSQLsyntax({
     query: `
-      SELECT * FROM creditcard_trade
-      WHERE credit_card_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-    successMessage: "",
-    errorMessage: "",
+      SELECT 1 FROM public.creditcard_trade
+      WHERE credit_card_id = '${data.creditcardId}' AND user_id = '${data.userId}' AND currency = '${data.currency}'
+      `,
   });
 
-  if (searchingResult.success === false) {
-    return { success: true, data: [], message: "連線錯誤，無法刪除", returnCode: -1 };
-  } else if (searchingResult.success === true && searchingResult.data.length > 0) {
-    return { success: true, data: [], message: "已有收支紀錄，無法刪除", returnCode: -1 };
-  } else if (searchingResult.success === true && searchingResult.data.length === 0) {
-
+  if (recordDetectResult.success === true && recordDetectResult.data.length > 0) {
+    return { success: true, message: "已有收支紀錄", returnCode: -1 };
+  } else if (recordDetectResult.success && recordDetectResult.data.length === 0) {
     await client.query("BEGIN");
 
     const deleteCreditcardDataResult = await executeSQLsyntax({
@@ -210,30 +206,32 @@ export async function removeCreditCardData(data: ICreditCardData) {
         WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
       successMessage: "刪除成功",
       errorMessage: "刪除失敗",
+      client,
     });
 
-    if (deleteCreditcardDataResult.success === false) {
+
+    const deleteParamsResult = await executeSQLsyntax({
+      query: `
+        DELETE FROM public.creditcard_limit
+        WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
+      successMessage: "刪除成功",
+      errorMessage: "刪除失敗",
+      client,
+    });
+
+
+    if (deleteCreditcardDataResult.success === true && deleteParamsResult.success === true) {
+      await client.query("COMMIT");
+      return { success: true, data: [], message: "刪除成功", returnCode: 1 };
+    } else if (!deleteCreditcardDataResult.success || !deleteParamsResult.success) {
       await client.query("ROLLBACK");
-      return { success: true, data: [], message: deleteCreditcardDataResult.message, returnCode: -1 };
-    } else if (deleteCreditcardDataResult.success === true) {
-
-      const deleteParamsResult = await executeSQLsyntax({
-        query: `
-          DELETE FROM public.creditcard_limit
-          WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
-        successMessage: "刪除成功",
-        errorMessage: "刪除失敗",
-      });
-
-      if (deleteParamsResult.success === false) {
-        await client.query("ROLLBACK");
-        return { success: true, data: [], message: deleteParamsResult.message, returnCode: -1 };
-      } else if (deleteParamsResult.success === true) {
-        await client.query("COMMIT");
-        return { success: true, data: [], message: "刪除成功", returnCode: 1 };
-      }
-
+      return { success: true, data: [], message: "刪除失敗", returnCode: -1 };
     }
 
+  } else {
+    await client.query("ROLLBACK");
+    return { success: false, data: [], message: "刪除失敗", returnCode: -1 };
   }
+
+  client.release();
 }

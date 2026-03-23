@@ -36,13 +36,14 @@ export async function executeSQLsyntax({
     // console.log("SQL rowCount:", sqlExecuteResult.rowCount);
 
 
-    if (sqlExecuteResult.command === "DELETE") {
-      return {
-        success: (sqlExecuteResult.rowCount ?? 0) > 0,
-        data: [],
-        message: (sqlExecuteResult.rowCount ?? 0) > 0 ? successMessage : errorMessage,
-      };
-    } else if (sqlExecuteResult.command === "") {
+    // if (sqlExecuteResult.command === "DELETE") {
+    //   return {
+    //     success: (sqlExecuteResult.rowCount ?? 0) > 0,
+    //     data: [],
+    //     message: (sqlExecuteResult.rowCount ?? 0) > 0 ? successMessage : errorMessage,
+    //   };
+    // } else
+    if (sqlExecuteResult.command === "") {
       return {
         success: (sqlExecuteResult.rowCount ?? 0) > 0,
         data: [],
@@ -66,7 +67,7 @@ export async function executeSQLsyntax({
 
 export async function testSQLsyntax() {
 
-  const sqlExecuteResult = await pool.query(`
+  return await pool.query(`
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime = '2025-12-14 19:30:00+08'
     UNION ALL

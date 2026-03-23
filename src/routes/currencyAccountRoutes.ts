@@ -11,7 +11,7 @@ router.post("/api/currencyAccount/create", authenticateToken, currencyAccountCon
 router.put("/api/currencyAccount/update", authenticateToken, currencyAccountControllers.currencyAccountUpdate);
 router.get("/api/currencyAccount/enable/:accountId", authenticateToken, currencyAccountControllers.enableCurrencyAccount);
 router.get("/api/currencyAccount/disable/:accountId", authenticateToken, currencyAccountControllers.disableCurrencyAccount);
-router.get("/api/currencyAccount/delete/:accountId", authenticateToken, currencyAccountControllers.currencyAccountDelete);
+router.post("/api/currencyAccount/delete", authenticateToken, currencyAccountControllers.currencyAccountDelete);
 
 
 router.post("/api/currencyAccountRecord/list", authenticateToken, currencyAccountRecordControllers.currencyAccountRecordList);

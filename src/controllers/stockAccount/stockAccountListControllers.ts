@@ -62,7 +62,6 @@ export async function disableStockAccount(req: Request, res: Response) {
 }
 
 export async function stockAccountDelete(req: Request, res: Response) {
-  req.body.accountId = req.params.stockAccountId;
   try {
     const result = await stockAccountServices.removeStockAccountData(req.body);
     await handleControllersResponse(res, req, result);

@@ -11,7 +11,7 @@ router.post("/api/storedValueCard/create", authenticateToken, storedValueCardLis
 router.put("/api/storedValueCard/update", authenticateToken, storedValueCardListControllers.storedValueCardUpdate);
 router.get("/api/storedValueCard/enable/:storedValueCardId", authenticateToken, storedValueCardListControllers.enableStoredValueCard);
 router.get("/api/storedValueCard/disable/:storedValueCardId", authenticateToken, storedValueCardListControllers.disableStoredValueCard);
-router.get("/api/storedValueCard/delete/:storedValueCardId", authenticateToken, storedValueCardListControllers.storedValueCardDelete);
+router.post("/api/storedValueCard/delete", authenticateToken, storedValueCardListControllers.storedValueCardDelete);
 
 
 

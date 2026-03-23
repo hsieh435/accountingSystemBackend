@@ -59,10 +59,10 @@ export async function creditCardUpdate(req: Request, res: Response) {
 }
 
 export async function creditCardDelete(req: Request, res: Response) {
-  req.body.creditcardId = req.params.creditCardId;
+  // req.body.creditcardId = req.params.creditCardId;
   try {
     const result = await creditCardServices.removeCreditCardData(req.body);
-    console.log("result:", result);
+    // console.log("result:", result);
     await handleControllersResponse(res, req, result);
   } catch (err) {
     console.log("err:", err);
