@@ -1,6 +1,5 @@
 import { getCurrentYear, getCurrentMonth, getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingStoredValueCardRecordList } from "@/services/storedValueCard/storedValueCardRecordServices";
 
 export interface IStoredValueCardData {
   storedValueCardId: string;

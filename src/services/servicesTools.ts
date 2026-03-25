@@ -19,12 +19,12 @@ export async function executeSQLsyntax({
   errorMessage?: string;
   isTesting?: boolean;
   client?: PoolClient;
-}): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number }> {
+}): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number; returnCode?: number }> {
   // console.log("Query executed:", query);
   // console.log("Parameters:", params);
 
   if (isTesting === true) {
-    return { success: true, data: [], message: "測試成功" };
+    return { success: true, data: [], message: "測試成功", returnCode: 0 };
   }
 
   try {
@@ -59,7 +59,7 @@ export async function executeSQLsyntax({
 
   } catch (error) {
     // console.error("SQL Execution Error:", error);
-    return { success: false, message: isTesting ? "測試失敗" : errorMessage, data: [], statusCode: 404 };
+    return { success: false, message: isTesting ? "測試失敗" : errorMessage, data: [], statusCode: 404, returnCode: -1 };
   }
 }
 
@@ -67,7 +67,7 @@ export async function executeSQLsyntax({
 
 export async function testSQLsyntax() {
 
-  return await pool.query(`
+  return pool.query(`
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime = '2025-12-14 19:30:00+08'
     UNION ALL

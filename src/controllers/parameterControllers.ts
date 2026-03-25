@@ -186,9 +186,9 @@ export async function getAll(req: Request, res: Response) {
   try {
     const result = await tradeService.getAllTradeCategory();
     // console.log("result:", result);
-    return await handleControllersResponse(res, req, result);
+    await handleControllersResponse(res, req, result);
   } catch (err) {
-    return await handleControllersResponse(res, req, err);
+    await handleControllersResponse(res, req, err);
   }
 };
 

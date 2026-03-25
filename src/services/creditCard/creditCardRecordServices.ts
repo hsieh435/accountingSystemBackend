@@ -1,7 +1,6 @@
-import pool from "@/db";
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { type IFinanceRecordSearchingParams, tradeDateTimeDetect } from "@/services/recordServiceToolsCopy";
+import { IFinanceRecordParams, tradeDateTimeDetect } from "@/services/recordServiceTools";
 
 export interface ICreditCardRecordList {
   tradeId: string;
@@ -20,7 +19,7 @@ export interface ICreditCardRecordList {
   editedDatetime: string;
 }
 
-export async function searchingCreditCardRecordList(data: IFinanceRecordSearchingParams) {
+export async function searchingCreditCardRecordList(data: IFinanceRecordParams) {
   return executeSQLsyntax({
     query: `
       SELECT creditcard_trade.*,
@@ -76,23 +75,13 @@ export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const client = await pool.connect();
-  await client.query("BEGIN");
-
-  const insertResult = await executeSQLsyntax({
+  return executeSQLsyntax({
     query: `
       INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
       VALUES ('${data.tradeId}', '${data.creditCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
-    successMessage: "",
+    successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
-  if (!insertResult.success) {
-    await client.query("ROLLBACK");
-    return { success: true, message: insertResult.message, returnCode: -1 };
-  }
-
-  await client.query("COMMIT");
-  return { success: true, message: "新增成功", returnCode: 0 };
 }
 
 export async function updateCreditCardData(data: ICreditCardRecordList) {
@@ -111,42 +100,22 @@ export async function updateCreditCardData(data: ICreditCardRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const client = await pool.connect();
-  await client.query("BEGIN");
-
-  const updateResult = await executeSQLsyntax({
+  return executeSQLsyntax({
     query: `
       UPDATE public.creditcard_trade SET trade_datetime = '${data.tradeDatetime}', trade_category = '${data.tradeCategory}', trade_amount = ${data.tradeAmount}, currency = '${data.currency}', bill_month = '${data.billMonth}', trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
       WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
-    successMessage: "",
+    successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
-  if (!updateResult.success) {
-    await client.query("ROLLBACK");
-    return { success: true, message: updateResult.message, returnCode: -1 };
-  }
-
-  await client.query("COMMIT");
-  return { success: true, message: "更新成功", returnCode: 0 };
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
-  const client = await pool.connect();
-  await client.query("BEGIN");
 
-  const deleteResult = await executeSQLsyntax({
+  return executeSQLsyntax({
     query: `
       DELETE FROM public.creditcard_trade
       WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
-    successMessage: "",
+    successMessage: "刪除成功",
     errorMessage: "刪除失敗",
   });
-
-  if (!deleteResult.success) {
-    await client.query("ROLLBACK");
-    return { success: true, message: "刪除失敗", returnCode: -1 };
-  }
-
-  await client.query("COMMIT");
-  return { success: true, message: "刪除成功", returnCode: 0 };
 }

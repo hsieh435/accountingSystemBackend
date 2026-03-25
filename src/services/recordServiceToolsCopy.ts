@@ -1,7 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 
-export interface IFinanceRecordSearchingParams {
+export interface IFinanceRecordParams {
   accountId: string;
   currencyId: string;
   tradeCategory: string;
@@ -28,7 +28,6 @@ export async function tradeDateTimeDetect(
   const column = sanitizeIdentifier(flowColumn);
 
   try {
-
     const tradeDatetimeSearchingResult = await executeSQLsyntax({
       query: `
         SELECT EXISTS (
@@ -46,7 +45,6 @@ export async function tradeDateTimeDetect(
       isReturnArray: false,
     });
 
-
     const hasExistsData = tradeDatetimeSearchingResult.data.hasexistsdata;
     const currentTradeId = tradeDatetimeSearchingResult.data.currenttradeid || null;
     const prevTradeId = tradeDatetimeSearchingResult.data.prevtradeid || null;
@@ -57,28 +55,21 @@ export async function tradeDateTimeDetect(
     // console.log("prevTradeId:", prevTradeId);
     // console.log("nextTradeId:", nextTradeId);
 
-
-
     if (hasExistsData === true && recordId !== currentTradeId) {
       return { success: false, message: "收支時間點重複", returnCode: 0 };
     } else {
-
       if (prevTradeId === null) {
         // 新增到最初紀錄或金流第一筆紀錄
         return { success: true, message: "", returnCode: 0 };
-
       } else if (nextTradeId === null && prevTradeId !== null) {
         // 新增到最後一筆紀錄
         return { success: true, message: "", returnCode: 0 };
-
-      } else  if (nextTradeId !== null && prevTradeId !== null) {
+      } else if (nextTradeId !== null && prevTradeId !== null) {
         // 新增到中間紀錄
         return { success: true, message: "", returnCode: 0 };
-
       } else {
         return { success: false, message: "查詢失敗", returnCode: -1 };
       }
-
     }
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };
@@ -95,7 +86,7 @@ export async function updateRelatedData(
   flowColumnName: string,
   flowId: string,
   recordTableName: string,
-  recordColumnName: string
+  recordColumnName: string,
 ) {
   // console.log("mainExecuteQuery:", mainExecuteQuery);
   // console.log("mainExecuteParams:", mainExecuteParams);
@@ -103,8 +94,6 @@ export async function updateRelatedData(
   const flowColumn = sanitizeIdentifier(flowColumnName);
   const recordTable = sanitizeIdentifier(recordTableName);
   const recordColumn = sanitizeIdentifier(recordColumnName);
-
-
 
   const client = await pool.connect();
   try {
@@ -121,9 +110,9 @@ export async function updateRelatedData(
     });
     if (mainExecuteResult.success === false) {
       await client.query("ROLLBACK");
-      return { success: false, message: errorMessage, returnCode: -1 };
+      return { success: true, message: errorMessage, returnCode: -1 };
     }
-
+    console.log("mainExecuteResult:", mainExecuteResult);
 
     // WITH balance_calc AS (
     //   SELECT ct.trade_id, ct.cashflow_id, ct.trade_datetime, ct.trade_amount, ct.transaction_type, cl.starting_amount,
@@ -142,8 +131,6 @@ export async function updateRelatedData(
     // )
     // UPDATE cashflow_trade SET remaining_amount = bc.new_balance
     // FROM balance_calc bc WHERE cashflow_trade.trade_id = bc.trade_id;
-
-
 
     // 更新後續紀錄的 remaining_amount
     const recordUpdateResult = await executeSQLsyntax({
@@ -179,8 +166,6 @@ export async function updateRelatedData(
     //   client,
     // });
 
-
-
     // 更新 present_amount，pass client，加上 await 確保同步執行
     const flowUpdateResult = await executeSQLsyntax({
       query: `
@@ -194,15 +179,14 @@ export async function updateRelatedData(
       client,
     });
 
-    // console.log("recordUpdateResult:", recordUpdateResult);
-    // console.log("flowUpdateResult:", flowUpdateResult);
+    console.log("recordUpdateResult:", recordUpdateResult);
+    console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success || !recordUpdateResult.success) {
       await client.query("ROLLBACK");
-      return { success: false, message: "更新餘額失敗", returnCode: -1 };
+      return { success: true, message: "更新餘額失敗", returnCode: -1 };
     }
     await client.query("COMMIT");
-    // console.log("更新餘額成功");
     return { success: true, message: "更新餘額成功", returnCode: 0 };
   } catch (err) {
     await client.query("ROLLBACK");

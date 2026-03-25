@@ -1,6 +1,5 @@
 import { getCurrentYear, getCurrentMonth, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingCurrencyAccountRecordList } from "@/services/currencyAccount/currencyAccountRecordServices";
 
 export interface ICurrencyAccountData {
   accountId: string;

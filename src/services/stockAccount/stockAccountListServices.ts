@@ -1,6 +1,5 @@
 import { getCurrentYear, getCurrentMonth, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import { searchingStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
 
 export interface IStockAccountList {
   accountId: string;
@@ -63,7 +62,8 @@ export async function getStockAccountById(data: { accountId: string; userId: str
       SELECT stock_account_list.*,
         COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month,
+        COALESCE(storage.stock_storage_list, '[]'::json) AS stock_storage_list
       FROM stock_account_list
 
       LEFT JOIN (
@@ -76,7 +76,52 @@ export async function getStockAccountById(data: { accountId: string; userId: str
         GROUP BY account_id
       ) trade_totals ON stock_account_list.account_id = trade_totals.account_id
 
-      WHERE stock_account_list.account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+      LEFT JOIN (
+        SELECT storage_list.stock_account_id,
+          storage_list.user_id,
+          json_agg(
+            json_build_object(
+              'stock_no', storage_list.stock_no,
+              'stock_name', storage_list.stock_name,
+              'storage_quantity', storage_list.storage_quantity,
+              'stock_storage_detail', COALESCE(storage_detail.stock_storage_detail, '[]'::json)
+            )
+            ORDER BY storage_list.stock_no
+          ) AS stock_storage_list
+        FROM public.stock_storage_list AS storage_list
+        LEFT JOIN (
+          SELECT ssd.account_id,
+            ssd.user_id,
+            ssd.stock_no,
+            json_agg(
+              json_build_object(
+                'stock_no', ssd.stock_no,
+                'stock_name', ssd.stock_name,
+                'trade_datetime', ssd.trade_datetime,
+                'price_per_share', ssd.price_per_share,
+                'quantity', ssd.quantity,
+                'stock_total_price', ssd.stock_total_price,
+                'handling_fee', ssd.handling_fee,
+                'transaction_tax', ssd.transaction_tax,
+                'trade_total_price', ssd.trade_total_price,
+                'currency', ssd.currency
+              )
+              ORDER BY ssd.trade_datetime
+            ) AS stock_storage_detail
+          FROM public.stock_storage_detail AS ssd
+          WHERE ssd.account_id = '${data.accountId}'
+            AND ssd.user_id = '${data.userId}'
+          GROUP BY ssd.account_id, ssd.user_id, ssd.stock_no
+        ) storage_detail
+          ON storage_list.stock_account_id = storage_detail.account_id
+          AND storage_list.user_id = storage_detail.user_id
+          AND storage_list.stock_no = storage_detail.stock_no
+        WHERE storage_list.stock_account_id = '${data.accountId}'
+          AND storage_list.user_id = '${data.userId}'
+        GROUP BY storage_list.stock_account_id, storage_list.user_id
+      ) storage ON stock_account_list.account_id = storage.stock_account_id AND stock_account_list.user_id = storage.user_id
+
+      WHERE stock_account_list.account_id = '${data.accountId}' AND stock_account_list.user_id = '${data.userId}'`,
     isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",

@@ -1,10 +1,6 @@
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import {
-  type IFinanceRecordSearchingParams,
-  tradeDateTimeDetect,
-  updateRelatedData,
-} from "@/services/recordServiceToolsCopy";
+import { IFinanceRecordParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface ICurrencyAccountRecordList {
   tradeId: string;
@@ -24,7 +20,7 @@ export interface ICurrencyAccountRecordList {
   editedDatetime: string;
 }
 
-export async function searchingCurrencyAccountRecordList(data: IFinanceRecordSearchingParams) {
+export async function searchingCurrencyAccountRecordList(data: IFinanceRecordParams) {
   return executeSQLsyntax({
     query: `
       SELECT currency_account_trade.*,
@@ -87,7 +83,7 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const insertResult = await updateRelatedData(
+  return updateRelatedData(
     `INSERT INTO public.currency_account_trade(trade_id, account_id, trade_datetime, user_id, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
@@ -114,12 +110,8 @@ export async function insertCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "currency_account_trade",
     "trade_amount",
   );
-  if (insertResult.success === true) {
-    return { success: true, message: "新增成功" };
-  } else if (insertResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
-  }
 }
+
 
 export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
   data.editedDatetime = `${setTimezone()}`;
@@ -136,7 +128,7 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const updateResult = await updateRelatedData(
+  return updateRelatedData(
     `UPDATE public.currency_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, currency = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
     WHERE trade_id = $9 AND account_id = $10 AND user_id = $11`,
     [
@@ -161,15 +153,11 @@ export async function updateCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "currency_account_trade",
     "trade_amount",
   );
-  if (updateResult.success === true) {
-    return { success: true, message: "更新成功" };
-  } else if (updateResult.success === false) {
-    return { success: true, message: "更新失敗", returnCode: -1 };
-  }
 }
 
+
 export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordList) {
-  const deleteResult = await updateRelatedData(
+  return updateRelatedData(
     `DELETE FROM public.currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3`,
     [data.tradeId, data.accountId, data.userId],
     false,
@@ -181,10 +169,4 @@ export async function removeCurrencyAccountRecord(data: ICurrencyAccountRecordLi
     "currency_account_trade",
     "trade_amount",
   );
-
-  if (deleteResult.success === true) {
-    return { success: true, message: "刪除成功" };
-  } else if (deleteResult.success === false) {
-    return { success: true, message: "刪除失敗", returnCode: -1 };
-  }
 }

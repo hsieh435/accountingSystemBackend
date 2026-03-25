@@ -6,8 +6,28 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
 
   return executeSQLsyntax({
     query: `
-      SELECT * FROM public.stock_storage_list
-      WHERE stock_account_id LIKE '%${data.stockAccountId}%' AND user_id = '${data.userId}'`,
+      SELECT
+        stock_storage_list.*,
+        COALESCE(stock_totals.totals, 0)::INTEGER AS storage_count
+      FROM stock_storage_list
+
+      LEFT JOIN (
+        SELECT
+          stock_storage_detail.account_id,
+          stock_storage_detail.user_id,
+          stock_storage_detail.stock_no,
+          SUM(stock_storage_detail.quantity) AS totals
+      FROM stock_storage_detail
+      GROUP BY
+        stock_storage_detail.account_id,
+        stock_storage_detail.user_id,
+        stock_storage_detail.stock_no
+      ) stock_totals
+      ON stock_storage_list.stock_account_id = stock_totals.account_id
+        AND stock_storage_list.stock_no = stock_totals.stock_no
+
+      WHERE stock_storage_list.stock_account_id LIKE '%${data.stockAccountId}%'
+        AND stock_storage_list.user_id = '${data.userId}'`,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗"
   });

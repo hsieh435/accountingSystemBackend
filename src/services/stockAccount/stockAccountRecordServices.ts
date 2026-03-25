@@ -1,11 +1,6 @@
-import pool from "@/db";
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import {
-  type IFinanceRecordSearchingParams,
-  tradeDateTimeDetect,
-  updateRelatedData,
-} from "@/services/recordServiceToolsCopy";
+import { IFinanceRecordParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface IStockAccountRecordList {
   tradeId: string;
@@ -31,7 +26,7 @@ export interface IStockAccountRecordList {
   editedDatetime: string;
 }
 
-export async function searchingStockAccountRecordList(data: IFinanceRecordSearchingParams) {
+export async function searchingStockAccountRecordList(data: IFinanceRecordParams) {
   return executeSQLsyntax({
     query: `
       SELECT stock_account_trade.*,
@@ -170,7 +165,7 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
 }
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {
-  const deleteResult = await updateRelatedData(
+  return updateRelatedData(
     `DELETE FROM public.stock_account_trade WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     [],
     false,
@@ -182,10 +177,4 @@ export async function removeStockAccountRecord(data: IStockAccountRecordList) {
     "stock_account_trade",
     "trade_total_price",
   );
-
-  if (deleteResult.success === true) {
-    return { success: true, message: "刪除成功" };
-  } else if (deleteResult.success === false) {
-    return { success: true, message: "刪除失敗", returnCode: -1 };
-  }
 }

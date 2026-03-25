@@ -112,6 +112,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
       data.expirationDate,
       timeStampWithZone,
       data.note,
+      client,
     ],
     isReturnArray: false,
     successMessage: "新增成功",
@@ -128,7 +129,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
     userId: data.userId,
     startDate: data.startDate,
     expirationDate: data.expirationDate,
-    creditPerMonth: data.limitCredit
+    creditPerMonth: data.limitCredit,
   });
   if (!limitInsertResult.success) {
     await client.query("ROLLBACK");

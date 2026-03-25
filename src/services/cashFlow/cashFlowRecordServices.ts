@@ -1,10 +1,6 @@
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
-import {
-  type IFinanceRecordSearchingParams,
-  tradeDateTimeDetect,
-  updateRelatedData,
-} from "@/services/recordServiceToolsCopy";
+import { IFinanceRecordParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
 
 export interface ICashFlowRecordList {
   tradeId: string;
@@ -22,7 +18,7 @@ export interface ICashFlowRecordList {
   editedDatetime: string;
 }
 
-export async function searchingCashFlowRecordList(data: IFinanceRecordSearchingParams) {
+export async function searchingCashFlowRecordList(data: IFinanceRecordParams) {
   return executeSQLsyntax({
     query: `
       SELECT cashflow_trade.*,
@@ -91,7 +87,7 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const insertResult = await updateRelatedData(
+  return updateRelatedData(
     `INSERT INTO public.cashflow_trade(trade_id, cashflow_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
     [
@@ -118,11 +114,6 @@ export async function insertCashFlowRecordData(data: ICashFlowRecordList) {
     "cashflow_trade",
     "trade_amount",
   );
-  if (insertResult.success === true) {
-    return { success: true, message: "新增成功" };
-  } else if (insertResult.success === false) {
-    return insertResult;
-  }
 }
 
 export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
@@ -141,7 +132,7 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const updateResult = await updateRelatedData(
+  return updateRelatedData(
     `UPDATE public.cashflow_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, trade_amount = $4, trade_description = $5, trade_note = $6, edited_datetime = $7
     WHERE trade_id = $8 AND cashflow_id = $9 AND user_id = $10`,
     [
@@ -165,16 +156,10 @@ export async function updateCashFlowRecordData(data: ICashFlowRecordList) {
     "cashflow_trade",
     "trade_amount",
   );
-  // console.log("updateResult:", updateResult);
-  if (updateResult.success === true && updateResult.returnCode === 0) {
-    return { success: true, message: "更新成功" };
-  } else {
-    return updateResult;
-  }
 }
 
 export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
-  const deleteResult = await updateRelatedData(
+  return updateRelatedData(
     `DELETE FROM public.cashflow_trade WHERE trade_id = $1 AND cashflow_id = $2 AND user_id = $3`,
     [data.tradeId, data.cashflowId, data.userId],
     false,
@@ -186,10 +171,4 @@ export async function deleteCashFlowRecordData(data: ICashFlowRecordList) {
     "cashflow_trade",
     "trade_amount",
   );
-
-  if (deleteResult.success === true) {
-    return { success: true, message: "刪除成功" };
-  } else if (deleteResult.success === false) {
-    return deleteResult;
-  }
 }
