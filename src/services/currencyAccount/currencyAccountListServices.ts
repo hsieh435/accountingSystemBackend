@@ -152,8 +152,8 @@ export async function enableCurrencyAccountStatus(data: ICurrencyAccountData) {
       UPDATE public.currency_account_list SET enable = ${true}
       WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
+    successMessage: "已啟用",
+    errorMessage: "啟用失敗",
   });
 }
 
@@ -163,8 +163,8 @@ export async function disableCurrencyAccountStatus(data: ICurrencyAccountData) {
       UPDATE public.currency_account_list SET enable = ${false}
       WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
+    successMessage: "已停用",
+    errorMessage: "停用失敗",
   });
 }
 

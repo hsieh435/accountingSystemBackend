@@ -60,7 +60,6 @@ export async function searchingCreditCardList(data: { currencyId: string; userId
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
-
 }
 
 export async function getCreditCardById(creditcardId: string, userId: string) {
@@ -145,15 +144,14 @@ export async function updateCreditCardData(data: ICreditCardData) {
   return executeSQLsyntax({
     query: `
       UPDATE public.creditcard_list
-      SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, alert_value = $4, open_alert = $5, enable = $6, note = $7
-      WHERE creditcard_id = $8 AND user_id = $9`,
+      SET creditcard_name = $1, creditcard_bank_code = $2, creditcard_bank_name = $3, alert_value = $4, open_alert = $5, note = $6
+      WHERE creditcard_id = $7 AND user_id = $8`,
     params: [
       data.creditcardName,
       data.creditcardBankCode,
       data.creditcardBankName,
       data.alertValue,
       data.openAlert,
-      data.enable,
       data.note,
       data.creditcardId,
       data.userId,
@@ -170,8 +168,8 @@ export async function enableCreditCardStatus(data: ICreditCardData) {
       UPDATE public.creditcard_list SET enable = ${true}
       WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "成功",
-    errorMessage: "失敗",
+    successMessage: "已啟用",
+    errorMessage: "啟用失敗",
   });
 }
 
@@ -181,8 +179,8 @@ export async function disableCreditCardStatus(data: ICreditCardData) {
       UPDATE public.creditcard_list SET enable = ${false}
       WHERE creditcard_id = '${data.creditcardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "成功",
-    errorMessage: "失敗",
+    successMessage: "已停用",
+    errorMessage: "停用失敗",
   });
 }
 
@@ -210,7 +208,6 @@ export async function removeCreditCardData(data: ICreditCardData) {
       client,
     });
 
-
     const deleteParamsResult = await executeSQLsyntax({
       query: `
         DELETE FROM public.creditcard_limit
@@ -220,7 +217,6 @@ export async function removeCreditCardData(data: ICreditCardData) {
       client,
     });
 
-
     if (deleteCreditcardDataResult.success === true && deleteParamsResult.success === true) {
       await client.query("COMMIT");
       return { success: true, data: [], message: "刪除成功", returnCode: 1 };
@@ -228,7 +224,6 @@ export async function removeCreditCardData(data: ICreditCardData) {
       await client.query("ROLLBACK");
       return { success: true, data: [], message: "刪除失敗", returnCode: -1 };
     }
-
   } else {
     await client.query("ROLLBACK");
     return { success: false, data: [], message: "刪除失敗", returnCode: -1 };

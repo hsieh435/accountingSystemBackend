@@ -161,8 +161,8 @@ export async function updateRelatedData(
         WHERE ${flowColumn} = $1`,
       params: [flowId],
       isReturnArray: true,
-      successMessage: "更新成功",
-      errorMessage: "更新失敗",
+      successMessage: "更新餘額成功",
+      errorMessage: "更新餘額失敗",
       client,
     });
 
@@ -170,11 +170,11 @@ export async function updateRelatedData(
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success) {
       await client.query("ROLLBACK");
-      return { success: true, message: "更新餘額失敗", returnCode: -1 };
+      return { success: true, message: flowUpdateResult.message, returnCode: -1 };
     }
     await client.query("COMMIT");
     // console.log("更新餘額成功");
-    return { success: true, message: "更新餘額成功", returnCode: 0 };
+    return { success: true, message: flowUpdateResult.message, returnCode: 0 };
   } catch (err) {
     await client.query("ROLLBACK");
     return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };

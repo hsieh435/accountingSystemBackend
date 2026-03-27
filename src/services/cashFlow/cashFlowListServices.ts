@@ -12,6 +12,7 @@ export interface ICashFlowData {
   minimumValueAllowed: number;
   alertValue: number;
   openAlert: boolean;
+  enable: boolean;
   createdDate: string;
   note: string;
 }
@@ -105,7 +106,7 @@ export async function insertCashflowData(data: ICashFlowData) {
       data.minimumValueAllowed,
       data.alertValue,
       data.openAlert,
-      true,
+      data.enable,
       timeStampWithZone,
       data.note,
     ],
@@ -141,9 +142,8 @@ export async function enableCashFlowStatus(data: ICashFlowData) {
     query: `
       UPDATE public.cashflow_list SET enable = ${true}
       WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`,
-    params: [],
     isReturnArray: false,
-    successMessage: "啟用成功",
+    successMessage: "已啟用",
     errorMessage: "啟用失敗",
   });
 }
@@ -153,9 +153,8 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
     query: `
       UPDATE public.cashflow_list SET enable = ${false}
       WHERE cashflow_id = '${data.cashflowId}' AND user_id = '${data.userId}'`,
-    params: [],
     isReturnArray: false,
-    successMessage: "停用成功",
+    successMessage: "已停用",
     errorMessage: "停用失敗",
   });
 }

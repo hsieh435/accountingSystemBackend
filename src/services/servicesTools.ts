@@ -35,7 +35,6 @@ export async function executeSQLsyntax({
     // console.log("SQL command:", sqlExecuteResult.command);
     // console.log("SQL rowCount:", sqlExecuteResult.rowCount);
 
-
     // if (sqlExecuteResult.command === "DELETE") {
     //   return {
     //     success: (sqlExecuteResult.rowCount ?? 0) > 0,
@@ -56,18 +55,21 @@ export async function executeSQLsyntax({
         message: successMessage,
       };
     }
-
   } catch (error) {
     // console.error("SQL Execution Error:", error);
-    return { success: false, message: isTesting ? "測試失敗" : errorMessage, data: [], statusCode: 404, returnCode: -1 };
+    return {
+      success: false,
+      message: isTesting ? "測試失敗" : errorMessage,
+      data: [],
+      statusCode: 404,
+      returnCode: -1,
+    };
   }
 }
 
-
-
 export async function testSQLsyntax() {
 
-  return pool.query(`
+  const sqlExecuteResult = await pool.query(`
     SELECT trade_datetime AS tradeDatetime FROM cashflow_trade
     WHERE trade_datetime = '2025-12-14 19:30:00+08'
     UNION ALL
@@ -76,5 +78,5 @@ export async function testSQLsyntax() {
     SELECT 1 FROM cashflow_trade WHERE trade_datetime = '2025-12-14 19:30:00+08'
     )`);
 
-  // console.log("Test SQL:", sqlExecuteResult.rows);
+  console.log("Test SQL:", sqlExecuteResult.rows);
 }

@@ -134,7 +134,24 @@ export async function insertStockAccountData(data: IStockAccountList) {
   return executeSQLsyntax({
     query: `
       INSERT INTO public.stock_account_list(account_id, user_id, account_type, account_name, account_bank_code, account_bank_name, currency, starting_amount, present_amount, minimum_value_allowed, alert_value, open_alert, enable, created_date, note)
-      VALUES ('${data.accountId}', '${data.userId}', '${data.accountType}', '${data.accountName}', '${data.accountBankCode}', '${data.accountBankName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+    params: [
+      data.accountId,
+      data.userId,
+      data.accountType,
+      data.accountName,
+      data.accountBankCode,
+      data.accountBankName,
+      data.currency,
+      data.startingAmount,
+      data.startingAmount,
+      data.minimumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      data.enable,
+      timeStampWithZone,
+      data.note,
+    ],
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
@@ -144,8 +161,23 @@ export async function insertStockAccountData(data: IStockAccountList) {
 export async function updateStockAccountData(data: IStockAccountList) {
   return executeSQLsyntax({
     query: `
-      UPDATE public.stock_account_list SET account_name = '${data.accountName}', account_bank_code = '${data.accountBankCode}', account_bank_name = '${data.accountBankName}', currency = '${data.currency}', starting_amount = ${data.startingAmount}, present_amount = ${data.presentAmount}, minimum_value_allowed = ${data.minimumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, enable = ${data.enable}, created_date = '${data.createdDate}', note = '${data.note}'
-      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+      UPDATE public.stock_account_list SET account_name = $1, account_bank_code = $2, account_bank_name = $3, currency = $4, starting_amount = $5, present_amount = $6, minimum_value_allowed = $7, alert_value = $8, open_alert = $9, created_date = $10, note = $11
+      WHERE account_id = $12 AND user_id = $13`,
+    params: [
+      data.accountName,
+      data.accountBankCode,
+      data.accountBankName,
+      data.currency,
+      data.startingAmount,
+      data.presentAmount,
+      data.minimumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      data.createdDate,
+      data.note,
+      data.accountId,
+      data.userId,
+    ],
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -154,23 +186,21 @@ export async function updateStockAccountData(data: IStockAccountList) {
 
 export async function enableStockAccountStatus(data: IStockAccountList) {
   return executeSQLsyntax({
-    query: `
-      UPDATE public.stock_account_list SET enable = ${true}
-      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    query: `UPDATE public.stock_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3`,
+    params: [true, data.accountId, data.userId],
     isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
+    successMessage: "已啟用",
+    errorMessage: "啟用失敗",
   });
 }
 
 export async function disableStockAccountStatus(data: IStockAccountList) {
   return executeSQLsyntax({
-    query: `
-      UPDATE public.stock_account_list SET enable = ${false}
-      WHERE account_id = '${data.accountId}' AND user_id = '${data.userId}'`,
+    query: `UPDATE public.stock_account_list SET enable = $1 WHERE account_id = $2 AND user_id = $3`,
+    params: [false, data.accountId, data.userId],
     isReturnArray: false,
-    successMessage: "更新成功",
-    errorMessage: "更新失敗",
+    successMessage: "已停用",
+    errorMessage: "停用失敗",
   });
 }
 

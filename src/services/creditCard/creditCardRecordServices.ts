@@ -1,4 +1,4 @@
-import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
+import { getCurrentTimestamp, setTimezone, getCurrentYear, getCurrentMonth } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { IFinanceRecordParams, tradeDateTimeDetect } from "@/services/recordServiceTools";
 
@@ -77,8 +77,22 @@ export async function insertCreditCardRecordData(data: ICreditCardRecordList) {
 
   return executeSQLsyntax({
     query: `
-      INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-      VALUES ('${data.tradeId}', '${data.creditCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', ${data.tradeAmount}, ${data.remainingAmount}, '${data.currency}', '${data.billMonth}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
+      INSERT INTO public.creditcard_trade(trade_id, credit_card_id, user_id, trade_datetime, trade_category, trade_amount, currency, bill_month, trade_description, trade_note, created_datetime, edited_datetime)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+    params: [
+      data.tradeId,
+      data.creditCardId,
+      data.userId,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.tradeAmount,
+      data.currency,
+      `${getCurrentYear(data.tradeDatetime)}-${getCurrentMonth(data.tradeDatetime)}`,
+      data.tradeDescription,
+      data.tradeNote,
+      data.createdDatetime,
+      data.editedDatetime,
+    ],
     successMessage: "新增成功",
     errorMessage: "新增失敗",
   });
@@ -102,15 +116,27 @@ export async function updateCreditCardData(data: ICreditCardRecordList) {
 
   return executeSQLsyntax({
     query: `
-      UPDATE public.creditcard_trade SET trade_datetime = '${data.tradeDatetime}', trade_category = '${data.tradeCategory}', trade_amount = ${data.tradeAmount}, currency = '${data.currency}', bill_month = '${data.billMonth}', trade_description = '${data.tradeDescription}', trade_note = '${data.tradeNote}', edited_datetime = '${data.editedDatetime}'
-      WHERE trade_id = '${data.tradeId}' AND credit_card_id = '${data.creditCardId}' AND user_id = '${data.userId}'`,
+      UPDATE public.creditcard_trade SET trade_datetime = $1, trade_category = $2, trade_amount = $3, currency = $4, bill_month = $5, trade_description = $6, trade_note = $7, edited_datetime = $8
+      WHERE trade_id = $9 AND credit_card_id = $10 AND user_id = $11`,
+    params: [
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.tradeAmount,
+      data.currency,
+      `${getCurrentYear(data.tradeDatetime)}-${getCurrentMonth(data.tradeDatetime)}`,
+      data.tradeDescription,
+      data.tradeNote,
+      data.editedDatetime,
+      data.tradeId,
+      data.creditCardId,
+      data.userId,
+    ],
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });
 }
 
 export async function removeCreditCardRecordData(data: { tradeId: string; creditCardId: string; userId: string }) {
-
   return executeSQLsyntax({
     query: `
       DELETE FROM public.creditcard_trade

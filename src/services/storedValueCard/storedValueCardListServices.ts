@@ -81,13 +81,29 @@ export async function getStoredValueCardData(storedValueCardId: string, userId: 
 }
 
 export async function insertStoredValueCardData(data: IStoredValueCardData) {
-  const currentTimestamp = getCurrentTimestamp();
+  data.storedValueCardId = `SVC-${data.currency}-${getCurrentTimestamp()}`;
   const timeStampWithZone = setTimezone();
 
   return executeSQLsyntax({
     query: `
       INSERT INTO public.stored_value_card_list(stored_value_card_id, user_id, account_type, stored_value_card_name, currency, starting_amount, present_amount, minimum_value_allowed, maximum_value_allowed, alert_value, open_alert, enable, created_date, note)
-      VALUES ('SVC-${currentTimestamp}', '${data.userId}', '${data.accountType}', '${data.storedValueCardName}', '${data.currency}', ${data.startingAmount}, ${data.startingAmount}, ${data.minimumValueAllowed}, ${data.maximumValueAllowed}, ${data.alertValue}, ${data.openAlert}, ${data.enable}, '${timeStampWithZone}', '${data.note}')`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+    params: [
+      data.storedValueCardId,
+      data.userId,
+      data.accountType,
+      data.storedValueCardName,
+      data.currency,
+      data.startingAmount,
+      data.startingAmount,
+      data.minimumValueAllowed,
+      data.maximumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      data.enable,
+      timeStampWithZone,
+      data.note,
+    ],
     isReturnArray: false,
     successMessage: "新增成功",
     errorMessage: "新增失敗",
@@ -97,8 +113,18 @@ export async function insertStoredValueCardData(data: IStoredValueCardData) {
 export async function updateStoredValueCardData(data: IStoredValueCardData) {
   return executeSQLsyntax({
     query: `
-      UPDATE public.stored_value_card_list SET stored_value_card_name = '${data.storedValueCardName}', minimum_value_allowed = ${data.minimumValueAllowed}, maximum_value_allowed = ${data.maximumValueAllowed}, alert_value = ${data.alertValue}, open_alert = ${data.openAlert}, note = '${data.note}'
-      WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
+      UPDATE public.stored_value_card_list SET stored_value_card_name = $1, minimum_value_allowed = $2, maximum_value_allowed = $3, alert_value = $4, open_alert = $5, note = $6
+      WHERE stored_value_card_id = $7 AND user_id = $8`,
+    params: [
+      data.storedValueCardName,
+      data.minimumValueAllowed,
+      data.maximumValueAllowed,
+      data.alertValue,
+      data.openAlert,
+      data.note,
+      data.storedValueCardId,
+      data.userId,
+    ],
     isReturnArray: false,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
@@ -111,7 +137,7 @@ export async function enableStoredValueCardStatus(data: IStoredValueCardData) {
       UPDATE public.stored_value_card_list SET enable = ${true}
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "啟用成功",
+    successMessage: "已啟用",
     errorMessage: "啟用失敗",
   });
 }
@@ -122,7 +148,7 @@ export async function disableStoredValueCardStatus(data: IStoredValueCardData) {
       UPDATE public.stored_value_card_list SET enable = ${false}
       WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}'`,
     isReturnArray: false,
-    successMessage: "停用成功",
+    successMessage: "已停用",
     errorMessage: "停用失敗",
   });
 }

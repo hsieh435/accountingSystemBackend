@@ -87,8 +87,22 @@ export async function insertStoredValueCardRecord(data: IStoredValueCardRecordLi
 
   return updateRelatedData(
     `INSERT INTO public.stored_value_card_trade(trade_id, stored_value_card_id, user_id, trade_datetime, trade_category, transaction_type, trade_amount, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ('${data.tradeId}', '${data.storedValueCardId}', '${data.userId}', '${data.tradeDatetime}', '${data.tradeCategory}', '${data.transactionType}', ${data.tradeAmount}, ${0}, '${data.currency}', '${data.tradeDescription}', '${data.tradeNote}', '${data.createdDatetime}', '${data.editedDatetime}')`,
-    [],
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+    [
+      data.tradeId,
+      data.storedValueCardId,
+      data.userId,
+      data.tradeDatetime,
+      data.tradeCategory,
+      data.transactionType,
+      data.tradeAmount,
+      0,
+      data.currency,
+      data.tradeDescription,
+      data.tradeNote,
+      data.createdDatetime,
+      data.editedDatetime,
+    ],
     false,
     "新增成功",
     "新增失敗",

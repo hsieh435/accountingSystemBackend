@@ -56,7 +56,6 @@ export async function getCreditCardLimitation(data: { creditcardId: string; user
       GROUP BY creditcard_limit.creditcard_id, creditcard_limit.limit_year_month, creditcard_limit.user_id, creditcard_limit.limit_credit, creditcard_list.creditcard_name
       ORDER BY limit_year_month, creditcard_id`,
     params: params,
-    isReturnArray: true,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });
@@ -106,7 +105,6 @@ export async function updateCreditCardLimitation(data: ICreditCardLimitation) {
       UPDATE public.creditcard_limit SET limit_credit = $4
       WHERE creditcard_id = $1 AND user_id = $2 AND limit_year_month = $3`,
     params: [data.creditcardId, data.userId, data.limitYearMonth, data.creditPerMonth],
-    isReturnArray: true,
     successMessage: "更新成功",
     errorMessage: "更新失敗",
   });

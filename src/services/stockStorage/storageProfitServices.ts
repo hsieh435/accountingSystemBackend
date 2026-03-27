@@ -3,6 +3,23 @@ import { executeSQLsyntax } from "@/services/servicesTools";
 import { IStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
 
 export async function getStockStorageList(data: { stockAccountId: string; userId: string }) {
+  // UPDATE stock_storage_list
+  // SET storage_quantity = totals.net_quantity
+  // FROM (
+  //   SELECT stock_no, stock_name,
+  //     SUM(
+  //       CASE
+  //         WHEN trade_category = 'stockBuy'  THEN quantity
+  //         WHEN trade_category = 'stockDividend'  THEN quantity
+  //         WHEN trade_category = 'stockSell' THEN -quantity
+  //         ELSE 0
+  //       END
+  //     ) AS net_quantity
+  //   FROM stock_account_trade
+  //   WHERE account_id = '202508292251' AND user_id = 'mike'
+  //   GROUP BY stock_no, stock_name
+  // ) totals
+  // WHERE stock_storage_list.stock_no = totals.stock_no;
 
   return executeSQLsyntax({
     query: `
@@ -26,10 +43,10 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
       ON stock_storage_list.stock_account_id = stock_totals.account_id
         AND stock_storage_list.stock_no = stock_totals.stock_no
 
-      WHERE stock_storage_list.stock_account_id LIKE '%${data.stockAccountId}%'
+      WHERE stock_storage_list.stock_account_id = '${data.stockAccountId}'
         AND stock_storage_list.user_id = '${data.userId}'`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -57,7 +74,7 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
       WHERE ssl.stock_account_id = '${stockAccountId}' AND ssl.user_id = '${userId}'
       GROUP BY ssl.stock_account_id, ssl.user_id, ssl.stock_no`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -66,10 +83,10 @@ export async function searchingStockSProfitDetail(data: { stockAccountId: string
   return executeSQLsyntax({
     query: `
       SELECT * FROM public.stock_storage_detail
-      WHERE account_id LIKE '%${data.stockAccountId}%' AND user_id = '${data.userId}' AND stock_no = '${data.stockNo}'
+      WHERE account_id = '${data.stockAccountId}' AND user_id = '${data.userId}' AND stock_no = '${data.stockNo}'
       ORDER BY trade_datetime`,
     successMessage: "查詢成功",
-    errorMessage: "查詢失敗"
+    errorMessage: "查詢失敗",
   });
 }
 
@@ -78,10 +95,7 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
   await client.query("BEGIN");
 
   const searchingResult = await executeSQLsyntax({
-    query: `
-      SELECT * FROM public.stock_storage_list
-      WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3
-    `,
+    query: `SELECT * FROM public.stock_storage_list WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
     params: [data.accountId, data.userId, data.stockNo],
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
@@ -96,13 +110,7 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
       query: `
         INSERT INTO public.stock_storage_list(stock_account_id, user_id, stock_no, stock_name, storage_quantity)
         VALUES ($1, $2, $3, $4, $5)`,
-      params: [
-        data.accountId,
-        data.userId,
-        data.stockNo,
-        data.stockName,
-        data.quantity,
-      ],
+      params: [data.accountId, data.userId, data.stockNo, data.stockName, data.quantity],
       successMessage: "增加成功",
       errorMessage: "增加失敗",
       client,
@@ -116,7 +124,6 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
 
   } else if (searchingResult.success && searchingResult.data.length > 0) {
     const currentQuantity = Number(searchingResult.data[0].storageQuantity);
-
 
     const updateResult = await executeSQLsyntax({
       query: `
@@ -135,7 +142,6 @@ export async function updateStockStorageQuantity(data: IStockAccountRecordList) 
       return { success: true, message: updateResult.message, returnCode: -1 };
     }
   }
-
 
   await client.query("COMMIT");
   client.release();

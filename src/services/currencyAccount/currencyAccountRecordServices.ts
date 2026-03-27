@@ -55,10 +55,8 @@ export async function searchingCurrencyAccountRecordList(data: IFinanceRecordPar
 
 export async function getCurrencyAccountRecordById(data: { tradeId: string; accountId: string; userId: string }) {
   return executeSQLsyntax({
-    query: `
-      SELECT * FROM currency_account_trade
-      WHERE trade_id = '${data.tradeId}' AND account_id = '${data.accountId}'
-        AND user_id = '${data.userId}'`,
+    query: `SELECT * FROM currency_account_trade WHERE trade_id = $1 AND account_id = $2 AND user_id = $3`,
+    params: [data.tradeId, data.accountId, data.userId],
     isReturnArray: false,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
