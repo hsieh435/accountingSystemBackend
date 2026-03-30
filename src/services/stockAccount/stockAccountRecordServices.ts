@@ -1,6 +1,9 @@
+import pool from "@/db";
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { IFinanceRecordParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
+import { updateStockStorageQuantity } from "@/services/stockStorage/storageProfitServices";
+
 
 export interface IStockAccountRecordList {
   tradeId: string;
@@ -92,31 +95,9 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   // const client = await pool.connect();
   // await client.query("BEGIN");
 
-  const insertResult = await updateRelatedData(
-    `INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-
-
-    INSERT INTO public.stock_storage_list(stock_account_id, user_id, stock_no, stock_name, storage_quantity)
-    VALUES ($2, $3, $7, $8, $10)
-    ON CONFLICT (stock_account_id, stock_no)
-    DO UPDATE SET
-    UPDATE stock_storage_list
-      SET stock_storage_list.storage_quantity = totals.net_quantity
-        FROM (SELECT stock_no, stock_name,
-          SUM(
-            CASE
-              WHEN trade_category = 'stockBuy'  THEN quantity
-              WHEN trade_category = 'stockDividend'  THEN quantity
-              WHEN trade_category = 'stockSell' THEN -quantity
-              ELSE 0
-            END
-          ) AS net_quantity
-        FROM stock_account_trade
-      WHERE account_id = $2 AND user_id = $3
-      GROUP BY stock_no, stock_name
-    ) totals
-    WHERE stock_storage_list.stock_no = totals.stock_no;
+  const insertResult = await updateRelatedData(`
+    INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20);
     `,
     [
       data.tradeId,
@@ -148,15 +129,10 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
     data.accountId,
     "stock_account_trade",
     "trade_total_price",
+    {
+      afterUpdate: async (client) => updateStockStorageQuantity(data, client),
+    },
   );
-
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-  // await updateStockStorageQuantity(data);
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
 
   if (insertResult.success === true) {
     return { success: true, message: "新增成功" };
@@ -179,35 +155,9 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const updateResult = await updateRelatedData(
-    `UPDATE public.stock_account_trade SET trade_datetime = $1, stock_no = $2, stock_name = $3, price_per_share = $4, quantity = $5, stock_total_price = $6, handling_fee = $7, transaction_tax = $8, trade_total_price = $9, trade_description = $10, trade_note = $11, edited_datetime = $12
+  const updateResult = await updateRelatedData(`
+    UPDATE public.stock_account_trade SET trade_datetime = $1, stock_no = $2, stock_name = $3, price_per_share = $4, quantity = $5, stock_total_price = $6, handling_fee = $7, transaction_tax = $8, trade_total_price = $9, trade_description = $10, trade_note = $11, edited_datetime = $12
     WHERE trade_id = $13 AND account_id = $14 AND user_id = $15
-
-
-
-    INSERT INTO public.stock_storage_list(stock_account_id, user_id, stock_no, stock_name, storage_quantity)
-    VALUES ($14, $15, $2, $3, $5)
-    ON CONFLICT (stock_account_id, stock_no)
-    DO UPDATE SET
-    UPDATE stock_storage_list
-      SET stock_storage_list.storage_quantity = totals.net_quantity
-        FROM (SELECT stock_no, stock_name,
-          SUM(
-            CASE
-              WHEN trade_category = 'stockBuy'  THEN quantity
-              WHEN trade_category = 'stockDividend'  THEN quantity
-              WHEN trade_category = 'stockSell' THEN -quantity
-              ELSE 0
-            END
-          ) AS net_quantity
-        FROM stock_account_trade
-      WHERE account_id = $14 AND user_id = $15
-      GROUP BY stock_no, stock_name
-    ) totals
-    WHERE stock_storage_list.stock_no = totals.stock_no;
-
-
-
     `,
     [
       data.tradeDatetime,
@@ -234,15 +184,10 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
     data.accountId,
     "stock_account_trade",
     "trade_total_price",
+    {
+      afterUpdate: async (client) => updateStockStorageQuantity(data, client),
+    },
   );
-
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-  // await updateStockStorageQuantity(data);
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
 
   if (updateResult.success === true) {
     return { success: true, message: "更新成功" };

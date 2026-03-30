@@ -1,6 +1,7 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { IStockAccountRecordList } from "@/services/stockAccount/stockAccountRecordServices";
+import type { PoolClient } from "pg";
 
 export async function getStockStorageList(data: { stockAccountId: string; userId: string }) {
   // UPDATE stock_storage_list
@@ -23,26 +24,7 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
 
   return executeSQLsyntax({
     query: `
-      SELECT
-        stock_storage_list.*,
-        COALESCE(stock_totals.totals, 0)::INTEGER AS storage_count
-      FROM stock_storage_list
-
-      LEFT JOIN (
-        SELECT
-          stock_storage_detail.account_id,
-          stock_storage_detail.user_id,
-          stock_storage_detail.stock_no,
-          SUM(stock_storage_detail.quantity) AS totals
-      FROM stock_storage_detail
-      GROUP BY
-        stock_storage_detail.account_id,
-        stock_storage_detail.user_id,
-        stock_storage_detail.stock_no
-      ) stock_totals
-      ON stock_storage_list.stock_account_id = stock_totals.account_id
-        AND stock_storage_list.stock_no = stock_totals.stock_no
-
+      SELECT * FROM public.stock_storage_list
       WHERE stock_storage_list.stock_account_id = '${data.stockAccountId}'
         AND stock_storage_list.user_id = '${data.userId}'`,
     successMessage: "查詢成功",
@@ -51,7 +33,6 @@ export async function getStockStorageList(data: { stockAccountId: string; userId
 }
 
 export async function searchingStorageProfitList(stockAccountId: string, userId: string) {
-
   return executeSQLsyntax({
     query: `
       SELECT ssl.*,
@@ -79,7 +60,6 @@ export async function searchingStorageProfitList(stockAccountId: string, userId:
 }
 
 export async function searchingStockSProfitDetail(data: { stockAccountId: string; userId: string; stockNo: string }) {
-
   return executeSQLsyntax({
     query: `
       SELECT * FROM public.stock_storage_detail
@@ -90,60 +70,76 @@ export async function searchingStockSProfitDetail(data: { stockAccountId: string
   });
 }
 
-export async function updateStockStorageQuantity(data: IStockAccountRecordList) {
-  const client = await pool.connect();
-  await client.query("BEGIN");
+export async function updateStockStorageQuantity(data: IStockAccountRecordList, client?: PoolClient) {
+  const queryClient = client ?? (await pool.connect());
+  const shouldManageTransaction = !client;
 
-  const searchingResult = await executeSQLsyntax({
-    query: `SELECT * FROM public.stock_storage_list WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
-    params: [data.accountId, data.userId, data.stockNo],
-    successMessage: "查詢成功",
-    errorMessage: "查詢失敗",
-  });
-  console.log("searchingResult:", searchingResult);
+  try {
+    if (shouldManageTransaction) {
+      await queryClient.query("BEGIN");
+    }
 
-  if (!searchingResult.success) {
-    return { success: true, message: searchingResult.message, returnCode: -1 };
-  } else if (searchingResult.success && searchingResult.data.length === 0) {
+    const searchingResult = await executeSQLsyntax({
+      query: `SELECT 1 FROM public.stock_storage_list WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
+      params: [data.accountId, data.userId, data.stockNo],
+      successMessage: "查詢成功",
+      errorMessage: "查詢失敗",
+      client: queryClient,
+    });
+    console.log("searchingResult:", searchingResult);
 
-    const increaseResult = await executeSQLsyntax({
+    if (!searchingResult.success) {
+      if (shouldManageTransaction) {
+        await queryClient.query("ROLLBACK");
+      }
+      return { success: true, message: searchingResult.message, returnCode: -1 };
+    }
+
+
+    const updateStoragelistResult = await executeSQLsyntax({
       query: `
         INSERT INTO public.stock_storage_list(stock_account_id, user_id, stock_no, stock_name, storage_quantity)
-        VALUES ($1, $2, $3, $4, $5)`,
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (stock_account_id, stock_no)
+        DO UPDATE SET
+          storage_quantity = (
+            SELECT SUM(
+              CASE
+                WHEN trade_category = 'stockBuy' THEN quantity
+                WHEN trade_category = 'stockDividend' THEN quantity
+                WHEN trade_category = 'stockSell' THEN -quantity
+                ELSE 0
+              END
+            )
+            FROM stock_account_trade sat
+            WHERE sat.account_id = $1 AND sat.user_id = $2 AND sat.stock_no = stock_storage_list.stock_no
+          )`,
       params: [data.accountId, data.userId, data.stockNo, data.stockName, data.quantity],
       successMessage: "增加成功",
       errorMessage: "增加失敗",
-      client,
+      client: queryClient,
     });
+    // console.log("updateStoragelistResult:", updateStoragelistResult);
 
-    if (!increaseResult.success) {
-      await client.query("ROLLBACK");
-      client.release();
-      return { success: true, message: increaseResult.message, returnCode: -1 };
+    if (!updateStoragelistResult.success) {
+      if (shouldManageTransaction) {
+        await queryClient.query("ROLLBACK");
+      }
+      return { success: true, message: updateStoragelistResult.message, returnCode: -1 };
     }
 
-  } else if (searchingResult.success && searchingResult.data.length > 0) {
-    const currentQuantity = Number(searchingResult.data[0].storageQuantity);
-
-    const updateResult = await executeSQLsyntax({
-      query: `
-        UPDATE public.stock_storage_list
-        SET storage_quantity = ${currentQuantity + data.quantity}
-        WHERE stock_account_id = $1 AND user_id = $2 AND stock_no = $3`,
-      params: [data.accountId, data.userId, data.stockNo],
-      successMessage: "更新成功",
-      errorMessage: "更新失敗",
-      client,
-    });
-
-    if (!updateResult.success) {
-      await client.query("ROLLBACK");
-      client.release();
-      return { success: true, message: updateResult.message, returnCode: -1 };
+    if (shouldManageTransaction) {
+      await queryClient.query("COMMIT");
+    }
+    return { success: true, message: "操作成功", returnCode: 0 };
+  } catch (err) {
+    if (shouldManageTransaction) {
+      await queryClient.query("ROLLBACK");
+    }
+    return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };
+  } finally {
+    if (shouldManageTransaction) {
+      queryClient.release();
     }
   }
-
-  await client.query("COMMIT");
-  client.release();
-  return { success: true, message: "操作成功", returnCode: 0 };
 }

@@ -1,5 +1,6 @@
 import pool from "@/db";
 import { executeSQLsyntax } from "@/services/servicesTools";
+import type { PoolClient } from "pg";
 
 export interface IFinanceRecordParams {
   accountId: string;
@@ -8,6 +9,11 @@ export interface IFinanceRecordParams {
   startingDate: string;
   endDate: string;
   userId: string;
+}
+
+interface IUpdateRelatedDataOptions {
+  client?: PoolClient;
+  afterUpdate?: (client: PoolClient) => Promise<{ success: boolean; message?: string; returnCode?: number }>;
 }
 
 function sanitizeIdentifier(name: string): string {
@@ -87,6 +93,7 @@ export async function updateRelatedData(
   flowId: string,
   recordTableName: string,
   recordColumnName: string,
+  options?: IUpdateRelatedDataOptions,
 ) {
   // console.log("mainExecuteQuery:", mainExecuteQuery);
   // console.log("mainExecuteParams:", mainExecuteParams);
@@ -95,9 +102,13 @@ export async function updateRelatedData(
   const recordTable = sanitizeIdentifier(recordTableName);
   const recordColumn = sanitizeIdentifier(recordColumnName);
 
-  const client = await pool.connect();
+  const client = options?.client ?? (await pool.connect());
+  const shouldManageTransaction = !options?.client;
+
   try {
-    await client.query("BEGIN");
+    if (shouldManageTransaction) {
+      await client.query("BEGIN");
+    }
 
     // 執行主要的新增或更新操作
     const mainExecuteResult = await executeSQLsyntax({
@@ -108,8 +119,11 @@ export async function updateRelatedData(
       errorMessage,
       client,
     });
+    // console.log("mainExecuteResult:", mainExecuteResult);
     if (mainExecuteResult.success === false) {
-      await client.query("ROLLBACK");
+      if (shouldManageTransaction) {
+        await client.query("ROLLBACK");
+      }
       return { success: true, message: errorMessage, returnCode: -1 };
     }
     console.log("mainExecuteResult:", mainExecuteResult);
@@ -152,13 +166,17 @@ export async function updateRelatedData(
           WHERE ${recordTable}.trade_id = bc.trade_id AND ${recordTable}.${flowColumn} = $1
           RETURNING ${recordTable}.remaining_amount, ${recordTable}.trade_datetime
         )
-        UPDATE ${flowListTable} SET present_amount = (
-          SELECT ur.remaining_amount
-          FROM updated_record ur
-          ORDER BY ur.trade_datetime DESC
-          LIMIT 1
+        UPDATE ${flowListTable} AS aT
+        SET present_amount = COALESCE(
+          (
+            SELECT ur.remaining_amount
+            FROM updated_record ur
+            ORDER BY ur.trade_datetime DESC
+            LIMIT 1
+          ),
+          aT.starting_amount
         )
-        WHERE ${flowColumn} = $1`,
+        WHERE aT.${flowColumn} = $1`,
       params: [flowId],
       isReturnArray: true,
       successMessage: "更新餘額成功",
@@ -169,16 +187,40 @@ export async function updateRelatedData(
     console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success) {
-      await client.query("ROLLBACK");
+      if (shouldManageTransaction) {
+        await client.query("ROLLBACK");
+      }
       return { success: true, message: flowUpdateResult.message, returnCode: -1 };
     }
-    await client.query("COMMIT");
+
+    if (options?.afterUpdate) {
+      const afterUpdateResult = await options.afterUpdate(client);
+
+      if (!afterUpdateResult.success || afterUpdateResult.returnCode === -1) {
+        if (shouldManageTransaction) {
+          await client.query("ROLLBACK");
+        }
+        return {
+          success: true,
+          message: afterUpdateResult.message || errorMessage,
+          returnCode: -1,
+        };
+      }
+    }
+
+    if (shouldManageTransaction) {
+      await client.query("COMMIT");
+    }
     // console.log("更新餘額成功");
     return { success: true, message: flowUpdateResult.message, returnCode: 0 };
   } catch (err) {
-    await client.query("ROLLBACK");
+    if (shouldManageTransaction) {
+      await client.query("ROLLBACK");
+    }
     return { success: false, message: err instanceof Error ? err.message : String(err), returnCode: -1 };
   } finally {
-    client.release();
+    if (shouldManageTransaction) {
+      client.release();
+    }
   }
 }
