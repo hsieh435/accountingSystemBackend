@@ -10,8 +10,8 @@ export interface IStockAccountRecordList {
   accountId: string;
   userId: string;
   tradeDatetime: string;
-  accountUser: string;
   transactionType: string;
+  stockTransaction: string;
   tradeCategory: string;
   stockNo: string;
   stockName: string;
@@ -76,7 +76,7 @@ export async function getStockAccountRecordById(tradeId: string, accountId: stri
 
 export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   // console.log("data:", data);
-  data.tradeId = `ST-${data.currency}-${getCurrentTimestamp()}`;
+  data.tradeId = `SA-${data.currency}-${getCurrentTimestamp()}`;
   data.createdDatetime = `${setTimezone()}`;
   data.editedDatetime = `${setTimezone()}`;
 
@@ -87,17 +87,17 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
     data.tradeId,
     data.tradeDatetime,
   );
-  // console.log("dateDetectResult:", dateDetectResult);
   if (!dateDetectResult.success) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
+  // console.log("dateDetectResult:", dateDetectResult);
 
   // const client = await pool.connect();
   // await client.query("BEGIN");
 
-  const insertResult = await updateRelatedData(`
-    INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20);
+  return await updateRelatedData(`
+    INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_transaction, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21);
     `,
     [
       data.tradeId,
@@ -106,6 +106,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
       data.tradeDatetime,
       data.tradeCategory,
       data.transactionType,
+      data.stockTransaction,
       data.stockNo,
       data.stockName,
       data.pricePerShare,
@@ -133,12 +134,14 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
       afterUpdate: async (client) => updateStockStorageQuantity(data, client),
     },
   );
+  // console.log("insertResult:", insertResult);
 
-  if (insertResult.success === true) {
-    return { success: true, message: "新增成功" };
-  } else if (insertResult.success === false) {
-    return { success: true, message: "新增失敗", returnCode: -1 };
-  }
+  // return insertResult;
+  // if (insertResult.success === true) {
+  //   return { success: true, message: "新增成功" };
+  // } else if (insertResult.success === false) {
+  //   return { success: true, message: "新增失敗", returnCode: -1 };
+  // }
 }
 
 export async function updateStockAccountRecord(data: IStockAccountRecordList) {
@@ -155,14 +158,15 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
     return { success: true, message: dateDetectResult.message, returnCode: -1 };
   }
 
-  const updateResult = await updateRelatedData(`
-    UPDATE public.stock_account_trade SET trade_datetime = $1, stock_no = $2, stock_name = $3, price_per_share = $4, quantity = $5, stock_total_price = $6, handling_fee = $7, transaction_tax = $8, trade_total_price = $9, trade_description = $10, trade_note = $11, edited_datetime = $12
-    WHERE trade_id = $13 AND account_id = $14 AND user_id = $15
+  return await updateRelatedData(`
+    UPDATE public.stock_account_trade SET trade_datetime = $1, trade_category = $2, transaction_type = $3, stock_transaction = $4, price_per_share = $5, quantity = $6, stock_total_price = $7, handling_fee = $8, transaction_tax = $9, trade_total_price = $10, trade_description = $11, trade_note = $12, edited_datetime = $13
+    WHERE trade_id = $14 AND account_id = $15 AND user_id = $16
     `,
     [
       data.tradeDatetime,
-      data.stockNo,
-      data.stockName,
+      data.tradeCategory,
+      data.transactionType,
+      data.stockTransaction,
       data.pricePerShare,
       data.quantity,
       data.stockTotalPrice,
@@ -189,11 +193,12 @@ export async function updateStockAccountRecord(data: IStockAccountRecordList) {
     },
   );
 
-  if (updateResult.success === true) {
-    return { success: true, message: "更新成功" };
-  } else if (updateResult.success === false) {
-    return { success: false, message: "更新失敗", returnCode: -1 };
-  }
+  // return updateResult;
+  // if (updateResult.success === true) {
+  //   return { success: true, message: "更新成功" };
+  // } else if (updateResult.success === false) {
+  //   return { success: false, message: "更新失敗", returnCode: -1 };
+  // }
 }
 
 export async function removeStockAccountRecord(data: IStockAccountRecordList) {

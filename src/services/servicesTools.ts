@@ -20,8 +20,8 @@ export async function executeSQLsyntax({
   isTesting?: boolean;
   client?: PoolClient;
 }): Promise<{ success: boolean; data?: any; message?: string; statusCode?: number; returnCode?: number }> {
-  // console.log("Query executed:", query);
-  // console.log("Parameters:", params);
+  // console.log("Query:", query);
+  // console.log("Params:", params);
 
   if (isTesting === true) {
     return { success: true, data: [], message: "測試成功", returnCode: 0 };

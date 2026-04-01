@@ -157,7 +157,7 @@ export async function removeStoredValueCardData(data: IStoredValueCardData) {
   const recordDetectResult = await executeSQLsyntax({
     query: `
       SELECT 1 FROM public.stored_value_card_list
-      WHERE stored_value_card_id = '${data.storedValueCardId}XXXXX' AND user_id = '${data.userId}' AND currency = '${data.currency}'
+      WHERE stored_value_card_id = '${data.storedValueCardId}' AND user_id = '${data.userId}' AND currency = '${data.currency}'
       `,
   });
 

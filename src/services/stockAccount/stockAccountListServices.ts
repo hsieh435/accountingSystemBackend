@@ -36,7 +36,8 @@ export async function searchingStockAccountList(data: { currencyId: string; user
 
         COALESCE(trade_totals.expense_sum, 0) AS expense_sum_current_month,
         COALESCE(trade_totals.income_sum, 0) AS income_sum_current_month,
-        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month
+        COALESCE(trade_totals.income_sum - trade_totals.expense_sum, 0) AS profit_loss_sum_current_month,
+        COALESCE(storage.stock_storage, '[]'::json) AS stock_storage
       FROM stock_account_list
 
       LEFT JOIN (
@@ -49,8 +50,24 @@ export async function searchingStockAccountList(data: { currencyId: string; user
         GROUP BY account_id
       ) trade_totals ON stock_account_list.account_id = trade_totals.account_id
 
-      WHERE currency LIKE '%${data.currencyId}%' AND user_id = '${data.userId}'
-      ORDER BY created_date`,
+      LEFT JOIN (
+        SELECT stock_account_id,
+          user_id,
+          json_agg(
+            json_build_object(
+              'stock_no', stock_no,
+              'stock_name', stock_name,
+              'storage_quantity', storage_quantity
+            )
+            ORDER BY stock_no
+          ) AS stock_storage
+        FROM public.stock_storage_list
+        GROUP BY stock_account_id, user_id
+      ) storage ON stock_account_list.account_id = storage.stock_account_id AND stock_account_list.user_id = storage.user_id
+
+      WHERE stock_account_list.currency LIKE '%${data.currencyId}%'
+        AND stock_account_list.user_id = '${data.userId}'
+      ORDER BY stock_account_list.created_date`,
     successMessage: "查詢成功",
     errorMessage: "查詢失敗",
   });

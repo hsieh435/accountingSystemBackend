@@ -126,7 +126,6 @@ export async function updateRelatedData(
       }
       return { success: true, message: errorMessage, returnCode: -1 };
     }
-    console.log("mainExecuteResult:", mainExecuteResult);
 
     // WITH balance_calc AS (
     //   SELECT ct.trade_id, ct.cashflow_id, ct.trade_datetime, ct.trade_amount, ct.transaction_type, cl.starting_amount,
@@ -184,7 +183,7 @@ export async function updateRelatedData(
       client,
     });
 
-    console.log("flowUpdateResult:", flowUpdateResult);
+    // console.log("flowUpdateResult:", flowUpdateResult);
     // pass client，加上 await 確保同步執行
     if (!flowUpdateResult.success) {
       if (shouldManageTransaction) {
