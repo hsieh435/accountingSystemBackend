@@ -1,4 +1,3 @@
-import pool from "@/db";
 import { getCurrentTimestamp, setTimezone } from "@/utils/tools";
 import { executeSQLsyntax } from "@/services/servicesTools";
 import { IFinanceRecordParams, tradeDateTimeDetect, updateRelatedData } from "@/services/recordServiceTools";
@@ -92,8 +91,7 @@ export async function insertStockAccountRecord(data: IStockAccountRecordList) {
   }
   // console.log("dateDetectResult:", dateDetectResult);
 
-  // const client = await pool.connect();
-  // await client.query("BEGIN");
+
 
   return await updateRelatedData(`
     INSERT INTO public.stock_account_trade(trade_id, account_id, user_id, trade_datetime, trade_category, transaction_type, stock_transaction, stock_no, stock_name, price_per_share, quantity, stock_total_price, handling_fee, transaction_tax, trade_total_price, remaining_amount, currency, trade_description, trade_note, created_datetime, edited_datetime)
@@ -213,5 +211,8 @@ export async function removeStockAccountRecord(data: IStockAccountRecordList) {
     data.accountId,
     "stock_account_trade",
     "trade_total_price",
+    {
+      afterUpdate: async (client) => updateStockStorageQuantity(data, client),
+    },
   );
 }
