@@ -45,7 +45,6 @@ export async function getLatestCurrencyExchangeRate(req: Request, res: Response)
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
-    // const data = await response.json();
     await handleControllersResponse(res, req, response);
   } catch (err) {
     await handleControllersResponse(res, req, { message: String(err) }, 500);
@@ -64,7 +63,6 @@ export async function getCurrencyExRateHistory(req: Request, res: Response) {
         headers: { "Content-Type": "application/json" },
       },
     );
-    // const data = await response.json();
     // console.log("data:", data);
     await handleControllersResponse(res, req, response);
   } catch (err) {
