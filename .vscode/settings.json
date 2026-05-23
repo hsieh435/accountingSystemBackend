@@ -3,6 +3,14 @@
     "activityBar.background": "#3c2f41",
     "titleBar.activeBackground": "#3c2f41",
     "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#352A3A",
+    "titleBar.inactiveForeground": "#FBFAFB",
+    "statusBar.background": "#352A3A",
+    "statusBar.foreground": "#FBFAFB",
+    "statusBar.debuggingBackground": "#352A3A",
+    "statusBar.debuggingForeground": "#FBFAFB",
+    "statusBar.noFolderBackground": "#352A3A",
+    "statusBar.noFolderForeground": "#FBFAFB"
   },
   // 存檔即自動格式化
   "editor.formatOnSave": true,
@@ -11,7 +19,6 @@
 
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
-
 
   // Prettier 規則
   "prettier.singleQuote": false, // 使用雙引號
