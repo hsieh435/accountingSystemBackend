@@ -4,7 +4,7 @@ import { executeSQLsyntax } from "@/services/servicesTools";
 export interface ICashFlowData {
   cashflowId: string;
   userId: string;
-  accountType: string;
+  accountType: "cashFlow";
   cashflowName: string;
   currency: string;
   startingAmount: number;
@@ -160,7 +160,6 @@ export async function disableCashFlowStatus(data: ICashFlowData) {
 }
 
 export async function removeCashflowData(data: ICashFlowData) {
-
   const recordDetectResult = await executeSQLsyntax({
     query: `
       SELECT 1 FROM public.cashflow_list

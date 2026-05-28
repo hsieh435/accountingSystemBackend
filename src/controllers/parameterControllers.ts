@@ -98,7 +98,7 @@ export async function getEachCurrency(req: Request, res: Response) {
   try {
     const result = await pool.query(`SELECT * FROM currency_list WHERE currency_code = '${req.params.currencyCode}'`);
     if (result.rows.length === 1) {
-      await handleControllersResponse(res, req, { success: true, data: result.rows, message: "查詢成功" });
+      await handleControllersResponse(res, req, { success: true, data: result.rows[0], message: "查詢成功" });
     } else {
       await handleControllersResponse(res, req, { success: false, data: [], message: "查無資料" }, 404);
     }

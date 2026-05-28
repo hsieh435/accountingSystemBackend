@@ -111,7 +111,7 @@ export async function insertCreditCardData(data: ICreditCardData) {
       data.expirationDate,
       timeStampWithZone,
       data.note,
-      client,
+      // client,
     ],
     isReturnArray: false,
     successMessage: "新增成功",
