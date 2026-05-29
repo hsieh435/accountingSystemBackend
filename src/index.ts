@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-// import { createServer, IncomingMessage, ServerResponse } from "http";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -25,7 +24,6 @@ const port = 3600;
 
 
 
-// app.use(cors());
 app.use(cors({
   origin: "http://localhost:3000", // 僅允許這個網域發請求
   credentials: true,               // 若有傳送 cookie 或授權資訊

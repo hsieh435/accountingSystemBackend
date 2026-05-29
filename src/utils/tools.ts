@@ -19,8 +19,6 @@ export function keysToCamel<T extends object>(obj: T): any {
   return obj;
 }
 
-
-
 export function decodeJWT(token: string) {
   console.log("token:", token);
   const parts = token.split(".");
@@ -34,10 +32,8 @@ export function decodeJWT(token: string) {
   return JSON.parse(decoded);
 }
 
-
-
 // 取得今日日期 yyyy-mm-dd
-export function getCurrentYMD(dateInput: string | number | Date = ""): string  {
+export function getCurrentYMD(dateInput: string | number | Date = ""): string {
   const date = dateInput ? new Date(dateInput) : new Date();
 
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -66,7 +62,11 @@ export function getDaysInMonth(year: number | string = "", month: number | strin
   // console.log("year-month:", year, month);
   // console.log("day:", new Date(year, month, 0));
   // console.log("day:", new Date(year, month, 0).getDate());
-  return new Date(year === "" ? getCurrentYear() : Number(year), month === "" ? getCurrentMonth() : Number(month), 0).getDate();
+  return new Date(
+    year === "" ? getCurrentYear() : Number(year),
+    month === "" ? getCurrentMonth() : Number(month),
+    0,
+  ).getDate();
 }
 
 // 取得時間戳，type 為 number
@@ -74,25 +74,7 @@ export function getCurrentTimestamp(dateTimes: string | number | Date = "") {
   return dateTimes === "" ? new Date().getTime() : new Date(dateTimes).getTime();
 }
 
-
-
-// 西元年日期格式 yyyy-mm-dd hh:mm:ss 或 yyyy-mm-dd
-export function yearMonthDayTimeFormat(dateString: Date | string | number = "", hasTime: boolean = true): string {
-  const date = dateString ? new Date(dateString) : new Date();
-  if (isNaN(date.getTime()) || !dateString) return "";
-
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  return hasTime ? `${year}-${month}-${day} ${hours}:${minutes}:${seconds}` : `${year}-${month}-${day}`;
-}
-
 // 時間格式設定 Timezone
 export function setTimezone(dateString: Date | string | number = ""): string {
   return dateString ? new Date(dateString).toISOString() : new Date().toISOString();
 }
-

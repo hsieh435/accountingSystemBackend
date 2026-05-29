@@ -43,5 +43,4 @@ const pool = new Pool({
 
 
 
-// console.log("Pool:", pool);
 export default pool;
